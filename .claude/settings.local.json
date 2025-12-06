@@ -4,7 +4,12 @@
       "Bash(dir /B /S F:cloudbootclisrc)",
       "Bash(yarn install:*)",
       "Bash(node dist/index.js:*)",
-      "Bash(bun --version:*)"
+      "Bash(bun --version:*)",
+      "WebFetch(domain:martinfowler.com)",
+      "Bash(tree:*)",
+      "WebFetch(domain:lahirus.com)",
+      "Bash(ls:*)",
+      "WebFetch(domain:refactoring.com)"
     ],
     "deny": [],
     "ask": []

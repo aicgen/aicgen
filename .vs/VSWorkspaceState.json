@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\config",
+    "\\src\\models",
+    "\\src\\prompts",
+    "\\src\\services",
+    "\\src\\services\\ai",
+    "\\src\\templates",
+    "\\src\\templates\\guidelines",
+    "\\src\\utils"
+  ],
+  "SelectedNode": "\\src\\services\\ai\\anthropic.ts",
+  "PreviewInSolutionExplorer": false
+}

@@ -21,12 +21,15 @@ TypeScript-based CLI tool that automatically generates and manages AI coding ass
 ### Code Organization
 ```
 src/
-├── cli/              # CLI layer - commands, prompts, output formatting
-├── core/             # Business logic - scanning, generation, learning
-├── domain/           # Domain models and interfaces
-├── infrastructure/   # External concerns - file system, API clients
-├── profiles/         # Profile strategies
-└── templates/        # Static templates and guidelines
+├── commands/         # CLI command handlers
+├── config/           # Configuration (profiles, settings)
+├── models/           # Domain models and interfaces
+├── prompts/          # Interactive prompt definitions
+├── services/         # Business logic (scanner, generator, AI)
+├── utils/            # Utilities (errors, file ops, logging)
+└── docs/             # Documentation and guidelines
+    ├── architecture/        # Architecture patterns (Clean, DDD, SOLID, etc.)
+    └── enterprise-patterns/ # Enterprise patterns (Repository, DTO, etc.)
 ```
 
 ### Key Technical Decisions

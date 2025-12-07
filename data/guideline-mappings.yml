@@ -1,0 +1,419 @@
+# Guideline Mappings
+# Defines which guidelines apply to which profiles
+#
+# Format:
+# guideline-id:
+#   path: relative/path/to/guideline.md
+#   languages: [list of applicable languages] (optional, if omitted applies to all)
+#   levels: [list of applicable levels] (optional, if omitted applies to all)
+#   architectures: [list of applicable architectures] (optional, if omitted applies to all)
+#   tags: [list of tags for organization]
+
+# ============================================================
+# LANGUAGE: TYPESCRIPT
+# ============================================================
+
+typescript-basics:
+  path: language/typescript/basics.md
+  languages: [typescript]
+  levels: [basic, standard, expert, full]
+  tags: [typescript, fundamentals, types]
+
+typescript-async:
+  path: language/typescript/async.md
+  languages: [typescript]
+  levels: [basic, standard, expert, full]
+  tags: [typescript, async, promises]
+
+typescript-interfaces-types:
+  path: language/typescript/interfaces-types.md
+  languages: [typescript]
+  levels: [standard, expert, full]
+  tags: [typescript, interfaces, types, utility-types]
+
+typescript-generics:
+  path: language/typescript/generics.md
+  languages: [typescript]
+  levels: [expert, full]
+  tags: [typescript, generics, advanced]
+
+typescript-error-handling:
+  path: language/typescript/error-handling.md
+  languages: [typescript]
+  levels: [standard, expert, full]
+  tags: [typescript, errors, exceptions]
+
+typescript-testing:
+  path: language/typescript/testing.md
+  languages: [typescript]
+  levels: [standard, expert, full]
+  tags: [typescript, testing, jest]
+
+typescript-config:
+  path: language/typescript/config.md
+  languages: [typescript]
+  levels: [standard, expert, full]
+  tags: [typescript, tsconfig, configuration]
+
+typescript-performance:
+  path: language/typescript/performance.md
+  languages: [typescript]
+  levels: [expert, full]
+  tags: [typescript, performance, optimization]
+
+# ============================================================
+# LANGUAGE: PYTHON
+# ============================================================
+
+python-basics:
+  path: language/python/basics.md
+  languages: [python]
+  levels: [basic, standard, expert, full]
+  tags: [python, fundamentals, pep8]
+
+python-types:
+  path: language/python/types.md
+  languages: [python]
+  levels: [standard, expert, full]
+  tags: [python, types, type-hints, mypy]
+
+python-async:
+  path: language/python/async.md
+  languages: [python]
+  levels: [expert, full]
+  tags: [python, async, asyncio]
+
+python-testing:
+  path: language/python/testing.md
+  languages: [python]
+  levels: [standard, expert, full]
+  tags: [python, testing, pytest]
+
+# ============================================================
+# ARCHITECTURE: MICROSERVICES
+# ============================================================
+
+microservices-boundaries:
+  path: architecture/microservices/boundaries.md
+  architectures: [microservices]
+  levels: [standard, expert, full]
+  tags: [microservices, boundaries, ddd]
+
+microservices-communication:
+  path: architecture/microservices/communication.md
+  architectures: [microservices]
+  levels: [standard, expert, full]
+  tags: [microservices, communication, messaging, events]
+
+microservices-data:
+  path: architecture/microservices/data.md
+  architectures: [microservices]
+  levels: [standard, expert, full]
+  tags: [microservices, data, consistency, saga]
+
+microservices-resilience:
+  path: architecture/microservices/resilience.md
+  architectures: [microservices]
+  levels: [expert, full]
+  tags: [microservices, resilience, circuit-breaker, retry]
+
+# ============================================================
+# ARCHITECTURE: MODULAR MONOLITH
+# ============================================================
+
+modular-monolith-structure:
+  path: architecture/modular-monolith/structure.md
+  architectures: [modular-monolith]
+  levels: [standard, expert, full]
+  tags: [modular-monolith, structure, modules]
+
+modular-monolith-boundaries:
+  path: architecture/modular-monolith/boundaries.md
+  architectures: [modular-monolith]
+  levels: [standard, expert, full]
+  tags: [modular-monolith, boundaries, coupling, events]
+
+# ============================================================
+# TESTING
+# ============================================================
+
+testing-unit-fundamentals:
+  path: testing/unit-fundamentals.md
+  levels: [standard, expert, full]
+  tags: [testing, unit-tests, aaa-pattern]
+
+testing-unit-mocking:
+  path: testing/unit-mocking.md
+  levels: [standard, expert, full]
+  tags: [testing, mocking, test-doubles, stubs]
+
+testing-integration:
+  path: testing/integration.md
+  levels: [expert, full]
+  tags: [testing, integration, database, api]
+
+# ============================================================
+# SECURITY
+# ============================================================
+
+security-injection:
+  path: security/injection.md
+  levels: [basic, standard, expert, full]
+  tags: [security, owasp, sql-injection, xss]
+
+security-auth-jwt:
+  path: security/auth-jwt.md
+  levels: [standard, expert, full]
+  tags: [security, auth, jwt, session, password]
+
+security-secrets:
+  path: security/secrets.md
+  levels: [standard, expert, full]
+  tags: [security, secrets, env, configuration]
+
+security-headers:
+  path: security/headers.md
+  levels: [expert, full]
+  tags: [security, headers, cors, csp, https]
+
+# ============================================================
+# PERFORMANCE
+# ============================================================
+
+performance-caching:
+  path: performance/caching.md
+  levels: [expert, full]
+  tags: [performance, caching, redis, memoization]
+
+performance-async:
+  path: performance/async.md
+  levels: [standard, expert, full]
+  tags: [performance, async, parallel, batching]
+
+# ============================================================
+# DATABASE
+# ============================================================
+
+database-schema:
+  path: database/schema.md
+  levels: [standard, expert, full]
+  tags: [database, schema, design, normalization]
+
+database-indexing:
+  path: database/indexing.md
+  levels: [expert, full]
+  tags: [database, indexing, performance, queries]
+
+# ============================================================
+# API DESIGN
+# ============================================================
+
+api-rest:
+  path: api/rest.md
+  levels: [standard, expert, full]
+  tags: [api, rest, http, design]
+
+api-pagination:
+  path: api/pagination.md
+  levels: [standard, expert, full]
+  tags: [api, pagination, cursor, offset]
+
+# ============================================================
+# CODE STYLE
+# ============================================================
+
+code-style-naming:
+  path: style/naming.md
+  levels: [basic, standard, expert, full]
+  tags: [style, naming, conventions]
+
+code-style-organization:
+  path: style/organization.md
+  levels: [standard, expert, full]
+  tags: [style, organization, structure, srp]
+
+# ============================================================
+# ERROR HANDLING
+# ============================================================
+
+error-handling-strategy:
+  path: error-handling/strategy.md
+  levels: [standard, expert, full]
+  tags: [errors, exceptions, resilience, retry]
+
+# ============================================================
+# ARCHITECTURE: SOLID PRINCIPLES
+# ============================================================
+
+solid-principles:
+  path: architecture/solid/principles.md
+  levels: [standard, expert, full]
+  tags: [solid, srp, ocp, lsp, isp, dip, design-principles]
+
+# ============================================================
+# ARCHITECTURE: CLEAN ARCHITECTURE
+# ============================================================
+
+clean-architecture-layers:
+  path: architecture/clean-architecture/layers.md
+  architectures: [clean-architecture]
+  levels: [standard, expert, full]
+  tags: [clean-architecture, layers, dependency-rule, use-cases]
+
+# ============================================================
+# ARCHITECTURE: DOMAIN-DRIVEN DESIGN
+# ============================================================
+
+ddd-tactical:
+  path: architecture/ddd/tactical.md
+  architectures: [ddd]
+  levels: [standard, expert, full]
+  tags: [ddd, entities, value-objects, aggregates, domain-events]
+
+ddd-strategic:
+  path: architecture/ddd/strategic.md
+  architectures: [ddd]
+  levels: [expert, full]
+  tags: [ddd, bounded-context, ubiquitous-language, context-mapping]
+
+# ============================================================
+# ARCHITECTURE: EVENT-DRIVEN
+# ============================================================
+
+event-driven-patterns:
+  path: architecture/event-driven/patterns.md
+  architectures: [event-driven]
+  levels: [expert, full]
+  tags: [event-sourcing, cqrs, saga, event-driven]
+
+# ============================================================
+# ARCHITECTURE: LAYERED
+# ============================================================
+
+layered-architecture:
+  path: architecture/layered/layers.md
+  architectures: [layered]
+  levels: [standard, expert, full]
+  tags: [layered, presentation, domain, data-access]
+
+# ============================================================
+# ARCHITECTURE: SERVERLESS
+# ============================================================
+
+serverless-patterns:
+  path: architecture/serverless/patterns.md
+  architectures: [serverless]
+  levels: [standard, expert, full]
+  tags: [serverless, faas, lambda, cold-start]
+
+# ============================================================
+# ARCHITECTURE: GUI
+# ============================================================
+
+gui-architecture:
+  path: architecture/gui/patterns.md
+  levels: [standard, expert, full]
+  tags: [gui, mvc, mvp, mvvm, component-architecture]
+
+# ============================================================
+# ARCHITECTURE: FEATURE TOGGLES
+# ============================================================
+
+feature-toggles:
+  path: architecture/feature-toggles/patterns.md
+  levels: [standard, expert, full]
+  tags: [feature-flags, release-toggles, ab-testing]
+
+# ============================================================
+# DEVOPS
+# ============================================================
+
+devops-ci-cd:
+  path: devops/ci-cd.md
+  levels: [standard, expert, full]
+  tags: [devops, ci, cd, deployment, pipelines]
+
+devops-practices:
+  path: devops/practices.md
+  levels: [expert, full]
+  tags: [devops, infrastructure, observability, containers]
+
+# ============================================================
+# DEVELOPMENT PRACTICES
+# ============================================================
+
+practices-code-review:
+  path: practices/code-review.md
+  levels: [standard, expert, full]
+  tags: [code-review, pr, feedback, collaboration]
+
+practices-refactoring:
+  path: practices/refactoring.md
+  levels: [standard, expert, full]
+  tags: [refactoring, code-smells, clean-code]
+
+practices-version-control:
+  path: practices/version-control.md
+  levels: [basic, standard, expert, full]
+  tags: [git, branching, commits, version-control]
+
+# ============================================================
+# API (ADDITIONAL)
+# ============================================================
+
+api-versioning:
+  path: api/versioning.md
+  levels: [standard, expert, full]
+  tags: [api, versioning, deprecation, backwards-compatibility]
+
+# ============================================================
+# PERFORMANCE (ADDITIONAL)
+# ============================================================
+
+performance-caching-strategies:
+  path: performance/caching-strategies.md
+  levels: [expert, full]
+  tags: [caching, cache-aside, write-through, invalidation]
+
+# ============================================================
+# DATABASE (ADDITIONAL)
+# ============================================================
+
+database-design-patterns:
+  path: database/design-patterns.md
+  levels: [standard, expert, full]
+  tags: [database, normalization, denormalization, soft-deletes]
+
+# ============================================================
+# ENTERPRISE PATTERNS
+# ============================================================
+
+patterns-base:
+  path: patterns/base-patterns.md
+  levels: [standard, expert, full]
+  tags: [value-object, money, special-case, registry, plugin]
+
+patterns-concurrency:
+  path: patterns/concurrency.md
+  levels: [expert, full]
+  tags: [concurrency, optimistic-lock, pessimistic-lock, locking]
+
+patterns-data-access:
+  path: patterns/data-access.md
+  levels: [standard, expert, full]
+  tags: [repository, data-mapper, active-record, unit-of-work]
+
+patterns-distribution:
+  path: patterns/distribution.md
+  levels: [expert, full]
+  tags: [remote-facade, dto, gateway, service-stub]
+
+patterns-domain-logic:
+  path: patterns/domain-logic.md
+  levels: [standard, expert, full]
+  tags: [transaction-script, domain-model, service-layer]
+
+patterns-gof:
+  path: patterns/gof.md
+  levels: [standard, expert, full]
+  tags: [gang-of-four, factory, strategy, observer, decorator]

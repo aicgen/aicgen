@@ -1,0 +1,146 @@
+meta:
+  name: "Claude Code - TypeScript - Standard - Modular Monolith"
+  assistant: "claude-code"
+  language: "typescript"
+  level: "standard"
+  architecture: "modular-monolith"
+  version: "1.0.0"
+  description: "Production-ready TypeScript setup with modular monolith architecture for small-medium teams"
+
+detection:
+  matches:
+    - packageManager: ["npm", "yarn", "pnpm", "bun"]
+      hasFiles: ["package.json", "tsconfig.json"]
+      language: "typescript"
+  autoSuggestWhen:
+    teamSize: "1-10"
+    projectType: "new-or-small"
+  autoSuggestScore: 0.9
+
+instructionLevel:
+  type: "standard"
+  description: "Production-ready with good practices"
+  estimatedLines: 500
+  includes:
+    guidelines:
+      - id: "clean-code-style-guide"
+        path: "src/docs/development-practices/clean-code-style-guide.md"
+        extract: "all"
+
+      - id: "solid-principles"
+        path: "src/docs/architecture/solid-principles.md"
+        extract: "summary"
+
+      - id: "testing-practices"
+        path: "src/docs/development-practices/testing-practices.md"
+        extract:
+          sections: ["test-pyramid", "unit-testing", "integration-testing"]
+
+      - id: "error-handling"
+        path: "src/docs/development-practices/error-handling-resilience.md"
+        extract:
+          sections: ["custom-errors", "retry-patterns", "timeout"]
+
+      - id: "deployment"
+        path: "src/docs/development-practices/deployment-delivery.md"
+        extract:
+          sections: ["environment-management", "ci-cd"]
+
+    rules:
+      - "Use strict TypeScript with no `any` types"
+      - "Prefer async/await over .then() chains"
+      - "Functions under 50 lines, files under 300 lines"
+      - "No console.log in production - use structured logging"
+      - "All public APIs must have TypeScript types exported"
+      - "Use Zod or similar for runtime validation"
+
+architecture:
+  type: "modular-monolith"
+  structure:
+    layout: |
+      src/
+      ├── modules/
+      │   ├── [module-name]/
+      │   │   ├── domain/          # Domain models, business logic
+      │   │   ├── application/     # Use cases, services
+      │   │   ├── infrastructure/  # External adapters (DB, APIs)
+      │   │   └── presentation/    # Controllers, routes
+      │   └── ...
+      ├── shared/                  # Shared kernel
+      │   ├── utils/
+      │   ├── types/
+      │   └── errors/
+      └── index.ts
+    description: "Clear module boundaries following clean architecture principles"
+
+  guidelinesAdd:
+    - id: "clean-architecture"
+      path: "src/docs/architecture/clean-architecture.md"
+      extract: "summary"
+    - id: "modular-monolith"
+      path: "src/docs/architecture/modular-monolith.md"
+      extract: "all"
+
+  rules:
+    - "Each module is self-contained and can be extracted to a service later"
+    - "Modules communicate via application layer interfaces"
+    - "Dependencies point inward (domain ← application ← infrastructure)"
+    - "Shared kernel contains only truly shared code"
+
+  focus:
+    - "Module boundaries prevent circular dependencies"
+    - "Clear separation of concerns within modules"
+    - "Easy to test each module independently"
+
+outputs:
+  - type: "instructions"
+    template: "claude-code/instructions.md.hbs"
+    destination: ".claude/instructions.md"
+
+  - type: "config"
+    template: "claude-code/config.yml.hbs"
+    destination: ".claude/config.yml"
+
+  - type: "decisions"
+    template: "claude-code/decisions.md.hbs"
+    destination: ".claude/decisions.md"
+    optional: true
+
+  - type: "ci"
+    template: "ci/github-actions-typescript.yml.hbs"
+    destination: ".github/workflows/ci.yml"
+    condition: "!structure.hasCI"
+
+  - type: "docker"
+    template: "docker/typescript-node.Dockerfile.hbs"
+    destination: "Dockerfile"
+    condition: "!structure.hasDocker"
+
+  - type: "docker-compose"
+    template: "docker/docker-compose.yml.hbs"
+    destination: "docker-compose.yml"
+    condition: "!structure.hasDocker"
+    optional: true
+
+defaults:
+  runtime: "node:20-alpine"
+  packageManager: "auto-detect"
+
+  testing:
+    framework: "vitest"
+    coverageThreshold: 80
+
+  linting:
+    tool: "eslint"
+    config: "@typescript-eslint/recommended"
+
+  formatting:
+    tool: "prettier"
+
+  database:
+    prefer: "postgresql"
+    migrationTool: "drizzle"
+
+  cicd:
+    platform: "github-actions"
+    template: "ci/github-actions-typescript.yml.hbs"

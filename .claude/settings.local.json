@@ -9,7 +9,17 @@
       "Bash(tree:*)",
       "WebFetch(domain:lahirus.com)",
       "Bash(ls:*)",
-      "WebFetch(domain:refactoring.com)"
+      "WebFetch(domain:refactoring.com)",
+      "WebSearch",
+      "WebFetch(domain:developers.googleblog.com)",
+      "WebFetch(domain:codelabs.developers.google.com)",
+      "Bash(dir:*)",
+      "Bash(bun run typecheck:*)",
+      "Bash(bun run prebuild:*)",
+      "Bash(node --version:*)",
+      "Bash(bun run embed:*)",
+      "Bash(node scripts/embed-data.ts:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

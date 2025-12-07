@@ -1,0 +1,118 @@
+# Architecture Decision Records
+
+**Project:** {{project.name}}
+**Generated:** {{formatDate timestamp}}
+
+---
+
+## ADR-001: Architecture Choice - {{capitalize profile.architecture.type}}
+
+**Date:** {{formatDate timestamp}}
+
+**Status:** Accepted
+
+**Context:**
+
+Project characteristics:
+- Team size: ~{{project.projectSize.estimatedTeamSize}} developers
+- Codebase size: {{project.projectSize.fileCount}} files
+- Complexity: {{project.projectSize.codeComplexity}}
+
+**Decision:**
+
+We will use **{{profile.architecture.type}}** architecture.
+
+**Rationale:**
+
+{{#each profile.architecture.rules}}
+- {{this}}
+{{/each}}
+
+**Consequences:**
+
+Positive:
+- Clear module boundaries
+- Easy to test independently
+- Can extract to microservices later if needed
+
+Negative:
+- Requires discipline to maintain boundaries
+- Slightly more upfront structure than simple layered approach
+
+---
+
+## ADR-002: Testing Strategy
+
+**Date:** {{formatDate timestamp}}
+
+**Status:** Accepted
+
+**Context:**
+
+{{#if project.structure.hasTests}}
+Existing tests detected. Standardizing on {{profile.defaults.testing.framework}}.
+{{else}}
+No existing tests detected. Setting up testing infrastructure.
+{{/if}}
+
+**Decision:**
+
+- **Framework:** {{profile.defaults.testing.framework}}
+- **Coverage Target:** {{profile.defaults.testing.coverageThreshold}}%
+- **Approach:** Test pyramid (many unit, some integration, few E2E)
+
+**Consequences:**
+
+- All new features require tests
+- Coverage must meet {{profile.defaults.testing.coverageThreshold}}% threshold
+- Focus on testing behavior, not implementation
+
+---
+
+## ADR-003: Code Quality Tools
+
+**Date:** {{formatDate timestamp}}
+
+**Status:** Accepted
+
+**Decision:**
+
+- **Linter:** {{profile.defaults.linting.tool}}
+- **Formatter:** {{profile.defaults.formatting.tool}}
+- **Type Checker:** TypeScript strict mode
+
+**Consequences:**
+
+- Consistent code style across team
+- Automated formatting prevents style debates
+- Type safety catches errors at compile time
+
+---
+
+## Adding New ADRs
+
+When making significant technical decisions, document them here:
+
+```markdown
+## ADR-XXX: [Title]
+
+**Date:** YYYY-MM-DD
+
+**Status:** Proposed | Accepted | Deprecated | Superseded
+
+**Context:**
+
+What is the issue we're addressing?
+
+**Decision:**
+
+What did we decide?
+
+**Consequences:**
+
+What becomes easier or harder as a result?
+```
+
+---
+
+*This file tracks major architectural and technical decisions. Add new entries as you make significant choices.*

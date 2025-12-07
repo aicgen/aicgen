@@ -1,13 +1,43 @@
-export type ProjectType = 'typescript' | 'javascript' | 'react' | 'nextjs' | 'express' | 'nest' | 'unknown';
+export type Language =
+  | 'typescript'
+  | 'javascript'
+  | 'python'
+  | 'go'
+  | 'rust'
+  | 'java'
+  | 'csharp'
+  | 'ruby'
+  | 'unknown';
 
-export interface ProjectInfo {
-  path: string;
+export type ProjectType =
+  | 'web'
+  | 'api'
+  | 'cli'
+  | 'library'
+  | 'desktop'
+  | 'mobile'
+  | 'other';
+
+export type AIAssistant =
+  | 'claude-code'
+  | 'copilot'
+  | 'gemini'
+  | 'antigravity'
+  | 'codex';
+
+export type PackageManager =
+  | 'npm'
+  | 'yarn'
+  | 'pnpm'
+  | 'bun'
+  | 'pip'
+  | 'poetry'
+  | 'cargo'
+  | 'go'
+  | 'unknown';
+
+export interface DetectedProject {
   name: string;
-  type: ProjectType;
-  language: 'typescript' | 'javascript';
-  frameworks: string[];
-  dependencies: Record<string, string>;
-  srcDir: string | null;
-  testDir: string | null;
+  language: Language;
   hasExistingConfig: boolean;
 }

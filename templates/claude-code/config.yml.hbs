@@ -1,0 +1,28 @@
+# Claude Code Configuration
+# Generated: {{formatDate timestamp}}
+
+project:
+  name: "{{project.name}}"
+  language: "{{project.language.primary}}"
+  {{#if project.framework}}framework: "{{project.framework.name}}"{{/if}}
+
+profile:
+  level: "{{profile.meta.level}}"
+  architecture: "{{profile.meta.architecture}}"
+
+defaults:
+  runtime: "{{profile.defaults.runtime}}"
+  {{#if profile.defaults.testing}}
+  testing:
+    framework: "{{profile.defaults.testing.framework}}"
+    coverage: {{profile.defaults.testing.coverageThreshold}}
+  {{/if}}
+  {{#if profile.defaults.linting}}
+  linting:
+    tool: "{{profile.defaults.linting.tool}}"
+    {{#if profile.defaults.linting.config}}config: "{{profile.defaults.linting.config}}"{{/if}}
+  {{/if}}
+  {{#if profile.defaults.formatting}}
+  formatting:
+    tool: "{{profile.defaults.formatting.tool}}"
+  {{/if}}

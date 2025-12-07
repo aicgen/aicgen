@@ -24,12 +24,13 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node",
-    "build:binary": "bun build src/index.ts --compile --outfile aicgen",
-    "build:binary:windows": "bun build src/index.ts --compile --outfile aicgen.exe",
-    "build:binary:linux": "bun build src/index.ts --compile --outfile aicgen-linux --target=bun-linux-x64",
-    "build:binary:macos": "bun build src/index.ts --compile --outfile aicgen-macos --target=bun-darwin-arm64",
-    "build:all": "bun run build:binary:windows && bun run build:binary:linux && bun run build:binary:macos",
+    "embed": "bun run scripts/embed-data.ts",
+    "build": "bun run embed && bun build src/index.ts --outdir dist --target node",
+    "build:binary": "bun run embed && bun build src/index.ts --compile --outfile aicgen",
+    "build:binary:windows": "bun run embed && bun build src/index.ts --compile --outfile aicgen.exe",
+    "build:binary:linux": "bun run embed && bun build src/index.ts --compile --outfile aicgen-linux --target=bun-linux-x64",
+    "build:binary:macos": "bun run embed && bun build src/index.ts --compile --outfile aicgen-macos --target=bun-darwin-arm64",
+    "build:all": "bun run embed && bun run build:binary:windows && bun run build:binary:linux && bun run build:binary:macos",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "test": "bun test",
@@ -44,6 +45,7 @@
     "commander": "^12.1.0",
     "debug": "^4.3.7",
     "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
     "ora": "^8.1.1",
     "yaml": "^2.6.1"
   },

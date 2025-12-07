@@ -1,0 +1,263 @@
+# {{project.name}} - Development Instructions
+
+**Generated:** {{formatDate timestamp}}
+**Profile:** {{profile.meta.name}}
+**Architecture:** {{profile.architecture.type}}
+
+---
+
+## Project Overview
+
+- **Language:** {{project.language.primary}}
+{{#if project.framework}}
+- **Framework:** {{project.framework.name}} {{project.framework.version}}
+{{/if}}
+{{#if project.database}}
+- **Database:** {{project.database.type}}{{#if project.database.orm}} ({{project.database.orm}}){{/if}}
+{{/if}}
+- **Package Manager:** {{project.packageManager}}
+- **Team Size:** ~{{project.projectSize.estimatedTeamSize}} developers
+- **Complexity:** {{project.projectSize.codeComplexity}}
+
+---
+
+## Architecture: {{profile.architecture.type}}
+
+{{profile.architecture.structure.description}}
+
+### Project Structure
+
+```
+{{profile.architecture.structure.layout}}
+```
+
+### Architectural Rules
+
+{{#each profile.architecture.rules}}
+- {{this}}
+{{/each}}
+
+{{#if profile.architecture.focus}}
+
+### Focus Areas
+
+{{#each profile.architecture.focus}}
+- {{this}}
+{{/each}}
+{{/if}}
+
+---
+
+## Code Guidelines
+
+### Core Principles
+
+{{#each profile.instructionLevel.includes.rules}}
+- {{this}}
+{{/each}}
+
+### Clean Code & Style
+
+- **Functions:** Keep under 50 lines
+- **Files:** Keep under 300 lines
+- **Nesting:** Maximum 3 levels deep
+- **Comments:** Explain WHY, not WHAT - code should be self-documenting
+- **Naming:** Use descriptive names over comments
+
+**Examples:**
+
+```typescript
+// ❌ Bad: Redundant comments
+// Increment counter by 1
+counter++
+
+// ✅ Good: Self-explanatory code
+activeUsers = users.filter(u => u.isActive)
+```
+
+### TypeScript Specifics
+
+- Use strict mode with all type checks enabled
+- No `any` types - use `unknown` with type guards
+- Export all public types alongside implementations
+- Prefer `interface` for public APIs, `type` for internal use
+- Use discriminated unions for variant types
+
+### Error Handling
+
+- Create custom error classes extending base `Error`
+- Use structured error codes for programmatic handling
+- Never swallow errors silently
+- Log errors with context
+
+```typescript
+export class ValidationError extends Error {
+  constructor(
+    message: string,
+    public field: string,
+    public code: string = 'VALIDATION_ERROR'
+  ) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+```
+
+### Async Operations
+
+- Prefer `async/await` over `.then()` chains
+- Use `Promise.all()` for independent operations
+- Use `Promise.allSettled()` when partial failure is acceptable
+- Implement timeouts for API calls
+- Handle errors at appropriate boundaries
+
+---
+
+## Testing Strategy
+
+{{#if (eq profile.defaults.testing.framework "vitest")}}
+### Vitest Setup
+
+- **Framework:** Vitest
+- **Coverage Threshold:** {{profile.defaults.testing.coverageThreshold}}%
+{{/if}}
+
+### Test Pyramid
+
+```
+E2E Tests          [Few]     - Critical user flows
+    ↑
+Integration Tests  [Some]    - Module interactions
+    ↑
+Unit Tests         [Many]    - Business logic, utilities
+```
+
+### Testing Rules
+
+- Unit tests for all business logic
+- Integration tests for module boundaries
+- E2E tests for critical paths only
+- Aim for {{profile.defaults.testing.coverageThreshold}}% code coverage
+- Test behavior, not implementation details
+
+---
+
+## Development Workflow
+
+### Before Committing
+
+1. Run linter: `npm run lint`
+2. Run type check: `npm run typecheck`
+3. Run tests: `npm test`
+4. Format code: `npm run format`
+
+### Git Workflow
+
+- Small, focused commits
+- Descriptive commit messages
+- Feature branches for new work
+- PR reviews required for main branch
+
+---
+
+## Environment Configuration
+
+### Environment Variables
+
+```env
+NODE_ENV=development|staging|production
+LOG_LEVEL=debug|info|warn|error
+{{#if project.database}}
+DATABASE_URL=postgresql://user:pass@host:port/db
+{{/if}}
+```
+
+### Secrets Management
+
+- **Never** commit secrets to version control
+- Use `.env` for local development (in `.gitignore`)
+- Use environment-specific secret management in production
+
+---
+
+## Logging
+
+Use structured logging with context:
+
+```typescript
+logger.info('User login successful', {
+  userId: user.id,
+  email: user.email,
+  ipAddress: request.ip
+});
+
+logger.error('Payment processing failed', {
+  orderId: order.id,
+  amount: order.total,
+  error: error.message
+});
+```
+
+### Log Levels
+
+- **ERROR:** Application errors requiring attention
+- **WARN:** Potentially harmful situations
+- **INFO:** Important business events
+- **DEBUG:** Detailed diagnostic info (development only)
+
+---
+
+## Deployment
+
+{{#if project.structure.hasCI}}
+### CI/CD
+
+Current CI platform detected. Ensure pipeline includes:
+{{else}}
+### CI/CD Setup
+
+Configure CI pipeline with:
+{{/if}}
+
+1. Linting and type checking
+2. Unit and integration tests
+3. Build verification
+4. Security scanning
+
+### Environment Progression
+
+```
+Development → Staging → Production
+```
+
+- Test all changes in staging first
+- Use feature flags for gradual rollouts
+- Monitor error rates after deployment
+
+---
+
+## Important Notes
+
+{{#if (not project.structure.hasTests)}}
+⚠️ **No tests detected** - Setting up testing infrastructure is a priority
+{{/if}}
+
+{{#if (not project.structure.hasCI)}}
+⚠️ **No CI detected** - Consider adding GitHub Actions or similar
+{{/if}}
+
+{{#if (not project.structure.hasDocker)}}
+💡 **Docker support** - Consider containerizing for consistent environments
+{{/if}}
+
+---
+
+## Resources
+
+- Project Documentation: `./docs/`
+- Architecture Decisions: `./.claude/decisions.md`
+
+---
+
+*This file was generated by aicgen. Feel free to customize it for your needs.*
+*Last updated: {{formatDate timestamp}}*

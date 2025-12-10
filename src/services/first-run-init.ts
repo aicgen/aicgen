@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { homedir } from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -86,7 +86,7 @@ async function copyEmbeddedDataToCache(): Promise<void> {
 
   for (const [relativePath, content] of Object.entries(EMBEDDED_DATA.guidelines)) {
     const fullPath = join(guidelinesDir, relativePath);
-    const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+    const dir = dirname(fullPath);
     await mkdir(dir, { recursive: true });
     await writeFile(fullPath, content, 'utf-8');
   }

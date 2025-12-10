@@ -59,12 +59,12 @@ export const CONFIG = {
   GITHUB_REPO_OWNER:
     process.env.AICGEN_GITHUB_OWNER ||
     userConfig.github?.owner ||
-    'aicgen',
+    'lpsandaruwan',
 
   GITHUB_REPO_NAME:
     process.env.AICGEN_GITHUB_REPO ||
     userConfig.github?.repo ||
-    'guidelines',
+    'aicgen-docs',
 
   GITHUB_API_BASE: 'https://api.github.com',
 

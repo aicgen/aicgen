@@ -70,6 +70,7 @@ export class HookGenerator {
           'Bash(npx:*)',
           'Read(src/**)',
           'Read(package.json)',
+          'Read(tsconfig.json)',
           'Read(.claude/**)',
           'Write(src/**)',
           'Write(.claude/**)',
@@ -83,7 +84,8 @@ export class HookGenerator {
         ],
         ask: [
           'Write(package.json)',
-          'Write(.gitignore)'
+          'Write(.gitignore)',
+          'Write(.env.example)'
         ]
       },
       sandbox: {

@@ -27,9 +27,13 @@ jobs:
           bun install
           bun run build:binary:windows
           
-      - name: Create Installer (NSIS)
+      - name: Setup NSIS
         run: |
           choco install nsis
+          echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
+
+      - name: Create Installer (NSIS)
+        run: |
           makensis packaging/windows/setup.nsi
           
       - name: Upload Artifact

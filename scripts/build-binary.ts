@@ -6,13 +6,18 @@ const version = packageJson.version;
 
 const platform = process.argv[2] || 'current';
 
+import { mkdirSync } from 'fs';
+
+// Ensure dist exists
+try { mkdirSync('dist'); } catch (e) { }
+
 console.log(`Building binary for ${platform} with version ${version}...`);
 
 const buildConfigs: Record<string, string[]> = {
-  current: ['build', 'src/index.ts', '--compile', '--outfile', 'aicgen'],
-  windows: ['build', 'src/index.ts', '--compile', '--outfile', 'aicgen.exe'],
-  linux: ['build', 'src/index.ts', '--compile', '--outfile', 'aicgen-linux', '--target=bun-linux-x64'],
-  macos: ['build', 'src/index.ts', '--compile', '--outfile', 'aicgen-macos', '--target=bun-darwin-arm64']
+  current: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen'],
+  windows: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen.exe'],
+  linux: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-linux', '--target=bun-linux-x64'],
+  macos: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-macos', '--target=bun-darwin-arm64']
 };
 
 const args = buildConfigs[platform];

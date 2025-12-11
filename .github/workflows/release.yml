@@ -33,7 +33,7 @@ jobs:
           echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
           
           # Install EnVar Plugin
-          Invoke-WebRequest -Uri "https://github.com/GS-Saroop/NSIS-EnVar-Plugin/releases/download/v0.3.1/EnVar-0.3.1.zip" -OutFile "envar.zip"
+          Invoke-WebRequest -Uri "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-0.3.1.zip" -OutFile "envar.zip"
           Expand-Archive "envar.zip" -DestinationPath "envar_temp"
           Copy-Item "envar_temp\Plugins\x86-unicode\EnVar.dll" "C:\Program Files (x86)\NSIS\Plugins\x86-unicode\EnVar.dll"
 

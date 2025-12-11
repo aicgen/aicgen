@@ -118,6 +118,21 @@ jobs:
           mkdir -p dist/pkg/usr/local/bin
           cp dist/aicgen-macos dist/pkg/usr/local/bin/aicgen
           chmod +x dist/pkg/usr/local/bin/aicgen
+          
+          # Build PKG
+          pkgbuild --root dist/pkg \
+            --identifier com.lpsandaruwan.aicgen \
+            --version ${{ github.ref_name }} \
+            --install-location / \
+            --scripts packaging/macos/scripts \
+            dist/aicgen.pkg
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/aicgen.pkg
+
   # ----------------------------------------------------------------
   publish-npm:
     needs: [release-windows, release-linux, release-macos]
@@ -132,6 +147,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Build and Publish
         run: |

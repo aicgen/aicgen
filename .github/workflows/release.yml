@@ -154,10 +154,7 @@ jobs:
         run: |
           bun install
           bun run build
-          npm config set //registry.npmjs.org/:_authToken "${NODE_AUTH_TOKEN}"
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm publish --provenance --access public
 
   # ----------------------------------------------------------------
   # JOB: PUBLISH RELEASE

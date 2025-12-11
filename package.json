@@ -1,6 +1,6 @@
 {
-  "name": "aicgen",
-  "version": "0.1.0",
+  "name": "@aicgen/aicgen",
+  "version": "0.0.1",
   "description": "AI Config Generator - Automated AI assistant configuration for your projects",
   "keywords": [
     "ai",

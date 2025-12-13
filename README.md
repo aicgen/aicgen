@@ -3,50 +3,30 @@
 </p>
 
 <p align="center">
-  <em>Enterprise-grade configuration generator for AI coding assistants</em>
+  <em>Configuration generator for AI coding assistants</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-cyan" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.0.15-cyan" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
   <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
-  <img src="https://img.shields.io/badge/AI-Powered-fuchsia" alt="AI Powered" />
 </p>
 
 ---
 
-**aicgen** makes your project AI-ready in seconds. It uses **LLMs (Claude, Gemini, OpenAI)** to analyze your codebase and automatically generate the perfect instruction files for your AI coding assistant.
+**aicgen** makes your project AI-ready in seconds. Generate tailored instruction files for your AI coding assistant with an interactive CLI wizard.
 
 ## ✨ Features
 
-- **🧠 AI-Powered Analysis** - Uses Claude, Gemini, or GPT-4o to scan your project structure and suggest the perfect configuration.
-- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex.
-- **🔐 Auto-Credential Resolution** - Automatically detects your existing `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or Google Cloud credentials (ADC).
-- **📚 60+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.).
-- **🎨 Enterprise CLI Experience** - Professional UI with interactive wizards and smart defaults.
-- **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents.
-- **🏗️ Architecture Aware** - Distinguishes between Microservices, Modular Monoliths, and simple scripts.
-- **📦 Zero Dependencies** - All guideline data is embedded in the binary.
+- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex
+- **📚 65+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
+- **🎨 Interactive CLI** - Professional wizard with smart defaults and back navigation
+- **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents
+- **🏗️ Architecture Aware** - Supports Microservices, Modular Monoliths, Hexagonal, and more
+- **📦 Zero External Dependencies** - All guideline data is embedded in the binary
 
 ## 🚀 Quick Start
 
-### 1. Set your API Key (Optional but Recommended)
-aicgen can use your existing keys to analyze your project.
-
-```bash
-# Claude
-export ANTHROPIC_API_KEY=sk-...
-# OR use existing ~/.claude/.credentials.json login
-
-# Gemini
-export GEMINI_API_KEY=...
-# OR use gcloud auth application-default login
-
-# OpenAI
-export OPENAI_API_KEY=sk-...
-```
-
-### 2. Run Init
 Navigate to your project and run:
 
 ```bash
@@ -54,19 +34,28 @@ aicgen init
 ```
 
 The CLI will:
-1.  Detect your API keys.
-2.  Ask to **✨ Analyze project structure with AI?**
-3.  Scan your file tree and key configs (package.json, go.mod, etc.).
-4.  Suggest the best **Language**, **Project Type**, and **Architecture**.
-5.  Generate the `.claude/`, `.github/`, or `.agent/` config files.
+1.  Detect your project language and structure
+2.  Guide you through assistant, architecture, and detail level selection
+3.  Let you customize which guidelines to include
+4.  Generate the appropriate config files (`.claude/`, `.github/`, `.agent/`, etc.)
 
 ---
 
 ## 📦 Installation
 
-### From Binary (Recommended)
+### From npm (Easiest)
 
-Download the latest binary for your platform from the [releases page](https://github.com/aicgen/aicgen/releases):
+```bash
+# Install globally
+npm install -g @aicgen/aicgen
+
+# Or use with npx (no installation)
+npx @aicgen/aicgen init
+```
+
+### From Binary (Standalone)
+
+Download the latest binary for your platform from the [releases page](https://github.com/lpsandaruwan/aicgen/releases):
 
 - **Windows**: `aicgen.exe`
 - **Linux**: `aicgen-linux`
@@ -80,7 +69,7 @@ Download the latest binary for your platform from the [releases page](https://gi
 ### From Source
 
 ```bash
-git clone https://github.com/aicgen/aicgen.git
+git clone https://github.com/lpsandaruwan/aicgen.git
 cd aicgen
 bun install
 bun run build:binary
@@ -89,23 +78,9 @@ bun run start init
 
 ---
 
-## 🧠 AI Integration Details
-
-aicgen's "Phase 2" engine uses intelligent context gathering to make setting up a complex project easy.
-
-| Provider | Requirement | Detection Method |
-| :--- | :--- | :--- |
-| **Claude** | `@anthropic-ai/claude-agent-sdk` | `ANTHROPIC_API_KEY` env or `~/.claude/` credentials. |
-| **Gemini** | `@google/generative-ai` | `GEMINI_API_KEY` env or Google ADC (`gcloud`). |
-| **OpenAI** | `openai` | `OPENAI_API_KEY` env. |
-
-**Privacy Note:** aicgen sends a *summary* of your file tree and content from public config files (like `package.json`, `README.md`) to the LLM. It does **not** upload your entire source code.
-
----
-
 ## 📚 Guideline System
 
-aicgen uses a **modular guideline architecture** with **60+ markdown guidelines** organized into **12 categories**.
+aicgen uses a **modular guideline architecture** with **65+ guidelines** organized into **12 categories**.
 
 ```bash
 # View guideline statistics
@@ -123,12 +98,12 @@ aicgen stats
 
 ### For Claude Code
 ```text
+CLAUDE.md                      # Master instructions (project root)
 .claude/
-├── CLAUDE.md                  # Master instructions
 ├── settings.json              # Hooks & permissions
 ├── guidelines/                # Modular guidelines
-│   ├── clean-architecture.md
-│   ├── typescript.md
+│   ├── language.md
+│   ├── architecture.md
 │   └── ...
 └── agents/                    # Sub-agents
     └── guideline-checker.md
@@ -153,23 +128,19 @@ aicgen stats
 
 ### ✅ Completed
 
-- [x] **Phase 1: Foundation**
-  - [x] Project fingerprinting (Regex/File extraction)
-  - [x] Profile system & Handlebars templating
-- [x] **Phase 1.5: Content Refinement**
-  - [x] Polyglot guidelines (Language-agnostic architecture concepts)
-  - [x] Legacy data cleanup
-- [x] **Phase 2: AI Integration**
-  - [x] AI-powered project analysis
-  - [x] Smart Auto-Configuration
-  - [x] Provider Agnostic (Claude, Gemini, OpenAI)
+- [x] Interactive CLI wizard with back navigation
+- [x] Multi-assistant support (Claude Code, Copilot, Gemini, Antigravity, Codex)
+- [x] 65+ guidelines across 12 categories
+- [x] Architecture-aware configuration (Layered, Modular Monolith, Microservices, etc.)
+- [x] Auto-generated hooks and sub-agents for Claude Code
+- [x] Custom guideline management (add/remove)
+- [x] GitHub-based guideline updates
 
 ### 🚧 Future Enhancements
 
-- [ ] **Phase 3: Deep Customization**
-  - [ ] "Fix my code" agent using generated guidelines
-  - [ ] Custom validation hooks
-  - [ ] npm publishing
+- [ ] Custom validation hooks
+- [ ] Guideline versioning and diffing
+- [ ] Project-specific guideline templates
 
 ## 🤝 Contributing
 

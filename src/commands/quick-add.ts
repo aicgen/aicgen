@@ -1,14 +1,23 @@
-import { select, checkbox } from '@inquirer/prompts';
+import { select, checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
 import { readFile, writeFile, appendFile } from 'fs/promises';
 import { join } from 'path';
 import ora from 'ora';
-import { AIAssistant, Language } from '../models/project.js';
+import { AIAssistant, Language, ProjectType } from '../models/project.js';
 import { GuidelineLoader } from '../services/guideline-loader.js';
 import { showBanner } from '../utils/banner.js';
 import { AssistantFileWriter } from '../services/assistant-file-writer.js';
-import { ProfileSelection } from '../models/profile.js';
+import { ProfileSelection, ArchitectureType, InstructionLevel } from '../models/profile.js';
+import { ConfigGenerator } from '../services/config-generator.js';
+
+interface CheckboxChoice {
+  name: string;
+  value: string;
+  checked?: boolean;
+  disabled?: boolean | string;
+}
+
 
 export async function quickAddCommand() {
   showBanner();
@@ -41,95 +50,138 @@ export async function quickAddCommand() {
   // Load guideline library
   const loader = await GuidelineLoader.create();
 
-  // Organize by category
-  const categoryTree = loader.getCategoryTree(
-    existingConfig.language,
-    existingConfig.level,
-    existingConfig.architecture || 'modular-monolith'
-  );
+  let continueLoop = true;
+  while (continueLoop) {
+    // Organize by category
+    const categoryTree = loader.getCategoryTree(
+      existingConfig.language,
+      existingConfig.level,
+      existingConfig.architecture || 'modular-monolith'
+    );
 
-  // Build choices
-  const choices: any[] = [];
-  const guidelineMap = new Map<string, string>();
+    // Build choices
+    const choices: CheckboxChoice[] = [];
+    const guidelineMap = new Map<string, string>();
 
-  for (const category of categoryTree) {
-    choices.push({
-      name: chalk.bold.cyan(`${category.name} (${category.count})`),
-      value: `__CATEGORY_${category.name}__`,
-      disabled: true
-    });
-
-    for (const guideline of category.guidelines) {
+    for (const category of categoryTree) {
       choices.push({
-        name: `   ${guideline.name}`,
-        value: guideline.id,
-        checked: false
+        name: chalk.bold.cyan(`${category.name} (${category.count})`),
+        value: `__CATEGORY_${category.name}__`,
+        disabled: true
       });
-      guidelineMap.set(guideline.id, guideline.name);
+
+      for (const guideline of category.guidelines) {
+        choices.push({
+          name: `   ${guideline.name}`,
+          value: guideline.id,
+          checked: false
+        });
+        guidelineMap.set(guideline.id, guideline.name);
+      }
     }
-  }
 
-  // Let user select guidelines
-  const selectedIds = await checkbox({
-    message: 'Select guidelines to add (Space to toggle, Enter to confirm):',
-    choices,
-    pageSize: 25,
-    loop: false
-  }) as string[];
+    // Add back/cancel options explicitly if needed, but checkbox supports escaping/cancelling naturally
+    // However, to integrate with our flow, we rely on empty selection as a cancel signal usually, or we can add a fake choice if needed.
+    // Inquirer checkbox doesn't support "Back" easily as a choice without being a selection.
+    // For now, we'll assume "Cancel" via Ctrl+C or empty selection is sufficient for exiting,
+    // but the user asked for navigation. The best we can do in a checkbox is likely standard behavior.
+    // But for the next prompt (How to add), we CAN add a back button.
 
-  if (selectedIds.length === 0) {
-    console.log(chalk.gray('\nNo guidelines selected.'));
-    return;
-  }
+    // Let user select guidelines
+    const selectedIds = await checkbox({
+      message: 'Select guidelines to add (Space to toggle, Enter to confirm):',
+      choices,
+      pageSize: 25,
+      loop: false
+    }) as string[];
 
-  // Filter out category separators
-  const validIds = selectedIds.filter(id => !id.startsWith('__CATEGORY_'));
+    if (selectedIds.length === 0) {
+      console.log(chalk.gray('\nNo guidelines selected.'));
+      return;
+    }
 
-  console.log(chalk.cyan(`\n✓ Selected ${validIds.length} guideline(s)`));
+    // Filter out category separators
+    const validIds = selectedIds.filter(id => !id.startsWith('__CATEGORY_'));
 
-  // Show what will be added
-  console.log(chalk.cyan('\n📚 Adding:'));
-  validIds.slice(0, 10).forEach(id => {
-    console.log(`   • ${guidelineMap.get(id) || id}`);
-  });
-  if (validIds.length > 10) {
-    console.log(chalk.gray(`   ... and ${validIds.length - 10} more`));
-  }
+    console.log(chalk.cyan(`\n✓ Selected ${validIds.length} guideline(s)`));
 
-  // Ask how to add
-  const addMode = await select({
-    message: 'How would you like to add these guidelines?',
-    choices: [
+    // Show what will be added
+    console.log(chalk.cyan('\n📚 Adding:'));
+    validIds.slice(0, 10).forEach(id => {
+      console.log(`   • ${guidelineMap.get(id) || id}`);
+    });
+    if (validIds.length > 10) {
+      console.log(chalk.gray(`   ... and ${validIds.length - 10} more`));
+    }
+
+    // Ask how to add
+    const addChoices = [
       { value: 'append', name: 'Append to existing config', description: 'Add to current configuration' },
       { value: 'replace', name: 'Replace entire config', description: 'Regenerate with selected + existing guidelines' },
+      { value: 'back', name: '← Back to selection', description: 'Change selected guidelines' },
       { value: 'cancel', name: 'Cancel', description: 'Exit without changes' }
-    ]
-  });
+    ];
 
-  if (addMode === 'cancel') {
-    console.log(chalk.gray('\nCancelled.'));
-    return;
-  }
+    const addMode = await select({
+      message: 'How would you like to add these guidelines?',
+      choices: addChoices
+    });
 
-  spinner.start('Adding guidelines...');
-
-  try {
-    if (addMode === 'append') {
-      await appendGuidelines(projectPath, assistant, validIds, loader);
-    } else {
-      await regenerateConfig(projectPath, existingConfig, validIds, loader);
+    if (addMode === 'back') {
+      console.clear();
+      showBanner();
+      console.log(chalk.cyan('🚀 Quick Add Guidelines\n'));
+      console.log(chalk.cyan('📋 Current Configuration:'));
+      console.log(`   Assistant: ${existingConfig.assistant}`);
+      console.log(`   Language: ${existingConfig.language}`);
+      console.log(`   Level: ${existingConfig.level}`);
+      console.log(`   Architecture: ${existingConfig.architecture || 'Not specified'}`);
+      continue;
     }
 
-    spinner.succeed('Guidelines added successfully!');
-    console.log(chalk.green(`\n✅ Added ${validIds.length} guideline(s) to ${assistant} configuration`));
-  } catch (error) {
-    spinner.fail('Failed to add guidelines');
-    console.error(chalk.red(`\n❌ Error: ${error}`));
+    if (addMode === 'cancel') {
+      console.log(chalk.gray('\nCancelled.'));
+      return;
+    }
+
+    // Warn before destructive replace
+    if (addMode === 'replace') {
+      console.log(chalk.yellow('\n⚠️  Warning: Replace mode will regenerate your entire configuration.'));
+      console.log(chalk.gray('   This will overwrite any manual edits to settings, hooks, or guidelines.'));
+
+      const confirmReplace = await confirm({
+        message: 'Are you sure you want to replace the entire configuration?',
+        default: false
+      });
+
+      if (!confirmReplace) {
+        continue;
+      }
+    }
+
+    spinner.start('Adding guidelines...');
+
+    try {
+      if (addMode === 'append') {
+        await appendGuidelines(projectPath, assistant, validIds, loader);
+      } else {
+        await regenerateConfig(projectPath, existingConfig, validIds, loader);
+      }
+
+      spinner.succeed('Guidelines added successfully!');
+      console.log(chalk.green(`\n✅ Added ${validIds.length} guideline(s) to ${assistant} configuration`));
+      continueLoop = false;
+    } catch (error) {
+      spinner.fail('Failed to add guidelines');
+      console.error(chalk.red(`\n❌ Error: ${error}`));
+      continueLoop = false;
+    }
   }
 }
 
 async function detectAssistant(projectPath: string): Promise<AIAssistant | null> {
   const configs = [
+    { path: 'CLAUDE.md', assistant: 'claude-code' as AIAssistant },
     { path: '.claude', assistant: 'claude-code' as AIAssistant },
     { path: '.github/copilot-instructions.md', assistant: 'copilot' as AIAssistant },
     { path: '.gemini', assistant: 'gemini' as AIAssistant },
@@ -146,16 +198,95 @@ async function detectAssistant(projectPath: string): Promise<AIAssistant | null>
   return null;
 }
 
-async function loadExistingConfig(_projectPath: string, assistant: AIAssistant): Promise<ProfileSelection> {
-  // Try to extract config from existing files
-  // For now, return defaults - in real implementation, parse the config files
-  return {
+async function loadExistingConfig(projectPath: string, assistant: AIAssistant): Promise<ProfileSelection> {
+  // Default fallback - get project name from path
+  const pathParts = projectPath.split(/[/\\]/);
+  const defaultName = pathParts[pathParts.length - 1] || 'project';
+
+  const config: ProfileSelection = {
     assistant,
-    language: 'typescript' as Language, // TODO: detect from project
+    language: 'typescript',
     level: 'standard',
     architecture: 'modular-monolith',
-    projectType: 'web'
+    projectType: 'web',
+    projectName: defaultName
   };
+
+  // 1. Detect language and name from project files using ConfigGenerator logic
+  try {
+    const generator = await ConfigGenerator.create();
+    const detected = await generator.detectProject(projectPath);
+    if (detected.language !== 'unknown') {
+      config.language = detected.language;
+    }
+    config.projectName = detected.name;
+  } catch {
+    // Ignore errors here
+  }
+
+  // 2. Parsed from instruction files if possible
+  try {
+    let content = '';
+    let filePath = '';
+
+    switch (assistant) {
+      case 'claude-code': {
+        // Check root first, then .claude/ for backward compatibility
+        const rootPath = join(projectPath, 'CLAUDE.md');
+        const legacyPath = join(projectPath, '.claude', 'CLAUDE.md');
+        filePath = existsSync(rootPath) ? rootPath : legacyPath;
+        break;
+      }
+      case 'copilot':
+        filePath = join(projectPath, '.github', 'copilot-instructions.md');
+        break;
+      case 'gemini':
+        filePath = join(projectPath, '.gemini', 'instructions.md');
+        break;
+      case 'antigravity':
+        filePath = join(projectPath, '.agent', 'rules', 'instructions.md');
+        break;
+      case 'codex':
+        filePath = join(projectPath, '.codex', 'instructions.md');
+        break;
+    }
+
+    if (filePath && existsSync(filePath)) {
+      content = await readFile(filePath, 'utf-8');
+
+      // Extract Language
+      const langMatch = content.match(/Language:\*\*\s*([\w-#]+)/i) || content.match(/Language:\s*([\w-#]+)/i);
+      if (langMatch && langMatch[1]) {
+        config.language = langMatch[1].toLowerCase().trim() as Language;
+      }
+
+      // Extract Architecture
+      const archMatch = content.match(/Architecture:\*\*\s*([\w-]+)/i) || content.match(/Architecture:\s*([\w-]+)/i);
+      if (archMatch && archMatch[1]) {
+        config.architecture = archMatch[1].toLowerCase().trim() as ArchitectureType;
+      }
+
+      // Extract Type
+      const typeMatch = content.match(/Type:\*\*\s*([\w-]+)/i) || content.match(/Type:\s*([\w-]+)/i);
+      if (typeMatch && typeMatch[1]) {
+        const typeStr = typeMatch[1].toLowerCase().trim();
+        // Simple mapping verification
+        if (['web', 'api', 'cli', 'library', 'desktop', 'mobile', 'other'].includes(typeStr)) {
+          config.projectType = typeStr as ProjectType;
+        }
+      }
+
+      // Extract Level
+      const levelMatch = content.match(/Level:\*\*\s*([\w-]+)/i) || content.match(/Level:\s*([\w-]+)/i);
+      if (levelMatch && levelMatch[1]) {
+        config.level = levelMatch[1].toLowerCase().trim() as InstructionLevel;
+      }
+    }
+  } catch (err) {
+    console.log(chalk.yellow(`\n⚠️  Could not parse existing config, using defaults: ${err}`));
+  }
+
+  return config;
 }
 
 async function appendGuidelines(
@@ -186,7 +317,10 @@ async function appendGuidelines(
 }
 
 async function appendToClaudeCode(projectPath: string, guidelines: string[]): Promise<void> {
-  const instructionsPath = join(projectPath, '.claude', 'CLAUDE.md');
+  // Check root first, then .claude/ for backward compatibility
+  const rootPath = join(projectPath, 'CLAUDE.md');
+  const legacyPath = join(projectPath, '.claude', 'CLAUDE.md');
+  const instructionsPath = existsSync(rootPath) ? rootPath : legacyPath;
 
   if (!existsSync(instructionsPath)) {
     throw new Error('CLAUDE.md not found');
@@ -266,7 +400,6 @@ async function regenerateConfig(
 ): Promise<void> {
   // Get existing guidelines + new ones
   const existingIds = loader.getGuidelinesForProfile(
-    existingConfig.assistant,
     existingConfig.language,
     existingConfig.level,
     existingConfig.architecture

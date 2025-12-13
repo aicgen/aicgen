@@ -1,0 +1,98 @@
+{
+  "alwaysThinkingEnabled": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write(src/**/*.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"${CLAUDE_FILE}\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"${CLAUDE_FILE}\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read(.env*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Blocked: Sensitive file access not allowed' && exit 2"
+          }
+        ]
+      },
+      {
+        "matcher": "Read(secrets/**)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Blocked: Secrets directory is protected' && exit 2"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(.env*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Blocked: Cannot modify environment files' && exit 2"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before completing this task, verify that:\n1. All tests pass\n2. No new failing tests were introduced\n3. Test coverage meets requirements\n\nIs the task truly complete with passing tests?",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(bun:*)",
+      "Bash(git:*)",
+      "Bash(npx:*)",
+      "Read(src/**)",
+      "Read(package.json)",
+      "Read(tsconfig.json)",
+      "Read(CLAUDE.md)",
+      "Read(.claude/**)",
+      "Write(src/**)",
+      "Write(.claude/**)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Read(secrets/**)",
+      "Bash(rm:*)",
+      "Bash(sudo:*)"
+    ],
+    "ask": [
+      "Write(package.json)",
+      "Write(.gitignore)",
+      "Write(.env.example)"
+    ]
+  },
+  "sandbox": {
+    "allowInternetAccess": true,
+    "workingDirectory": "F:\\aicgen\\aicgen"
+  }
+}

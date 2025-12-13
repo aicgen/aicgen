@@ -7,7 +7,9 @@ export type ArchitectureType =
   | 'microservices'
   | 'event-driven'
   | 'hexagonal'
-  | 'refactor'
+  | 'clean-architecture'
+  | 'ddd'
+  | 'serverless'
   | 'other';
 
 export interface ProfileSelection {
@@ -16,4 +18,5 @@ export interface ProfileSelection {
   level: InstructionLevel;
   architecture: ArchitectureType;
   projectType: ProjectType;
+  projectName: string;
 }

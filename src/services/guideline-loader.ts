@@ -1,5 +1,5 @@
 import { GuidelineMapping } from '../embedded-data.js';
-import { AIAssistant, Language } from '../models/project.js';
+import { Language } from '../models/project.js';
 import { InstructionLevel, ArchitectureType } from '../models/profile.js';
 import { homedir } from 'os';
 import { join } from 'path';
@@ -56,7 +56,6 @@ export class GuidelineLoader {
   }
 
   getGuidelinesForProfile(
-    _assistant: AIAssistant,
     language: Language,
     level: InstructionLevel,
     architecture: ArchitectureType
@@ -96,16 +95,19 @@ export class GuidelineLoader {
     return content;
   }
 
+  getMapping(guidelineId: string): GuidelineMapping | undefined {
+    return this.mappings[guidelineId];
+  }
+
   assembleProfile(
-    assistant: AIAssistant,
     language: Language,
     level: InstructionLevel,
     architecture: ArchitectureType
   ): string {
-    const guidelineIds = this.getGuidelinesForProfile(assistant, language, level, architecture);
+    const guidelineIds = this.getGuidelinesForProfile(language, level, architecture);
 
     if (guidelineIds.length === 0) {
-      throw new Error(`No guidelines found for profile: ${assistant}-${language}-${level}-${architecture}`);
+      throw new Error(`No guidelines found for profile: ${language}-${level}-${architecture}`);
     }
 
     const guidelineContents = guidelineIds.map(id => this.loadGuideline(id));

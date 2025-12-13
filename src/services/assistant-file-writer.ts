@@ -75,7 +75,7 @@ export class AssistantFileWriter {
     const byCategory = new Map<string, string[]>();
 
     for (const id of guidelineIds) {
-      const mapping = (this.guidelineLoader as any).mappings[id];
+      const mapping = this.guidelineLoader.getMapping(id);
       if (mapping) {
         const category = mapping.category || 'General';
         if (!byCategory.has(category)) {
@@ -116,14 +116,14 @@ export class AssistantFileWriter {
       mainReferences.push(`- **${category}**: @.claude/guidelines/${categoryFile}.md`);
     }
 
-    const mainContent = `# ${selection.projectType.charAt(0).toUpperCase() + selection.projectType.slice(1)} Project - Development Guidelines
+    const archDescription = selection.architecture === 'other'
+      ? ''
+      : ` and ${selection.architecture} architecture`;
 
-**Role:** You are an expert software engineer specialized in ${selection.language} and ${selection.architecture} architecture.
+    const mainContent = `# ${selection.projectName} - Development Guidelines
+
+**Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
 **User's Goal:** Build high-quality, maintainable software following strict project guidelines.
-
-**Language:** ${selection.language}
-**Architecture:** ${selection.architecture}
-**Level:** ${selection.level}
 
 ## Guidelines
 
@@ -149,13 +149,13 @@ ${mainReferences.join('\n')}
 `;
 
     files.push({
-      path: '.claude/CLAUDE.md',
+      path: 'CLAUDE.md',
       content: mainContent,
       type: 'main'
     });
 
     const hooks = await this.hookGenerator.generateHooks(guidelineIds);
-    const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, projectPath);
+    const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, projectPath, selection.level);
 
     files.push({
       path: '.claude/settings.json',
@@ -217,13 +217,13 @@ ${categoryContent}
       mainReferences.push(`- ${category}: @.github/instructions/${categoryFile}.instructions.md`);
     }
 
+    const archDescription = selection.architecture === 'other'
+      ? ''
+      : ` and ${selection.architecture}`;
+
     const mainContent = `# GitHub Copilot Instructions
 
-**Role:** You are an expert AI pair programmer specialized in ${selection.language} and ${selection.architecture}.
-
-**Language:** ${selection.language}
-**Project Type:** ${selection.projectType}
-**Architecture:** ${selection.architecture}
+**Role:** You are an expert AI pair programmer specialized in ${selection.language}${archDescription}.
 
 ## Guidelines
 
@@ -250,7 +250,7 @@ See the instruction files above for detailed guidelines on:
     return files;
   }
 
-  private generateGeminiFiles(
+  private async generateGeminiFiles(
     categoryTree: Map<string, string[]>,
     selection: ProfileSelection
   ): Promise<GeneratedFile[]> {
@@ -265,15 +265,14 @@ See the instruction files above for detailed guidelines on:
       allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
     }
 
+    const archDescription = selection.architecture === 'other'
+      ? ''
+      : ` and ${selection.architecture} architecture`;
+
     const content = `# Gemini Development Guide
 
-**Role:** You are an expert software engineer specialized in ${selection.language} and ${selection.architecture} architecture.
+**Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
 **Objective:** Write clean, efficient, and maintainable code following the guidelines below.
-
-## Project Context
-- **Language:** ${selection.language}
-- **Type:** ${selection.projectType}
-- **Architecture:** ${selection.architecture}
 
 ## Guiding Principles
 1. **Quality First**: Prioritize code quality and maintainability over speed.
@@ -292,7 +291,7 @@ ${allGuidelines}
       type: 'main'
     });
 
-    return Promise.resolve(files);
+    return files;
   }
 
   private async generateAntigravityFiles(
@@ -331,15 +330,14 @@ ${guidelines}
     }
 
     // Generate main instruction file (Index/System Prompt)
+    const archDescription = selection.architecture === 'other'
+      ? ''
+      : ` and ${selection.architecture} architecture`;
+
     const mainContent = `# Google Antigravity Instructions
 
-**Role:** You are an expert software engineer specialized in ${selection.language} and ${selection.architecture} architecture.
+**Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
 **Objective:** Assist the user in building high-quality, maintainable software following strict project guidelines.
-
-## Project Context
-- **Language:** ${selection.language}
-- **Architecture:** ${selection.architecture}
-- **Type:** ${selection.projectType}
 
 ## Rule Index
 
@@ -479,7 +477,7 @@ description: Analyze code for performance bottlenecks and optimization opportuni
     return workflows;
   }
 
-  private generateCodexFiles(
+  private async generateCodexFiles(
     categoryTree: Map<string, string[]>,
     selection: ProfileSelection
   ): Promise<GeneratedFile[]> {
@@ -514,7 +512,7 @@ ${allGuidelines}
       type: 'main'
     });
 
-    return Promise.resolve(files);
+    return files;
   }
 
   private generateUniversalAgentsFile(
@@ -525,12 +523,25 @@ ${allGuidelines}
 
     for (const [category, ids] of categoryTree) {
       const examples = ids.slice(0, 3).map(id => {
-        const mapping = (this.guidelineLoader as any).mappings[id];
-        return `- ${mapping.path.split('/').pop()?.replace('.md', '')}`;
+        const mapping = this.guidelineLoader.getMapping(id);
+        const fileName = mapping?.path.split('/').pop()?.replace('.md', '') || id;
+        return `- ${fileName}`;
       }).join('\n  ');
 
       categories.push(`### ${category}\n\n  ${examples}\n`);
     }
+
+    const archLine = selection.architecture === 'other'
+      ? ''
+      : `**Architecture:** ${selection.architecture}\n`;
+
+    const archSection = selection.architecture === 'other'
+      ? ''
+      : `## Architecture
+
+This project follows **${selection.architecture}** architecture. See architecture guidelines in tool-specific files.
+
+`;
 
     const content = `# AGENTS.md
 
@@ -538,8 +549,7 @@ ${allGuidelines}
 
 **Language:** ${selection.language}
 **Type:** ${selection.projectType}
-**Architecture:** ${selection.architecture}
-
+${archLine}
 ## Development Guidelines
 
 This project follows structured coding guidelines across multiple categories:
@@ -572,16 +582,12 @@ npm run build
 ## Code Style
 
 See tool-specific instruction files for detailed code style guidelines:
-- Claude Code: \`.claude/CLAUDE.md\`
+- Claude Code: \`CLAUDE.md\`
 - GitHub Copilot: \`.github/copilot-instructions.md\`
 - Gemini: \`.gemini/instructions.md\`
 - Antigravity: \`.agent/rules/instructions.md\`
 
-## Architecture
-
-This project follows **${selection.architecture}** architecture. See architecture guidelines in tool-specific files.
-
-## Testing
+${archSection}## Testing
 
 Follow testing guidelines in tool-specific instruction files.
 

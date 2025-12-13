@@ -7,6 +7,9 @@ import { GuidelineLoader } from '../services/guideline-loader.js';
 import { createSummaryBox } from '../utils/formatting.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 
+const DOWNLOAD_TIMEOUT_MS = 30000;
+const MAX_TARBALL_SIZE_BYTES = 10 * 1024 * 1024;
+
 interface GitHubRelease {
   tag_name: string;
   name: string;
@@ -108,95 +111,109 @@ export async function updateCommand(options: { force?: boolean } = {}) {
 }
 
 async function fetchLatestVersion(): Promise<VersionInfo> {
-  const response = await fetch(GITHUB_RELEASES_URL, {
-    headers: {
-      'Accept': 'application/vnd.github+json',
-      'User-Agent': CONFIG.USER_AGENT
-    }
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
 
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('Guidelines repository not found. The repository may not exist yet.');
-    } else if (response.status === 403) {
-      throw new Error('GitHub API rate limit exceeded');
+  try {
+    const response = await fetch(GITHUB_RELEASES_URL, {
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': CONFIG.USER_AGENT
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Guidelines repository not found. The repository may not exist yet.');
+      } else if (response.status === 403) {
+        throw new Error('GitHub API rate limit exceeded');
+      }
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
-    throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+
+    const data = await response.json() as GitHubRelease;
+
+    // Parse changelog from body
+    const changes = data.body
+      .split('\n')
+      .filter(line => line.trim().startsWith('-') || line.trim().startsWith('*'))
+      .map(line => line.replace(/^[-*]\s*/, '').trim())
+      .filter(line => line.length > 0);
+
+    return {
+      version: data.tag_name.replace(/^v/, ''),
+      downloadUrl: data.tarball_url,
+      changes,
+      publishedAt: data.published_at
+    };
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data = await response.json() as GitHubRelease;
-
-  // Parse changelog from body
-  const changes = data.body
-    .split('\n')
-    .filter(line => line.trim().startsWith('-') || line.trim().startsWith('*'))
-    .map(line => line.replace(/^[-*]\s*/, '').trim())
-    .filter(line => line.length > 0);
-
-  return {
-    version: data.tag_name.replace(/^v/, ''),
-    downloadUrl: data.tarball_url,
-    changes,
-    publishedAt: data.published_at
-  };
 }
 
 async function downloadGuidelines(url: string, targetDir: string): Promise<void> {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
-  }
-
-  const tarballBuffer = Buffer.from(await response.arrayBuffer());
-
-  // Extract tarball to temp directory
-  const tempDir = join(targetDir, '.temp-extract');
-  await mkdir(tempDir, { recursive: true });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
 
   try {
-    // Write tarball to temp file
-    const tarballPath = join(tempDir, 'archive.tar.gz');
-    await writeFile(tarballPath, tarballBuffer);
+    const response = await fetch(url, { signal: controller.signal });
 
-    // Extract tarball using decompress (Windows-compatible)
-    const decompress = (await import('decompress')).default;
-    await decompress(tarballPath, tempDir);
-
-    // GitHub tarballs contain a root directory like "username-repo-commitsha"
-    // Find and copy contents from that directory
-    const entries = await readdir(tempDir);
-    const rootDir = entries.find(entry => entry.startsWith('lpsandaruwan-aicgen-docs-'));
-
-    if (!rootDir) {
-      throw new Error('Could not find extracted repository directory');
+    if (!response.ok) {
+      throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
     }
 
-    const extractedPath = join(tempDir, rootDir);
+    // Check content-length if available
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > MAX_TARBALL_SIZE_BYTES) {
+      throw new Error(`Tarball too large: ${contentLength} bytes (max ${MAX_TARBALL_SIZE_BYTES})`);
+    }
 
-    // Copy contents to target directory
-    // Files should go into targetDir/guidelines/ subdirectory
-    const guidelinesTarget = join(targetDir, 'guidelines');
-    await mkdir(guidelinesTarget, { recursive: true });
+    const tarballBuffer = Buffer.from(await response.arrayBuffer());
 
-    // Copy extracted contents to guidelines subdirectory
-    const extractedEntries = await readdir(extractedPath, { withFileTypes: true });
-    for (const entry of extractedEntries) {
-      const sourcePath = join(extractedPath, entry.name);
-      const targetPath = join(guidelinesTarget, entry.name);
+    // Verify size after download
+    if (tarballBuffer.length > MAX_TARBALL_SIZE_BYTES) {
+      throw new Error(`Downloaded tarball too large: ${tarballBuffer.length} bytes`);
+    }
 
-      if (entry.name === 'guideline-mappings.yml') {
-        // Copy mappings file to root of targetDir, not into guidelines/
-        await cp(sourcePath, join(targetDir, entry.name));
-      } else if (entry.isDirectory() || entry.name.endsWith('.md')) {
-        // Copy directories and markdown files into guidelines/
-        await cp(sourcePath, targetPath, { recursive: true });
+    // Extract tarball to temp directory
+    const tempDir = join(targetDir, '.temp-extract');
+    await mkdir(tempDir, { recursive: true });
+
+    try {
+      const tarballPath = join(tempDir, 'archive.tar.gz');
+      await writeFile(tarballPath, tarballBuffer);
+
+      const decompress = (await import('decompress')).default;
+      await decompress(tarballPath, tempDir);
+
+      const entries = await readdir(tempDir);
+      const rootDir = entries.find(entry => entry.startsWith('lpsandaruwan-aicgen-docs-'));
+
+      if (!rootDir) {
+        throw new Error('Could not find extracted repository directory');
       }
-    }
 
+      const extractedPath = join(tempDir, rootDir);
+      const guidelinesTarget = join(targetDir, 'guidelines');
+      await mkdir(guidelinesTarget, { recursive: true });
+
+      const extractedEntries = await readdir(extractedPath, { withFileTypes: true });
+      for (const entry of extractedEntries) {
+        const sourcePath = join(extractedPath, entry.name);
+        const targetPath = join(guidelinesTarget, entry.name);
+
+        if (entry.name === 'guideline-mappings.yml') {
+          await cp(sourcePath, join(targetDir, entry.name));
+        } else if (entry.isDirectory() || entry.name.endsWith('.md')) {
+          await cp(sourcePath, targetPath, { recursive: true });
+        }
+      }
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   } finally {
-    // Clean up temp directory
-    await rm(tempDir, { recursive: true, force: true });
+    clearTimeout(timeout);
   }
 }
 

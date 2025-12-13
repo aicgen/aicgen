@@ -25,9 +25,3 @@ export class ConfigExistsError extends AicgenError {
     );
   }
 }
-
-export class AIProviderError extends AicgenError {
-  constructor(message: string, provider: string) {
-    super(`AI Provider Error (${provider}): ${message}`, 'AI_PROVIDER_ERROR', { provider });
-  }
-}

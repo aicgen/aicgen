@@ -1,0 +1,34 @@
+<svg width="300" height="150" viewBox="0 0 300 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="flowGradient" x1="50" y1="75" x2="160" y2="75" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#06b6d4" /> <stop offset="100%" stop-color="#8b5cf6" /> </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect width="700" height="150" fill="#0f172a" rx="8" />
+
+    <g transform="translate(40, 35)">
+        <rect x="160" y="0" width="60" height="80" rx="6" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+        <path d="M200 0 L220 20 L220 6 A 6 6 0 0 0 214 0 Z" fill="#8b5cf6" opacity="0.5"/>
+        <rect x="170" y="20" width="30" height="4" rx="2" fill="#8b5cf6" opacity="0.6"/>
+        <rect x="170" y="32" width="40" height="4" rx="2" fill="#8b5cf6" opacity="0.6"/>
+        <rect x="170" y="44" width="35" height="4" rx="2" fill="#8b5cf6" opacity="0.6"/>
+        <circle cx="210" cy="70" r="3" fill="#10b981" filter="url(#glow)" />
+
+        <circle cx="20" cy="15" r="8" fill="#06b6d4" filter="url(#glow)" />
+        <circle cx="20" cy="40" r="8" fill="#06b6d4" filter="url(#glow)" />
+        <circle cx="20" cy="65" r="8" fill="#06b6d4" filter="url(#glow)" />
+
+        <path d="M28 15 C 60 15, 100 15, 160 30" stroke="url(#flowGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M28 40 C 60 40, 100 40, 160 40" stroke="url(#flowGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M28 65 C 60 65, 100 65, 160 50" stroke="url(#flowGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+
+
+</svg>

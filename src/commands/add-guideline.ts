@@ -4,12 +4,13 @@ import { homedir } from 'os';
 import { join, dirname } from 'path';
 import { mkdir, writeFile, readFile, access } from 'fs/promises';
 import YAML from 'yaml';
-import { GuidelineLoader } from '../services/guideline-loader.js';
+import { GuidelineLoader, GuidelineMapping } from '../services/guideline-loader.js';
 import { showBanner } from '../utils/banner.js';
 import { createSummaryBox } from '../utils/formatting.js';
 import { Language } from '../models/project.js';
 import { InstructionLevel, ArchitectureType } from '../models/profile.js';
 import { CONFIG } from '../config.js';
+
 
 const LANGUAGES: { value: Language; name: string }[] = [
   { value: 'typescript', name: 'TypeScript' },
@@ -35,7 +36,9 @@ const ARCHITECTURES: { value: ArchitectureType; name: string }[] = [
   { value: 'microservices', name: 'Microservices' },
   { value: 'event-driven', name: 'Event-Driven' },
   { value: 'hexagonal', name: 'Hexagonal' },
-  { value: 'refactor', name: 'Refactor / Legacy' },
+  { value: 'clean-architecture', name: 'Clean Architecture' },
+  { value: 'ddd', name: 'Domain-Driven Design' },
+  { value: 'serverless', name: 'Serverless' },
   { value: 'other', name: 'Other / None' }
 ];
 
@@ -56,9 +59,15 @@ export async function addGuidelineCommand() {
       choices: [
         { value: '__new__', name: chalk.green('+ Create new category') },
         { value: '__separator__', name: chalk.gray('─'.repeat(50)), disabled: true },
-        ...existingCategories.map(c => ({ value: c, name: c }))
+        ...existingCategories.map(c => ({ value: c, name: c })),
+        { value: 'cancel', name: 'Cancel', description: 'Exit' }
       ]
     });
+
+    if (categoryChoice === 'cancel') {
+      console.log(chalk.gray('\nCancelled.'));
+      return;
+    }
 
     let category: string;
     if (categoryChoice === '__new__') {
@@ -166,7 +175,7 @@ export async function addGuidelineCommand() {
 
     let content: string;
     switch (contentChoice) {
-      case 'file':
+      case 'file': {
         const filePath = await input({
           message: 'File path:',
           validate: async (value) => {
@@ -180,6 +189,7 @@ export async function addGuidelineCommand() {
         });
         content = await readFile(filePath, 'utf-8');
         break;
+      }
 
       case 'editor':
         content = await editor({
@@ -245,10 +255,10 @@ export async function addGuidelineCommand() {
     await writeFile(guidelinePath, content, 'utf-8');
 
     // Update mappings
-    let mappings: any = {};
+    let mappings: Record<string, GuidelineMapping> = {};
     try {
       const mappingsContent = await readFile(mappingsPath, 'utf-8');
-      mappings = YAML.parse(mappingsContent);
+      mappings = YAML.parse(mappingsContent) as Record<string, GuidelineMapping>;
     } catch {
       // File doesn't exist yet, start with empty mappings
     }

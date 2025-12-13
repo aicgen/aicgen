@@ -11,9 +11,7 @@ import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
 import { selectGuidelines } from './guideline-selector.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 import { ensureDataInitialized } from '../services/first-run-init.js';
-import { CredentialManager } from '../services/ai/credential-manager.js';
-import { AIAnalysisService } from '../services/ai/analysis-service.js';
-import { ProjectContextGatherer } from '../services/ai/context-gatherer.js';
+
 
 interface InitOptions {
   assistant?: string;
@@ -58,7 +56,9 @@ const ARCHITECTURES: { value: ArchitectureType; name: string; description: strin
   { value: 'microservices', name: 'Microservices', description: 'Independent services with separate deploys' },
   { value: 'event-driven', name: 'Event-Driven', description: 'Event sourcing, CQRS, message queues' },
   { value: 'hexagonal', name: 'Hexagonal (Ports & Adapters)', description: 'Business logic isolated from infrastructure' },
-  { value: 'refactor', name: 'Refactor / Legacy', description: 'Improving existing codebase gradually' },
+  { value: 'clean-architecture', name: 'Clean Architecture', description: 'Uncle Bob\'s concentric layers with dependency rule' },
+  { value: 'ddd', name: 'Domain-Driven Design', description: 'Bounded contexts, aggregates, domain events' },
+  { value: 'serverless', name: 'Serverless', description: 'FaaS, event triggers, managed services' },
   { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
 ];
 
@@ -95,8 +95,7 @@ export async function initCommand(options: InitOptions) {
       { label: 'Language', value: detected.language !== 'unknown' ? detected.language : 'Not detected' }
     ]));
 
-    // AI Analysis Integration
-    await handleAIAnalysis(wizard, projectPath);
+
 
     // Check for existing config
     if (detected.hasExistingConfig && !options.force) {
@@ -179,7 +178,7 @@ export async function initCommand(options: InitOptions) {
           }
           break;
 
-        case 'summary':
+        case 'summary': {
           const shouldGenerate = await handleSummaryStep(wizard);
           if (shouldGenerate === BACK_VALUE) {
             wizard.goBack();
@@ -189,6 +188,7 @@ export async function initCommand(options: InitOptions) {
             return;
           }
           break;
+        }
       }
 
       if (state.currentStep !== 'summary') {
@@ -205,7 +205,8 @@ export async function initCommand(options: InitOptions) {
       language: state.language!,
       level: state.level!,
       architecture: state.architecture!,
-      projectType: state.projectType!
+      projectType: state.projectType!,
+      projectName: detected.name
     };
 
     spinner.start('Generating configuration...');
@@ -396,8 +397,7 @@ async function handleLevelStep(wizard: WizardStateManager, options: InitOptions)
 
   const levelsWithMetrics = await getLevelsWithMetrics(
     state.language!,
-    state.architecture!,
-    state.assistant!
+    state.architecture!
   );
 
   const choices = addBackOption(
@@ -445,7 +445,6 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
   const loader = await GuidelineLoader.create();
 
   const guidelineIds = state.selectedGuidelineIds || loader.getGuidelinesForProfile(
-    state.assistant!,
     state.language!,
     state.level!,
     state.architecture!
@@ -473,7 +472,7 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
   if (state.setupType === 'custom' && state.selectedGuidelineIds && state.selectedGuidelineIds.length > 0) {
     console.log(chalk.cyan('\n📚 Selected Guidelines:'));
     const guidelineNames = state.selectedGuidelineIds.map(id => {
-      const mapping = (loader as any).mappings[id];
+      const mapping = loader.getMapping(id);
       return mapping ? `   • ${mapping.category || 'General'}: ${id}` : `   • ${id}`;
     });
     console.log(guidelineNames.slice(0, 10).join('\n'));
@@ -502,12 +501,12 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
   }
 }
 
-async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType, assistant: AIAssistant): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
+async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
   const loader = await GuidelineLoader.create();
   const levels: InstructionLevel[] = ['basic', 'standard', 'expert', 'full'];
 
   return levels.map(level => {
-    const guidelineIds = loader.getGuidelinesForProfile(assistant, language, level, architecture);
+    const guidelineIds = loader.getGuidelinesForProfile(language, level, architecture);
     const metrics = loader.getMetrics(guidelineIds);
 
     const descriptions: Record<InstructionLevel, string> = {
@@ -599,67 +598,4 @@ async function checkForUpdatesInBackground() {
   }
 }
 
-async function handleAIAnalysis(wizard: WizardStateManager, projectPath: string) {
-    const credManager = new CredentialManager();
-    const providers = await credManager.getAvailableProviders();
 
-    if (providers.length === 0) return;
-
-    const useAI = await confirm({
-        message: '✨ AI credentials detected. Analyze project structure with AI?',
-        default: true
-    });
-
-    if (!useAI) return;
-
-    let provider = providers[0];
-    if (providers.length > 1) {
-        provider = await select({
-            message: 'Select AI provider:',
-            choices: providers.map(p => ({ value: p, name: p.charAt(0).toUpperCase() + p.slice(1) }))
-        }) as any;
-    }
-
-    const spinner = ora(`Consulting ${provider}...`).start();
-
-    try {
-        const gatherer = new ProjectContextGatherer();
-        const context = await gatherer.gather(projectPath);
-
-        spinner.text = 'Analyzing project structure...';
-
-        const analyzer = new AIAnalysisService();
-        const analysis = await analyzer.analyzeProject(provider, context);
-
-        spinner.succeed('Analysis complete');
-
-        // Show suggestions
-        console.log(createSummaryBox('🤖 AI Suggestions', [
-            { label: 'Language', value: analysis.language },
-            { label: 'Type', value: analysis.projectType },
-            { label: 'Architecture', value: analysis.architecture || 'None' },
-            { label: 'Confidence', value: `${Math.round(analysis.confidence * 100)}%` },
-            { label: 'Reasoning', value: analysis.reasoning }
-        ]));
-
-        const apply = await confirm({
-            message: 'Apply these suggestions?',
-            default: true
-        });
-
-        if (apply) {
-            wizard.updateState({
-                language: analysis.language as Language,
-                projectType: analysis.projectType as ProjectType,
-                architecture: (analysis.architecture as ArchitectureType) || 'other',
-                // Map recommendedAssistant to our enum if possible, or leave blank to prompt
-                assistant: (analysis.recommendedAssistant as AIAssistant)
-            });
-        }
-
-    } catch (error) {
-        spinner.fail('AI Analysis failed');
-        console.error(chalk.red((error as Error).message));
-        // Continue fall-through to manual wizard
-    }
-}

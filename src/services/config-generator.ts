@@ -47,14 +47,13 @@ export class ConfigGenerator {
 
     try {
       const guidelineIds = options.customGuidelineIds || this.guidelineLoader.getGuidelinesForProfile(
-        options.selection.assistant,
         options.selection.language,
         options.selection.level,
         options.selection.architecture
       );
 
       if (guidelineIds.length === 0) {
-        throw new Error(`No guidelines found for profile: ${options.selection.assistant}-${options.selection.language}-${options.selection.level}-${options.selection.architecture}`);
+        throw new Error(`No guidelines found for profile: ${options.selection.language}-${options.selection.level}-${options.selection.architecture}`);
       }
 
       const files = await this.fileWriter.generateFiles(

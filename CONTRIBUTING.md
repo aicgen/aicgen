@@ -40,13 +40,13 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 Found a bug? Help us fix it by submitting a detailed bug report.
 
 **Before Submitting:**
-- Check the [existing issues](https://github.com/aicgen/aicgen/issues) to avoid duplicates
+- Check the [existing issues](https://github.com/lpsandaruwan/aicgen/issues) to avoid duplicates
 - Verify you're using the latest version
 - Try to reproduce the bug with minimal steps
 
 **Creating a Bug Report:**
 
-Open a [new issue](https://github.com/aicgen/aicgen/issues/new) with the following information:
+Open a [new issue](https://github.com/lpsandaruwan/aicgen/issues/new) with the following information:
 
 **Title:** Clear, concise description (e.g., "Init command fails on Windows with spaces in path")
 
@@ -805,9 +805,9 @@ Binaries are created in `dist/`:
 
 ## Questions?
 
-- **Bug reports:** [GitHub Issues](https://github.com/aicgen/aicgen/issues)
-- **Feature requests:** [GitHub Issues](https://github.com/aicgen/aicgen/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/aicgen/aicgen/discussions)
+- **Bug reports:** [GitHub Issues](https://github.com/lpsandaruwan/aicgen/issues)
+- **Feature requests:** [GitHub Issues](https://github.com/lpsandaruwan/aicgen/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/lpsandaruwan/aicgen/discussions)
 - **Email:** [maintainer email]
 
 ---

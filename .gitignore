@@ -43,3 +43,5 @@ coverage/
 .cache/
 *.tmp
 .aicgen/
+
+nul

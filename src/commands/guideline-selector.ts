@@ -6,6 +6,13 @@ import { GuidelineLoader } from '../services/guideline-loader.js';
 import { showCheckboxInstructions } from '../utils/banner.js';
 import { BACK_VALUE } from '../utils/wizard-state.js';
 
+interface CheckboxChoice {
+  name: string;
+  value: string;
+  checked?: boolean;
+  disabled?: boolean | string;
+}
+
 export async function selectGuidelines(
   language: Language,
   level: InstructionLevel,
@@ -20,7 +27,7 @@ export async function selectGuidelines(
 
   const allGuidelineIds: string[] = [];
   const categoryToGuidelines = new Map<string, string[]>();
-  const choices: any[] = [];
+  const choices: CheckboxChoice[] = [];
 
   // Add back option if applicable
   if (canGoBack) {

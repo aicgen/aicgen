@@ -13,6 +13,7 @@ interface GuidelineMapping {
   languages?: string[];
   levels?: string[];
   architectures?: string[];
+  datasources?: string[];
   tags?: string[];
 }
 
@@ -75,6 +76,7 @@ export interface GuidelineMapping {
   languages?: string[];
   levels?: string[];
   architectures?: string[];
+  datasources?: string[];
   tags?: string[];
 }
 

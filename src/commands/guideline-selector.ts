@@ -1,7 +1,7 @@
 import { checkbox } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { Language } from '../models/project.js';
-import { InstructionLevel, ArchitectureType } from '../models/profile.js';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
 import { GuidelineLoader } from '../services/guideline-loader.js';
 import { showCheckboxInstructions } from '../utils/banner.js';
 import { BACK_VALUE } from '../utils/wizard-state.js';
@@ -17,10 +17,11 @@ export async function selectGuidelines(
   language: Language,
   level: InstructionLevel,
   architecture: ArchitectureType,
-  canGoBack: boolean
+  canGoBack: boolean,
+  datasource?: DatasourceType
 ): Promise<string[] | typeof BACK_VALUE> {
   const loader = await GuidelineLoader.create();
-  const categoryTree = loader.getCategoryTree(language, level, architecture);
+  const categoryTree = loader.getCategoryTree(language, level, architecture, datasource);
 
   console.log(chalk.cyan('\n📚 Select Guidelines'));
   showCheckboxInstructions();

@@ -19,7 +19,7 @@
 ## ✨ Features
 
 - **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex
-- **📚 65+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
+- **📚 75+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
 - **🎨 Interactive CLI** - Professional wizard with smart defaults and back navigation
 - **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents
 - **🏗️ Architecture Aware** - Supports Microservices, Modular Monoliths, Hexagonal, and more
@@ -80,7 +80,7 @@ bun run start init
 
 ## 📚 Guideline System
 
-aicgen uses a **modular guideline architecture** with **65+ guidelines** organized into **12 categories**.
+aicgen uses a **modular guideline architecture** with **75+ guidelines** organized into **12 categories**.
 
 ```bash
 # View guideline statistics
@@ -130,7 +130,7 @@ CLAUDE.md                      # Master instructions (project root)
 
 - [x] Interactive CLI wizard with back navigation
 - [x] Multi-assistant support (Claude Code, Copilot, Gemini, Antigravity, Codex)
-- [x] 65+ guidelines across 12 categories
+- [x] 75+ guidelines across 12 categories
 - [x] Architecture-aware configuration (Layered, Modular Monolith, Microservices, etc.)
 - [x] Auto-generated hooks and sub-agents for Claude Code
 - [x] Custom guideline management (add/remove)

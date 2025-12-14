@@ -2,7 +2,7 @@ import { select, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
 import { ConfigGenerator } from '../services/config-generator.js';
-import { ProfileSelection, InstructionLevel, ArchitectureType } from '../models/profile.js';
+import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
 import { AIAssistant, Language, ProjectType } from '../models/project.js';
 import { GuidelineLoader } from '../services/guideline-loader.js';
 import { showBanner, showInstructions } from '../utils/banner.js';
@@ -60,6 +60,12 @@ const ARCHITECTURES: { value: ArchitectureType; name: string; description: strin
   { value: 'ddd', name: 'Domain-Driven Design', description: 'Bounded contexts, aggregates, domain events' },
   { value: 'serverless', name: 'Serverless', description: 'FaaS, event triggers, managed services' },
   { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
+];
+
+const DATASOURCES: { value: DatasourceType; name: string; description: string }[] = [
+  { value: 'sql', name: 'SQL Database', description: 'PostgreSQL, MySQL, SQLite, etc.' },
+  { value: 'nosql', name: 'NoSQL Database', description: 'MongoDB, Redis, DynamoDB, etc.' },
+  { value: 'none', name: 'No Database', description: 'No persistent data storage needed' }
 ];
 
 export async function initCommand(options: InitOptions) {
@@ -160,6 +166,13 @@ export async function initCommand(options: InitOptions) {
           }
           break;
 
+        case 'datasource':
+          if (await handleDatasourceStep(wizard) === BACK_VALUE) {
+            wizard.goBack();
+            continue;
+          }
+          break;
+
         case 'level':
           if (await handleLevelStep(wizard, options) === BACK_VALUE) {
             wizard.goBack();
@@ -206,7 +219,8 @@ export async function initCommand(options: InitOptions) {
       level: state.level!,
       architecture: state.architecture!,
       projectType: state.projectType!,
-      projectName: detected.name
+      projectName: detected.name,
+      datasource: state.datasource!
     };
 
     spinner.start('Generating configuration...');
@@ -387,6 +401,32 @@ async function handleArchitectureStep(wizard: WizardStateManager, options: InitO
   return architecture;
 }
 
+async function handleDatasourceStep(wizard: WizardStateManager): Promise<string> {
+  const state = wizard.getState();
+  if (state.datasource) return state.datasource;
+
+  const choices = addBackOption(
+    DATASOURCES.map(d => ({
+      value: d.value,
+      name: d.name,
+      description: d.description
+    })),
+    wizard.canGoBack()
+  );
+
+  const datasource = await select({
+    message: 'Data storage?',
+    choices,
+    default: 'sql'
+  }) as DatasourceType | typeof BACK_VALUE;
+
+  if (datasource !== BACK_VALUE) {
+    wizard.updateState({ datasource: datasource as DatasourceType });
+  }
+
+  return datasource;
+}
+
 async function handleLevelStep(wizard: WizardStateManager, options: InitOptions): Promise<string> {
   const state = wizard.getState();
 
@@ -397,7 +437,8 @@ async function handleLevelStep(wizard: WizardStateManager, options: InitOptions)
 
   const levelsWithMetrics = await getLevelsWithMetrics(
     state.language!,
-    state.architecture!
+    state.architecture!,
+    state.datasource
   );
 
   const choices = addBackOption(
@@ -429,7 +470,8 @@ async function handleGuidelinesStep(wizard: WizardStateManager): Promise<string>
     state.language!,
     state.level!,
     state.architecture!,
-    wizard.canGoBack()
+    wizard.canGoBack(),
+    state.datasource
   );
 
   if (selectedIds === BACK_VALUE) {
@@ -447,7 +489,8 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
   const guidelineIds = state.selectedGuidelineIds || loader.getGuidelinesForProfile(
     state.language!,
     state.level!,
-    state.architecture!
+    state.architecture!,
+    state.datasource
   );
 
   const metrics = loader.getMetrics(guidelineIds);
@@ -457,6 +500,7 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
     { label: 'Language', value: state.language! },
     { label: 'Project Type', value: state.projectType! },
     { label: 'Architecture', value: state.architecture! },
+    { label: 'Data Storage', value: state.datasource! },
     { label: 'Level', value: state.level! },
     { label: 'Setup Type', value: state.setupType || 'standard' }
   ]));
@@ -501,12 +545,12 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
   }
 }
 
-async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
+async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType, datasource?: DatasourceType): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
   const loader = await GuidelineLoader.create();
   const levels: InstructionLevel[] = ['basic', 'standard', 'expert', 'full'];
 
   return levels.map(level => {
-    const guidelineIds = loader.getGuidelinesForProfile(language, level, architecture);
+    const guidelineIds = loader.getGuidelinesForProfile(language, level, architecture, datasource);
     const metrics = loader.getMetrics(guidelineIds);
 
     const descriptions: Record<InstructionLevel, string> = {

@@ -56,7 +56,8 @@ export async function quickAddCommand() {
     const categoryTree = loader.getCategoryTree(
       existingConfig.language,
       existingConfig.level,
-      existingConfig.architecture || 'modular-monolith'
+      existingConfig.architecture || 'modular-monolith',
+      existingConfig.datasource || 'sql'
     );
 
     // Build choices
@@ -209,7 +210,8 @@ async function loadExistingConfig(projectPath: string, assistant: AIAssistant): 
     level: 'standard',
     architecture: 'modular-monolith',
     projectType: 'web',
-    projectName: defaultName
+    projectName: defaultName,
+    datasource: 'sql'
   };
 
   // 1. Detect language and name from project files using ConfigGenerator logic
@@ -402,7 +404,8 @@ async function regenerateConfig(
   const existingIds = loader.getGuidelinesForProfile(
     existingConfig.language,
     existingConfig.level,
-    existingConfig.architecture
+    existingConfig.architecture,
+    existingConfig.datasource
   );
 
   const allIds = [...new Set([...existingIds, ...additionalIds])];

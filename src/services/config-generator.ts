@@ -49,7 +49,8 @@ export class ConfigGenerator {
       const guidelineIds = options.customGuidelineIds || this.guidelineLoader.getGuidelinesForProfile(
         options.selection.language,
         options.selection.level,
-        options.selection.architecture
+        options.selection.architecture,
+        options.selection.datasource
       );
 
       if (guidelineIds.length === 0) {

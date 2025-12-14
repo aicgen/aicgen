@@ -11,6 +11,7 @@ export type ArchitectureType =
   | 'ddd'
   | 'serverless'
   | 'other';
+export type DatasourceType = 'sql' | 'nosql' | 'none';
 
 export interface ProfileSelection {
   assistant: AIAssistant;
@@ -19,4 +20,5 @@ export interface ProfileSelection {
   architecture: ArchitectureType;
   projectType: ProjectType;
   projectName: string;
+  datasource: DatasourceType;
 }

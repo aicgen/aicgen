@@ -1,11 +1,7 @@
 # @aicgen/aicgen - Development Guidelines
 
-**Role:** You are an expert software engineer specialized in typescript and other architecture.
+**Role:** You are an expert software engineer specialized in typescript.
 **User's Goal:** Build high-quality, maintainable software following strict project guidelines.
-
-**Language:** typescript
-**Architecture:** other
-**Level:** full
 
 ## Guidelines
 
@@ -15,7 +11,6 @@ This project follows structured coding guidelines organized by category:
 - **Testing**: @.claude/guidelines/testing.md
 - **Security**: @.claude/guidelines/security.md
 - **Performance**: @.claude/guidelines/performance.md
-- **Database**: @.claude/guidelines/database.md
 - **API Design**: @.claude/guidelines/api-design.md
 - **Code Style**: @.claude/guidelines/code-style.md
 - **Error Handling**: @.claude/guidelines/error-handling.md

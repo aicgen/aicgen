@@ -1,6 +1,6 @@
 import { GuidelineMapping } from '../embedded-data.js';
 import { Language } from '../models/project.js';
-import { InstructionLevel, ArchitectureType } from '../models/profile.js';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
 import { homedir } from 'os';
 import { join } from 'path';
 import {
@@ -58,7 +58,8 @@ export class GuidelineLoader {
   getGuidelinesForProfile(
     language: Language,
     level: InstructionLevel,
-    architecture: ArchitectureType
+    architecture: ArchitectureType,
+    datasource?: DatasourceType
   ): string[] {
     const matchingGuidelines: string[] = [];
 
@@ -72,6 +73,16 @@ export class GuidelineLoader {
       }
 
       if (mapping.architectures && !mapping.architectures.includes(architecture)) {
+        continue;
+      }
+
+      // Filter by datasource - skip if guideline requires specific datasource that doesn't match
+      if (datasource && mapping.datasources && !mapping.datasources.includes(datasource)) {
+        continue;
+      }
+
+      // Skip database guidelines entirely if datasource is 'none'
+      if (datasource === 'none' && mapping.category === 'Database') {
         continue;
       }
 
@@ -102,9 +113,10 @@ export class GuidelineLoader {
   assembleProfile(
     language: Language,
     level: InstructionLevel,
-    architecture: ArchitectureType
+    architecture: ArchitectureType,
+    datasource?: DatasourceType
   ): string {
-    const guidelineIds = this.getGuidelinesForProfile(language, level, architecture);
+    const guidelineIds = this.getGuidelinesForProfile(language, level, architecture, datasource);
 
     if (guidelineIds.length === 0) {
       throw new Error(`No guidelines found for profile: ${language}-${level}-${architecture}`);
@@ -114,7 +126,7 @@ export class GuidelineLoader {
     return guidelineContents.join('\n\n---\n\n');
   }
 
-  getGuidelinesByCategory(language?: Language, level?: InstructionLevel, architecture?: ArchitectureType): Record<string, string[]> {
+  getGuidelinesByCategory(language?: Language, level?: InstructionLevel, architecture?: ArchitectureType, datasource?: DatasourceType): Record<string, string[]> {
     const byCategory: Record<string, string[]> = {};
 
     for (const [guidelineId, mapping] of Object.entries(this.mappings)) {
@@ -130,6 +142,14 @@ export class GuidelineLoader {
         continue;
       }
 
+      if (datasource && mapping.datasources && !mapping.datasources.includes(datasource)) {
+        continue;
+      }
+
+      if (datasource === 'none' && mapping.category === 'Database') {
+        continue;
+      }
+
       const category = mapping.category || 'General';
       if (!byCategory[category]) {
         byCategory[category] = [];
@@ -140,8 +160,8 @@ export class GuidelineLoader {
     return byCategory;
   }
 
-  getCategoryTree(language?: Language, level?: InstructionLevel, architecture?: ArchitectureType): CategoryNode[] {
-    const byCategory = this.getGuidelinesByCategory(language, level, architecture);
+  getCategoryTree(language?: Language, level?: InstructionLevel, architecture?: ArchitectureType, datasource?: DatasourceType): CategoryNode[] {
+    const byCategory = this.getGuidelinesByCategory(language, level, architecture, datasource);
 
     return Object.entries(byCategory)
       .map(([name, guidelineIds]) => ({

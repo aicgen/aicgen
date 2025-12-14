@@ -4,7 +4,6 @@
 
 **Language:** typescript
 **Type:** cli
-**Architecture:** other
 
 ## Development Guidelines
 
@@ -33,12 +32,6 @@ This project follows structured coding guidelines across multiple categories:
   - caching
   - async
   - caching-strategies
-
-### Database
-
-  - schema
-  - indexing
-  - design-patterns
 
 ### API Design
 
@@ -106,14 +99,10 @@ npm run build
 ## Code Style
 
 See tool-specific instruction files for detailed code style guidelines:
-- Claude Code: `.claude/CLAUDE.md`
+- Claude Code: `CLAUDE.md`
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Gemini: `.gemini/instructions.md`
 - Antigravity: `.agent/rules/instructions.md`
-
-## Architecture
-
-This project follows **other** architecture. See architecture guidelines in tool-specific files.
 
 ## Testing
 

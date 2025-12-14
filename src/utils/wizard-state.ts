@@ -1,5 +1,5 @@
 import { Language, ProjectType, AIAssistant } from '../models/project.js';
-import { InstructionLevel, ArchitectureType } from '../models/profile.js';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
 
 export type WizardStep =
   | 'language'
@@ -7,6 +7,7 @@ export type WizardStep =
   | 'assistant'
   | 'setupType'
   | 'architecture'
+  | 'datasource'
   | 'level'
   | 'guidelines'
   | 'summary';
@@ -26,6 +27,7 @@ export interface WizardState {
   assistant?: AIAssistant;
   setupType?: 'quick' | 'custom';
   architecture?: ArchitectureType;
+  datasource?: DatasourceType;
   level?: InstructionLevel;
   selectedGuidelineIds?: string[];
 }
@@ -38,6 +40,7 @@ export class WizardStateManager {
     'assistant',
     'setupType',
     'architecture',
+    'datasource',
     'level',
     'guidelines',
     'summary'
@@ -107,6 +110,7 @@ export class WizardStateManager {
            !!this.state.assistant &&
            !!this.state.setupType &&
            !!this.state.architecture &&
+           !!this.state.datasource &&
            !!this.state.level;
   }
 }

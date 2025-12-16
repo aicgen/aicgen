@@ -9,11 +9,11 @@ function getPackageVersion(): string {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const packageJsonPath = join(__dirname, '..', 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    return packageJson.version || '0.1.0';
+    return packageJson.version || '1.0-beta';
   } catch {
     // In compiled binary, package.json is not available
     // Version will be injected at build time via APP_VERSION env var
-    return process.env.APP_VERSION || '0.1.0';
+    return process.env.APP_VERSION || '1.0-beta';
   }
 }
 

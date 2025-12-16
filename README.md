@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0--beta.1-cyan" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.0--beta-cyan" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
   <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
   <img src="https://img.shields.io/github/actions/workflow/status/aicgen/aicgen/test.yml?branch=main&label=tests" alt="Tests" />

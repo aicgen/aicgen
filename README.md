@@ -10,6 +10,8 @@
   <img src="https://img.shields.io/badge/version-0.1.0--beta.1-cyan" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
   <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
+  <img src="https://img.shields.io/github/actions/workflow/status/aicgen/aicgen/test.yml?branch=main&label=tests" alt="Tests" />
+  <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Coverage" />
 </p>
 
 ---
@@ -141,6 +143,52 @@ CLAUDE.md                      # Master instructions (project root)
 - [ ] Custom validation hooks
 - [ ] Guideline versioning and diffing
 - [ ] Project-specific guideline templates
+
+## 🛠️ Development
+
+### Running Tests
+
+The project includes a comprehensive test suite with 60+ tests covering all core functionality:
+
+```bash
+# Run all tests
+bun test
+
+# Run tests with coverage report
+bun test --coverage
+
+# Run tests in watch mode
+bun test --watch
+```
+
+### Test Coverage
+
+Current test coverage: **94%** (93.44% function coverage, 94.52% line coverage)
+
+**Test Suite Includes:**
+- ✅ GuidelineLoader tests (filtering, level selection, architecture handling)
+- ✅ Tarball extraction tests (CONFIG-based prefix validation)
+- ✅ AssistantFileWriter tests (all 5 assistants - Claude Code, Copilot, Gemini, Antigravity, Codex)
+- ✅ File generation and path handling (cross-platform compatibility)
+- ✅ Content validation and metadata inclusion
+
+Tests are automatically excluded from builds via `tsconfig.json`.
+
+### Project Structure
+
+```
+src/
+├── __tests__/              # Test suite
+│   └── services/
+│       ├── guideline-loader.test.ts
+│       ├── tarball-extraction.test.ts
+│       └── assistant-file-writer.test.ts
+├── commands/               # CLI commands (init, update, quick-add)
+├── services/               # Core business logic
+└── config.ts              # Configuration management
+```
+
+---
 
 ## 🤝 Contributing
 

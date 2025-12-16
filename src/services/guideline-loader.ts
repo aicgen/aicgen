@@ -64,19 +64,22 @@ export class GuidelineLoader {
     const matchingGuidelines: string[] = [];
 
     for (const [guidelineId, mapping] of Object.entries(this.mappings)) {
+      // Language filter
       if (mapping.languages && !mapping.languages.includes(language)) {
         continue;
       }
 
+      // Level filter
       if (mapping.levels && !mapping.levels.includes(level)) {
         continue;
       }
 
-      if (mapping.architectures && !mapping.architectures.includes(architecture)) {
+      // Architecture filter - SKIP for "full" level (include all architectures)
+      if (level !== 'full' && mapping.architectures && !mapping.architectures.includes(architecture)) {
         continue;
       }
 
-      // Filter by datasource - skip if guideline requires specific datasource that doesn't match
+      // Datasource filter - skip if guideline requires specific datasource that doesn't match
       if (datasource && mapping.datasources && !mapping.datasources.includes(datasource)) {
         continue;
       }
@@ -138,7 +141,8 @@ export class GuidelineLoader {
         continue;
       }
 
-      if (architecture && mapping.architectures && !mapping.architectures.includes(architecture)) {
+      // Architecture filter - SKIP for "full" level (include all architectures)
+      if (level !== 'full' && architecture && mapping.architectures && !mapping.architectures.includes(architecture)) {
         continue;
       }
 

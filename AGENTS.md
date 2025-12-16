@@ -15,6 +15,12 @@ This project follows structured coding guidelines across multiple categories:
   - async
   - interfaces-types
 
+### Architecture
+
+  - boundaries
+  - communication
+  - data
+
 ### Testing
 
   - unit-fundamentals
@@ -29,15 +35,15 @@ This project follows structured coding guidelines across multiple categories:
 
 ### Performance
 
+  - basics
   - caching
   - async
-  - caching-strategies
 
 ### API Design
 
+  - basics
   - rest
   - pagination
-  - versioning
 
 ### Code Style
 
@@ -47,12 +53,7 @@ This project follows structured coding guidelines across multiple categories:
 ### Error Handling
 
   - strategy
-
-### Architecture
-
-  - principles
-  - patterns
-  - patterns
+  - basics
 
 ### DevOps
 

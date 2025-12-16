@@ -188,10 +188,11 @@ async function downloadGuidelines(url: string, targetDir: string): Promise<void>
       await decompress(tarballPath, tempDir);
 
       const entries = await readdir(tempDir);
-      const rootDir = entries.find(entry => entry.startsWith('lpsandaruwan-aicgen-docs-'));
+      const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
+      const rootDir = entries.find(entry => entry.startsWith(expectedPrefix));
 
       if (!rootDir) {
-        throw new Error('Could not find extracted repository directory');
+        throw new Error(`Could not find extracted repository directory (expected ${expectedPrefix}*)`);
       }
 
       const extractedPath = join(tempDir, rootDir);

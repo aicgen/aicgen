@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.15-cyan" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.1.0--beta.1-cyan" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
   <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
 </p>
@@ -19,7 +19,7 @@
 ## ✨ Features
 
 - **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex
-- **📚 75+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
+- **📚 82+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
 - **🎨 Interactive CLI** - Professional wizard with smart defaults and back navigation
 - **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents
 - **🏗️ Architecture Aware** - Supports Microservices, Modular Monoliths, Hexagonal, and more
@@ -55,7 +55,7 @@ npx @aicgen/aicgen init
 
 ### From Binary (Standalone)
 
-Download the latest binary for your platform from the [releases page](https://github.com/lpsandaruwan/aicgen/releases):
+Download the latest binary for your platform from the [releases page](https://github.com/aicgen/aicgen/releases):
 
 - **Windows**: `aicgen.exe`
 - **Linux**: `aicgen-linux`
@@ -69,7 +69,7 @@ Download the latest binary for your platform from the [releases page](https://gi
 ### From Source
 
 ```bash
-git clone https://github.com/lpsandaruwan/aicgen.git
+git clone https://github.com/aicgen/aicgen.git
 cd aicgen
 bun install
 bun run build:binary
@@ -80,7 +80,7 @@ bun run start init
 
 ## 📚 Guideline System
 
-aicgen uses a **modular guideline architecture** with **75+ guidelines** organized into **12 categories**.
+aicgen uses a **modular guideline architecture** with **82+ guidelines** organized into **12 categories**.
 
 ```bash
 # View guideline statistics
@@ -130,7 +130,7 @@ CLAUDE.md                      # Master instructions (project root)
 
 - [x] Interactive CLI wizard with back navigation
 - [x] Multi-assistant support (Claude Code, Copilot, Gemini, Antigravity, Codex)
-- [x] 75+ guidelines across 12 categories
+- [x] 82+ guidelines across 12 categories
 - [x] Architecture-aware configuration (Layered, Modular Monolith, Microservices, etc.)
 - [x] Auto-generated hooks and sub-agents for Claude Code
 - [x] Custom guideline management (add/remove)

@@ -1,7 +1,7 @@
 import { select, checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
-import { readFile, writeFile, appendFile } from 'fs/promises';
+import { readFile, writeFile, appendFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import ora from 'ora';
 import { AIAssistant, Language, ProjectType } from '../models/project.js';
@@ -81,24 +81,37 @@ export async function quickAddCommand() {
       }
     }
 
-    // Add back/cancel options explicitly if needed, but checkbox supports escaping/cancelling naturally
-    // However, to integrate with our flow, we rely on empty selection as a cancel signal usually, or we can add a fake choice if needed.
-    // Inquirer checkbox doesn't support "Back" easily as a choice without being a selection.
-    // For now, we'll assume "Cancel" via Ctrl+C or empty selection is sufficient for exiting,
-    // but the user asked for navigation. The best we can do in a checkbox is likely standard behavior.
-    // But for the next prompt (How to add), we CAN add a back button.
-
     // Let user select guidelines
     const selectedIds = await checkbox({
-      message: 'Select guidelines to add (Space to toggle, Enter to confirm):',
+      message: 'Select guidelines to add (Space to toggle, Enter to confirm, or press Enter with no selection to cancel):',
       choices,
       pageSize: 25,
       loop: false
     }) as string[];
 
     if (selectedIds.length === 0) {
-      console.log(chalk.gray('\nNo guidelines selected.'));
-      return;
+      const action = await select({
+        message: 'No guidelines selected. What would you like to do?',
+        choices: [
+          { value: 'retry', name: 'Try again', description: 'Go back to guideline selection' },
+          { value: 'cancel', name: 'Cancel', description: 'Exit without changes' }
+        ]
+      });
+
+      if (action === 'cancel') {
+        console.log(chalk.gray('\nCancelled.'));
+        return;
+      }
+
+      console.clear();
+      showBanner();
+      console.log(chalk.cyan('🚀 Quick Add Guidelines\n'));
+      console.log(chalk.cyan('📋 Current Configuration:'));
+      console.log(`   Assistant: ${existingConfig.assistant}`);
+      console.log(`   Language: ${existingConfig.language}`);
+      console.log(`   Level: ${existingConfig.level}`);
+      console.log(`   Architecture: ${existingConfig.architecture || 'Not specified'}\n`);
+      continue;
     }
 
     // Filter out category separators
@@ -115,67 +128,76 @@ export async function quickAddCommand() {
       console.log(chalk.gray(`   ... and ${validIds.length - 10} more`));
     }
 
-    // Ask how to add
-    const addChoices = [
-      { value: 'append', name: 'Append to existing config', description: 'Add to current configuration' },
-      { value: 'replace', name: 'Replace entire config', description: 'Regenerate with selected + existing guidelines' },
-      { value: 'back', name: '← Back to selection', description: 'Change selected guidelines' },
-      { value: 'cancel', name: 'Cancel', description: 'Exit without changes' }
-    ];
+    // Inner loop for "how to add" and confirmation
+    let addModeLoop = true;
+    while (addModeLoop) {
+      // Ask how to add
+      const addChoices = [
+        { value: 'append', name: 'Append to existing config', description: 'Add to current configuration' },
+        { value: 'replace', name: 'Replace entire config', description: 'Regenerate with selected + existing guidelines' },
+        { value: 'back', name: '← Back to selection', description: 'Change selected guidelines' },
+        { value: 'cancel', name: 'Cancel', description: 'Exit without changes' }
+      ];
 
-    const addMode = await select({
-      message: 'How would you like to add these guidelines?',
-      choices: addChoices
-    });
-
-    if (addMode === 'back') {
-      console.clear();
-      showBanner();
-      console.log(chalk.cyan('🚀 Quick Add Guidelines\n'));
-      console.log(chalk.cyan('📋 Current Configuration:'));
-      console.log(`   Assistant: ${existingConfig.assistant}`);
-      console.log(`   Language: ${existingConfig.language}`);
-      console.log(`   Level: ${existingConfig.level}`);
-      console.log(`   Architecture: ${existingConfig.architecture || 'Not specified'}`);
-      continue;
-    }
-
-    if (addMode === 'cancel') {
-      console.log(chalk.gray('\nCancelled.'));
-      return;
-    }
-
-    // Warn before destructive replace
-    if (addMode === 'replace') {
-      console.log(chalk.yellow('\n⚠️  Warning: Replace mode will regenerate your entire configuration.'));
-      console.log(chalk.gray('   This will overwrite any manual edits to settings, hooks, or guidelines.'));
-
-      const confirmReplace = await confirm({
-        message: 'Are you sure you want to replace the entire configuration?',
-        default: false
+      const addMode = await select({
+        message: 'How would you like to add these guidelines?',
+        choices: addChoices
       });
 
-      if (!confirmReplace) {
+      if (addMode === 'back') {
+        console.clear();
+        showBanner();
+        console.log(chalk.cyan('🚀 Quick Add Guidelines\n'));
+        console.log(chalk.cyan('📋 Current Configuration:'));
+        console.log(`   Assistant: ${existingConfig.assistant}`);
+        console.log(`   Language: ${existingConfig.language}`);
+        console.log(`   Level: ${existingConfig.level}`);
+        console.log(`   Architecture: ${existingConfig.architecture || 'Not specified'}\n`);
+        addModeLoop = false; // Exit inner loop, continue outer loop
         continue;
       }
-    }
 
-    spinner.start('Adding guidelines...');
-
-    try {
-      if (addMode === 'append') {
-        await appendGuidelines(projectPath, assistant, validIds, loader);
-      } else {
-        await regenerateConfig(projectPath, existingConfig, validIds, loader);
+      if (addMode === 'cancel') {
+        console.log(chalk.gray('\nCancelled.'));
+        return;
       }
 
-      spinner.succeed('Guidelines added successfully!');
-      console.log(chalk.green(`\n✅ Added ${validIds.length} guideline(s) to ${assistant} configuration`));
-      continueLoop = false;
-    } catch (error) {
-      spinner.fail('Failed to add guidelines');
-      console.error(chalk.red(`\n❌ Error: ${error}`));
-      continueLoop = false;
+      // Warn before destructive replace
+      if (addMode === 'replace') {
+        console.log(chalk.yellow('\n⚠️  Warning: Replace mode will regenerate your entire configuration.'));
+        console.log(chalk.gray('   This will overwrite any manual edits to settings, hooks, or guidelines.'));
+
+        const confirmReplace = await confirm({
+          message: 'Are you sure you want to replace the entire configuration?',
+          default: false
+        });
+
+        if (!confirmReplace) {
+          console.log(chalk.gray('\nGoing back to mode selection...\n'));
+          continue; // Stay in inner loop - go back to "how to add" question
+        }
+      }
+
+      // Execute the operation
+      spinner.start('Adding guidelines...');
+
+      try {
+        if (addMode === 'append') {
+          await appendGuidelines(projectPath, assistant, validIds, loader);
+        } else {
+          await regenerateConfig(projectPath, existingConfig, validIds, loader);
+        }
+
+        spinner.succeed('Guidelines added successfully!');
+        console.log(chalk.green(`\n✅ Added ${validIds.length} guideline(s) to ${assistant} configuration`));
+        continueLoop = false;
+        addModeLoop = false;
+      } catch (error) {
+        spinner.fail('Failed to add guidelines');
+        console.error(chalk.red(`\n❌ Error: ${error}`));
+        continueLoop = false;
+        addModeLoop = false;
+      }
     }
   }
 }
@@ -328,10 +350,42 @@ async function appendToClaudeCode(projectPath: string, guidelines: string[]): Pr
     throw new Error('CLAUDE.md not found');
   }
 
-  const content = await readFile(instructionsPath, 'utf-8');
-  const newContent = `${content}\n\n## Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+  // Create guidelines directory
+  const guidelinesDir = join(projectPath, '.claude', 'guidelines');
+  await mkdir(guidelinesDir, { recursive: true });
 
-  await writeFile(instructionsPath, newContent, 'utf-8');
+  // Create or append to additional.md file
+  const additionalFile = join(guidelinesDir, 'additional.md');
+  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+
+  if (existsSync(additionalFile)) {
+    // Append to existing file
+    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
+  } else {
+    // Create new file
+    await writeFile(additionalFile, additionalContent, 'utf-8');
+  }
+
+  // Update CLAUDE.md with reference if not already present
+  const content = await readFile(instructionsPath, 'utf-8');
+
+  if (content.includes('@.claude/guidelines/additional.md')) {
+    // Reference already exists, file is updated, we're done
+    return;
+  }
+
+  // Add reference to guidelines section
+  const guidelinesMatch = content.match(/(## Guidelines[\s\S]*?)(?=\n## |$)/);
+  if (guidelinesMatch) {
+    const guidelinesSection = guidelinesMatch[1];
+    const newGuidelinesSection = guidelinesSection.trimEnd() + '\n- **Additional**: @.claude/guidelines/additional.md';
+    const newContent = content.replace(guidelinesSection, newGuidelinesSection);
+    await writeFile(instructionsPath, newContent, 'utf-8');
+  } else {
+    // Fallback: append to end of file
+    const newContent = content.trimEnd() + '\n\n- **Additional**: @.claude/guidelines/additional.md\n';
+    await writeFile(instructionsPath, newContent, 'utf-8');
+  }
 }
 
 async function appendToCopilot(projectPath: string, guidelines: string[]): Promise<void> {
@@ -341,10 +395,49 @@ async function appendToCopilot(projectPath: string, guidelines: string[]): Promi
     throw new Error('copilot-instructions.md not found');
   }
 
-  const content = await readFile(instructionsPath, 'utf-8');
-  const newContent = `${content}\n\n## Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+  // Create instructions directory
+  const instructionsDir = join(projectPath, '.github', 'instructions');
+  await mkdir(instructionsDir, { recursive: true });
 
-  await writeFile(instructionsPath, newContent, 'utf-8');
+  // Create additional instructions file with frontmatter
+  const additionalFile = join(instructionsDir, 'additional.instructions.md');
+  const additionalContent = `---
+applyTo: "**/*"
+description: "Additional guidelines"
+---
+
+# Additional Guidelines
+
+${guidelines.join('\n\n---\n\n')}`;
+
+  if (existsSync(additionalFile)) {
+    // Append to existing file (skip frontmatter)
+    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
+  } else {
+    // Create new file
+    await writeFile(additionalFile, additionalContent, 'utf-8');
+  }
+
+  // Update copilot-instructions.md with reference if not already present
+  const content = await readFile(instructionsPath, 'utf-8');
+
+  if (content.includes('@.github/instructions/additional.instructions.md')) {
+    // Reference already exists
+    return;
+  }
+
+  // Add reference to guidelines section
+  const guidelinesMatch = content.match(/(## Guidelines[\s\S]*?)(?=\n## |$)/);
+  if (guidelinesMatch) {
+    const guidelinesSection = guidelinesMatch[1];
+    const newGuidelinesSection = guidelinesSection.trimEnd() + '\n- Additional: @.github/instructions/additional.instructions.md';
+    const newContent = content.replace(guidelinesSection, newGuidelinesSection);
+    await writeFile(instructionsPath, newContent, 'utf-8');
+  } else {
+    // Fallback: append to end
+    const newContent = content.trimEnd() + '\n\n- Additional: @.github/instructions/additional.instructions.md\n';
+    await writeFile(instructionsPath, newContent, 'utf-8');
+  }
 }
 
 async function appendToGemini(projectPath: string, guidelines: string[]): Promise<void> {
@@ -354,9 +447,32 @@ async function appendToGemini(projectPath: string, guidelines: string[]): Promis
     throw new Error('instructions.md not found');
   }
 
-  const content = await readFile(instructionsPath, 'utf-8');
-  const newContent = `${content}\n\n## Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+  // Create guidelines directory
+  const geminiDir = join(projectPath, '.gemini');
+  await mkdir(geminiDir, { recursive: true });
 
+  // Create additional guidelines file
+  const additionalFile = join(geminiDir, 'additional-guidelines.md');
+  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+
+  if (existsSync(additionalFile)) {
+    // Append to existing file
+    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
+  } else {
+    // Create new file
+    await writeFile(additionalFile, additionalContent, 'utf-8');
+  }
+
+  // Update instructions.md with import reference if not already present
+  const content = await readFile(instructionsPath, 'utf-8');
+
+  if (content.includes('additional-guidelines.md')) {
+    // Reference already exists
+    return;
+  }
+
+  // Add reference before the closing section
+  const newContent = content.trimEnd() + `\n\n## Additional Guidelines\n\nSee: additional-guidelines.md\n`;
   await writeFile(instructionsPath, newContent, 'utf-8');
 }
 
@@ -364,20 +480,44 @@ async function appendToAntigravity(
   projectPath: string,
   guidelines: string[]
 ): Promise<void> {
-  // For Antigravity, create a new rule file for the added guidelines
+  // Create rules directory
   const rulesDir = join(projectPath, '.agent', 'rules');
-  const additionalRulesPath = join(rulesDir, 'additional-guidelines.md');
+  await mkdir(rulesDir, { recursive: true });
 
-  // Convert to bullet points
-  const bullets = guidelines.map(g => {
-    const lines = g.split('\n').filter(l => l.trim() && !l.startsWith('#') && !l.startsWith('---'));
-    return lines.map(l => l.trim().startsWith('*') ? l : `* ${l}`).join('\n');
-  }).join('\n');
+  // Create additional rules file
+  const additionalRulesPath = join(rulesDir, 'additional.md');
+  const additionalContent = `# Additional Rules\n\n${guidelines.join('\n\n---\n\n')}\n\n---\n*Generated by aicgen*\n`;
 
   if (existsSync(additionalRulesPath)) {
-    await appendFile(additionalRulesPath, `\n\n${bullets}`, 'utf-8');
+    // Append to existing file
+    await appendFile(additionalRulesPath, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
   } else {
-    await writeFile(additionalRulesPath, bullets, 'utf-8');
+    // Create new file
+    await writeFile(additionalRulesPath, additionalContent, 'utf-8');
+  }
+
+  // Update instructions.md with reference if not already present
+  const instructionsPath = join(rulesDir, 'instructions.md');
+  if (existsSync(instructionsPath)) {
+    const content = await readFile(instructionsPath, 'utf-8');
+
+    if (content.includes('@.agent/rules/additional.md')) {
+      // Reference already exists
+      return;
+    }
+
+    // Add reference to rule index section
+    const ruleIndexMatch = content.match(/(## Rule Index[\s\S]*?)(?=\n## |$)/);
+    if (ruleIndexMatch) {
+      const ruleIndexSection = ruleIndexMatch[1];
+      const newRuleIndexSection = ruleIndexSection.trimEnd() + '\n- **Additional**: @.agent/rules/additional.md';
+      const newContent = content.replace(ruleIndexSection, newRuleIndexSection);
+      await writeFile(instructionsPath, newContent, 'utf-8');
+    } else {
+      // Fallback: append to end
+      const newContent = content.trimEnd() + '\n\n- **Additional**: @.agent/rules/additional.md\n';
+      await writeFile(instructionsPath, newContent, 'utf-8');
+    }
   }
 }
 
@@ -388,9 +528,32 @@ async function appendToCodex(projectPath: string, guidelines: string[]): Promise
     throw new Error('instructions.md not found');
   }
 
-  const content = await readFile(instructionsPath, 'utf-8');
-  const newContent = `${content}\n\n## Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+  // Create codex directory
+  const codexDir = join(projectPath, '.codex');
+  await mkdir(codexDir, { recursive: true });
 
+  // Create additional guidelines file
+  const additionalFile = join(codexDir, 'additional-guidelines.md');
+  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
+
+  if (existsSync(additionalFile)) {
+    // Append to existing file
+    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
+  } else {
+    // Create new file
+    await writeFile(additionalFile, additionalContent, 'utf-8');
+  }
+
+  // Update instructions.md with import reference if not already present
+  const content = await readFile(instructionsPath, 'utf-8');
+
+  if (content.includes('additional-guidelines.md')) {
+    // Reference already exists
+    return;
+  }
+
+  // Add reference before the closing section
+  const newContent = content.trimEnd() + `\n\n## Additional Guidelines\n\nSee: additional-guidelines.md\n`;
   await writeFile(instructionsPath, newContent, 'utf-8');
 }
 

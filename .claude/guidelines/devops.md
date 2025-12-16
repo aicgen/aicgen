@@ -74,68 +74,68 @@ Gradually replace instances with new version.
 
 ## Infrastructure as Code
 
-```typescript
-// Pulumi example
-const bucket = new aws.s3.Bucket("app-bucket", {
-  acl: "private",
-  versioning: { enabled: true }
-});
+```text
+# Define infrastructure as code (e.g., Terraform, Pulumi)
 
-const lambda = new aws.lambda.Function("api", {
-  runtime: "nodejs20.x",
-  handler: "index.handler",
-  code: new pulumi.asset.AssetArchive({
-    ".": new pulumi.asset.FileArchive("./dist")
-  })
-});
+Resource S3Bucket "app-bucket":
+  Access: Private
+  Versioning: Enabled
+
+Resource LambdaFunction "api":
+  Runtime: Node.js / Python / Go
+  Handler: index.handler
+  Code: ./dist
 ```
 
 ## Containerization
 
 ```dockerfile
-FROM node:20-alpine AS builder
+# Build Stage
+FROM base-image AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+COPY dependency-files ./
+RUN install-dependencies
+COPY source-code .
+RUN build-application
 
-FROM node:20-alpine
+# Runtime Stage
+FROM runtime-image
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-EXPOSE 3000
-CMD ["node", "dist/index.js"]
+EXPOSE 8080
+CMD ["run", "application"]
 ```
 
 ## Observability
 
 ### Logging
-```typescript
-logger.info('Order created', {
-  orderId: order.id,
-  customerId: order.customerId,
-  total: order.total,
-  timestamp: new Date().toISOString()
-});
+```json
+{
+  "level": "info",
+  "message": "Order created",
+  "orderId": "ord_123",
+  "customerId": "cust_456",
+  "total": 99.99,
+  "timestamp": "2023-10-27T10:00:00Z"
+}
 ```
 
 ### Metrics
-```typescript
-metrics.increment('orders.created');
-metrics.histogram('order.value', order.total);
-metrics.timing('order.processing_time', duration);
+```text
+Metrics.Increment("orders.created")
+Metrics.Histogram("order.value", total)
+Metrics.Timing("order.processing_time", duration)
 ```
 
 ### Health Checks
-```typescript
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    version: process.env.APP_VERSION,
-    uptime: process.uptime()
-  });
-});
+```text
+GET /health
+Response 200 OK:
+{
+  "status": "healthy",
+  "version": "1.2.3",
+  "uptime": 3600
+}
 ```
 
 ## Best Practices

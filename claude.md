@@ -8,13 +8,13 @@
 This project follows structured coding guidelines organized by category:
 
 - **Language**: @.claude/guidelines/language.md
+- **Architecture**: @.claude/guidelines/architecture.md
 - **Testing**: @.claude/guidelines/testing.md
 - **Security**: @.claude/guidelines/security.md
 - **Performance**: @.claude/guidelines/performance.md
 - **API Design**: @.claude/guidelines/api-design.md
 - **Code Style**: @.claude/guidelines/code-style.md
 - **Error Handling**: @.claude/guidelines/error-handling.md
-- **Architecture**: @.claude/guidelines/architecture.md
 - **DevOps**: @.claude/guidelines/devops.md
 - **Best Practices**: @.claude/guidelines/best-practices.md
 - **Design Patterns**: @.claude/guidelines/design-patterns.md

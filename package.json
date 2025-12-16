@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lpsandaruwan/aicgen.git"
+    "url": "https://github.com/aicgen/aicgen.git"
   },
   "bin": {
     "aicgen": "./dist/index.js"
@@ -24,7 +24,8 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
-    "embed": "bun run scripts/embed-data.ts",
+    "generate-version": "bun run scripts/generate-version.ts",
+    "embed": "bun run generate-version && bun run scripts/embed-data.ts",
     "prebuild": "bun run embed",
     "build": "bun build src/index.ts --outdir dist --target node",
     "build:binary": "bun run embed && bun run scripts/build-binary.ts current",

@@ -1,13 +1,13 @@
 # Memory Lane - aicgen Project Context
 
 ## Last Updated
-2024-12-14
+2024-12-16
 
 ## Project Overview
 **aicgen** - CLI tool that generates AI coding assistant configuration files (CLAUDE.md, copilot-instructions.md, etc.) with embedded guidelines.
 
 ## Current Objective
-Preparing v1.0 release - fixing architect-identified issues and improving dataset coverage.
+Preparing v1.0 release - improving dataset coverage with basic-level guidelines.
 
 ## Recent Progress
 
@@ -24,12 +24,18 @@ Preparing v1.0 release - fixing architect-identified issues and improving datase
 - ✅ Fixed network permission gating by level (expert/full only)
 - ✅ Added download safeguards (timeout, size limits)
 - ✅ Added destructive regeneration warning in quick-add
+- ✅ **Added 5 new basic-level guidelines (2024-12-16)**:
+  - `testing-basics.md` - First unit test, assertions, running tests
+  - `error-handling-basics.md` - Try/catch, throw, logging
+  - `api-basics.md` - HTTP methods, status codes
+  - `database-basics.md` - CRUD operations, SQL basics
+  - `performance-basics.md` - Data structures, N+1 queries, indexing
 
 ### In Progress
 - 🔄 No active work
 
 ### Pending
-- ⏳ Add more basic-level guidelines (basic tier is sparse: 12 vs 57+ at standard)
+- ⏳ Consider project type expansion (frontend vs fullstack)
 
 ## Key Decisions
 1. **Datasource dimension** - Users choose SQL, NoSQL, or None; database guidelines filtered accordingly
@@ -61,16 +67,17 @@ Preparing v1.0 release - fixing architect-identified issues and improving datase
 | Architecture wizard/data mismatch | ✅ Fixed |
 | Language gaps outside TS/Python | ✅ Improved (basics + testing for 6 languages) |
 | README claim mismatch | ✅ Fixed |
-| Level imbalance | Partial (basic still sparse) |
+| Level imbalance | ✅ Fixed (basic: 12 → 17, +42% coverage) |
 
 ## Stats
-- Total guidelines: 77
+- Total guidelines: 82 (up from 77)
 - Languages: 8 (TS, Python, Go, Rust, Java, C#, Ruby, JS)
 - Architectures: 8 (layered, modular-monolith, microservices, event-driven, hexagonal, clean-architecture, ddd, serverless)
-- Levels: basic (12), standard (57), expert (71), full (77)
+- Levels: basic (17), standard (62), expert (76), full (82)
 - Datasources: sql (3), nosql (1)
+- Categories: Testing (4), Error Handling (2), API Design (4), Database (5), Performance (4)
 
 ## Next Session
-1. Consider adding more basic-level guidelines
+1. Consider project type expansion (split "web" into "frontend" and "fullstack")
 2. Consider running integration tests manually to verify wizard flow
 3. Version bump for release

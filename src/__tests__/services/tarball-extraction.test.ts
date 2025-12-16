@@ -92,8 +92,8 @@ describe('Tarball Extraction Configuration', () => {
   describe('Version Management', () => {
     test('should have valid version format', () => {
       const version = CONFIG.APP_VERSION;
-      // Valid 2-number version: X.Y or X.Y-prerelease (e.g., "1.0-beta")
-      const versionPattern = /^\d+\.\d+(-[a-z0-9]+)?$/i;
+      // Valid version: X.Y.Z-prerelease or X.Y-prerelease (e.g., "1.0.0-beta.1" or "1.0-beta")
+      const versionPattern = /^\d+\.\d+(\.\d+)?(-[a-z0-9.]+)?$/i;
       expect(versionPattern.test(version)).toBe(true);
     });
 

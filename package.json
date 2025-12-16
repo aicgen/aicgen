@@ -1,6 +1,6 @@
 {
   "name": "@aicgen/aicgen",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "AI Config Generator - Automated AI assistant configuration for your projects",
   "keywords": [
     "ai",
@@ -17,7 +17,7 @@
     "url": "https://github.com/aicgen/aicgen.git"
   },
   "bin": {
-    "aicgen": "./dist/index.js"
+    "aicgen": "dist/index.js"
   },
   "type": "module",
   "engines": {

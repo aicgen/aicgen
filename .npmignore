@@ -1,0 +1,48 @@
+# Test files
+src/__tests__/
+**/*.test.ts
+**/*.spec.ts
+*.test.js
+*.spec.js
+
+# Development files
+.github/
+.claude/
+.vscode/
+scripts/
+packaging/
+
+# Source files (we publish built files)
+src/
+
+# Build artifacts
+*.log
+*.tgz
+
+# Git
+.git/
+.gitignore
+
+# Documentation (keep README)
+docs/
+CONTRIBUTING.md
+
+# Config files
+.editorconfig
+.eslintrc*
+.prettierrc*
+tsconfig*.json
+bun.lockb
+
+# Temp files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Keep these for distribution
+!dist/
+!README.md
+!LICENSE
+!package.json

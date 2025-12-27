@@ -8,7 +8,20 @@
  * - Configuration file hash
  */
 
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { join } from 'path';
+import { existsSync } from 'fs';
 import type { FingerprintResult } from '../types.js';
+import { hashDirectoryTree, hashFile, hashMultiple, hashContent } from '../utils/file-hash.js';
+
+const execAsync = promisify(exec);
+
+/**
+ * Schema version for cache invalidation
+ * Increment this when fingerprint structure changes
+ */
+const FINGERPRINT_SCHEMA_VERSION = '1.0.0';
 
 /**
  * Generate a fingerprint for the given project
@@ -17,54 +30,201 @@ import type { FingerprintResult } from '../types.js';
  * @returns Fingerprint result with combined hash and components
  */
 export async function generateFingerprint(projectPath: string): Promise<FingerprintResult> {
-  // TODO: Implement in Phase 2
-  throw new Error('Not implemented yet');
+  if (!existsSync(projectPath)) {
+    return {
+      hash: '',
+      components: {
+        structure: '',
+        dependencies: '',
+        configs: '',
+      },
+      timestamp: Date.now(),
+      valid: false,
+      invalidReason: `Project path does not exist: ${projectPath}`,
+    };
+  }
+
+  try {
+    // Run all fingerprint components in parallel for speed
+    const [gitHash, structureHash, dependenciesHash, configsHash] = await Promise.all([
+      getGitHash(projectPath),
+      hashDirectoryStructure(projectPath),
+      hashDependencies(projectPath),
+      hashConfigs(projectPath),
+    ]);
+
+    const components: FingerprintResult['components'] = {
+      git: gitHash,
+      structure: structureHash,
+      dependencies: dependenciesHash,
+      configs: configsHash,
+    };
+
+    const combinedHash = combineHashes(components);
+
+    return {
+      hash: combinedHash,
+      components,
+      timestamp: Date.now(),
+      valid: true,
+    };
+  } catch (error) {
+    return {
+      hash: '',
+      components: {
+        structure: '',
+        dependencies: '',
+        configs: '',
+      },
+      timestamp: Date.now(),
+      valid: false,
+      invalidReason: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
 }
 
 /**
  * Check if project is a git repository
  */
 async function isGitRepository(projectPath: string): Promise<boolean> {
-  // TODO: Check for .git directory or run git rev-parse --git-dir
-  throw new Error('Not implemented yet');
+  const gitDir = join(projectPath, '.git');
+  if (!existsSync(gitDir)) {
+    return false;
+  }
+
+  try {
+    await execAsync('git rev-parse --git-dir', { cwd: projectPath });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Get git HEAD commit hash
  */
 async function getGitHash(projectPath: string): Promise<string | undefined> {
-  // TODO: Run git rev-parse HEAD
-  throw new Error('Not implemented yet');
+  if (!(await isGitRepository(projectPath))) {
+    return undefined;
+  }
+
+  try {
+    const { stdout } = await execAsync('git rev-parse HEAD', { cwd: projectPath });
+    return stdout.trim();
+  } catch {
+    // Git command failed (maybe no commits yet)
+    return undefined;
+  }
 }
 
 /**
  * Hash directory structure (directories only, not file contents)
  */
 async function hashDirectoryStructure(projectPath: string): Promise<string> {
-  // TODO: Recursively list directories, hash the tree structure
-  throw new Error('Not implemented yet');
+  return hashDirectoryTree(projectPath);
 }
 
 /**
  * Hash dependency lockfiles
  */
 async function hashDependencies(projectPath: string): Promise<string> {
-  // TODO: Find and hash package-lock.json, yarn.lock, pnpm-lock.yaml, etc.
-  throw new Error('Not implemented yet');
+  const lockfiles = [
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    'bun.lockb',
+    'Pipfile.lock',
+    'poetry.lock',
+    'requirements.txt',
+    'go.sum',
+    'Cargo.lock',
+    'Gemfile.lock',
+    'composer.lock',
+    'packages.lock.json', // .NET
+  ];
+
+  const hashes: string[] = [];
+
+  for (const lockfile of lockfiles) {
+    const lockfilePath = join(projectPath, lockfile);
+    if (existsSync(lockfilePath)) {
+      try {
+        const hash = await hashFile(lockfilePath);
+        hashes.push(`${lockfile}:${hash}`);
+      } catch (error) {
+        // File may not be readable, skip
+        console.warn(`Warning: Cannot hash ${lockfile}:`, error);
+      }
+    }
+  }
+
+  // If no lockfiles found, hash is empty
+  if (hashes.length === 0) {
+    return hashContent('no-lockfiles');
+  }
+
+  return hashMultiple(hashes);
 }
 
 /**
  * Hash configuration files
  */
 async function hashConfigs(projectPath: string): Promise<string> {
-  // TODO: Find and hash tsconfig.json, next.config.js, vite.config.ts, etc.
-  throw new Error('Not implemented yet');
+  const configFiles = [
+    'package.json',
+    'tsconfig.json',
+    'next.config.js',
+    'next.config.mjs',
+    'vite.config.ts',
+    'vite.config.js',
+    'webpack.config.js',
+    'nx.json',
+    'turbo.json',
+    'lerna.json',
+    'pyproject.toml',
+    'setup.py',
+    'go.mod',
+    'Cargo.toml',
+    '.eslintrc.json',
+    '.eslintrc.js',
+    'prettier.config.js',
+    '.prettierrc',
+  ];
+
+  const hashes: string[] = [];
+
+  for (const configFile of configFiles) {
+    const configPath = join(projectPath, configFile);
+    if (existsSync(configPath)) {
+      try {
+        const hash = await hashFile(configPath);
+        hashes.push(`${configFile}:${hash}`);
+      } catch (error) {
+        // File may not be readable, skip
+        console.warn(`Warning: Cannot hash ${configFile}:`, error);
+      }
+    }
+  }
+
+  // If no config files found, hash is empty
+  if (hashes.length === 0) {
+    return hashContent('no-configs');
+  }
+
+  return hashMultiple(hashes);
 }
 
 /**
  * Combine component hashes into final fingerprint
  */
 function combineHashes(components: FingerprintResult['components']): string {
-  // TODO: Combine all hashes with schema version for cache invalidation
-  throw new Error('Not implemented yet');
+  const parts: string[] = [
+    `schema:${FINGERPRINT_SCHEMA_VERSION}`,
+    `git:${components.git || 'none'}`,
+    `structure:${components.structure}`,
+    `dependencies:${components.dependencies}`,
+    `configs:${components.configs}`,
+  ];
+
+  return hashContent(parts.join('|'));
 }

@@ -7,6 +7,7 @@ import { addGuidelineCommand } from './commands/add-guideline.js';
 import { removeGuidelineCommand } from './commands/remove-guideline.js';
 import { quickAddCommand } from './commands/quick-add.js';
 import { clearCommand } from './commands/clear.js';
+import { analyzeCommand } from './commands/analyze.js';
 import { showBanner } from './utils/banner.js';
 import { CONFIG } from './config.js';
 
@@ -63,5 +64,14 @@ program
   .description('Remove all AI configurations from the project')
   .option('-f, --force', 'Skip confirmation prompt')
   .action(clearCommand);
+
+program
+  .command('analyze')
+  .description('Run AI-powered codebase analysis')
+  .option('-p, --provider <name>', 'AI provider (claude|openai|gemini)')
+  .option('-s, --strategy <type>', 'Sampling strategy (minimal|balanced|comprehensive)')
+  .option('--no-cache', 'Disable caching')
+  .option('--static-only', 'Run static analysis only (no AI)')
+  .action(analyzeCommand);
 
 program.parse();

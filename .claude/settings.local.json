@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs git tag -d)",
+      "Bash(dist/aicgen.exe --version:*)",
+      "Bash(where:*)"
+    ]
+  }
+}

@@ -11,6 +11,7 @@ import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
 import { selectGuidelines } from './guideline-selector.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 import { ensureDataInitialized } from '../services/first-run-init.js';
+import { input } from '@inquirer/prompts';
 
 
 interface InitOptions {
@@ -19,54 +20,10 @@ interface InitOptions {
   architecture?: string;
   force?: boolean;
   dryRun?: boolean;
+  analyze?: boolean;
 }
 
-const LANGUAGES: { value: Language; name: string }[] = [
-  { value: 'typescript', name: 'TypeScript' },
-  { value: 'javascript', name: 'JavaScript' },
-  { value: 'python', name: 'Python' },
-  { value: 'go', name: 'Go' },
-  { value: 'rust', name: 'Rust' },
-  { value: 'java', name: 'Java' },
-  { value: 'csharp', name: 'C#' },
-  { value: 'ruby', name: 'Ruby' }
-];
-
-const PROJECT_TYPES: { value: ProjectType; name: string; description: string }[] = [
-  { value: 'web', name: 'Web Application', description: 'Frontend or full-stack web app' },
-  { value: 'api', name: 'API / Backend', description: 'REST API, GraphQL, or backend service' },
-  { value: 'cli', name: 'CLI Tool', description: 'Command-line application' },
-  { value: 'library', name: 'Library / Package', description: 'Reusable library or npm/pip package' },
-  { value: 'desktop', name: 'Desktop Application', description: 'Electron, Tauri, or native desktop app' },
-  { value: 'mobile', name: 'Mobile Application', description: 'React Native, Flutter, or native mobile' },
-  { value: 'other', name: 'Other', description: 'Something else' }
-];
-
-const ASSISTANTS: { value: AIAssistant; name: string; description: string }[] = [
-  { value: 'claude-code', name: 'Claude Code', description: 'Anthropic\'s Claude for coding' },
-  { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub\'s AI pair programmer' },
-  { value: 'gemini', name: 'Google Gemini', description: 'Google\'s AI model' },
-  { value: 'antigravity', name: 'Google Antigravity', description: 'Google\'s agentic platform' },
-  { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI\'s code model' }
-];
-
-const ARCHITECTURES: { value: ArchitectureType; name: string; description: string }[] = [
-  { value: 'layered', name: 'Layered', description: 'Simple layers: UI → Business → Data' },
-  { value: 'modular-monolith', name: 'Modular Monolith', description: 'Single deploy with clear module boundaries' },
-  { value: 'microservices', name: 'Microservices', description: 'Independent services with separate deploys' },
-  { value: 'event-driven', name: 'Event-Driven', description: 'Event sourcing, CQRS, message queues' },
-  { value: 'hexagonal', name: 'Hexagonal (Ports & Adapters)', description: 'Business logic isolated from infrastructure' },
-  { value: 'clean-architecture', name: 'Clean Architecture', description: 'Uncle Bob\'s concentric layers with dependency rule' },
-  { value: 'ddd', name: 'Domain-Driven Design', description: 'Bounded contexts, aggregates, domain events' },
-  { value: 'serverless', name: 'Serverless', description: 'FaaS, event triggers, managed services' },
-  { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
-];
-
-const DATASOURCES: { value: DatasourceType; name: string; description: string }[] = [
-  { value: 'sql', name: 'SQL Database', description: 'PostgreSQL, MySQL, SQLite, etc.' },
-  { value: 'nosql', name: 'NoSQL Database', description: 'MongoDB, Redis, DynamoDB, etc.' },
-  { value: 'none', name: 'No Database', description: 'No persistent data storage needed' }
-];
+import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants.js';
 
 export async function initCommand(options: InitOptions) {
   showBanner();
@@ -100,6 +57,73 @@ export async function initCommand(options: InitOptions) {
       { label: 'Name', value: detected.name },
       { label: 'Language', value: detected.language !== 'unknown' ? detected.language : 'Not detected' }
     ]));
+
+    // AI Analysis Flow
+    if (options.analyze || await confirm({ message: 'Run AI Project Analysis to suggest optimal config?', default: true })) {
+        const { ProjectAnalyzer } = await import('../services/project-analyzer.js');
+        const { AIAnalysisService } = await import('../services/ai-analysis-service.js');
+        
+        const analyzer = new ProjectAnalyzer(projectPath);
+        const aiService = new AIAnalysisService();
+        
+        spinner.start('Performing deep analysis...');
+        const context = await analyzer.analyze();
+        spinner.text = 'Consulting AI Architect...';
+        
+        // Check for API Keys
+        let apiKey = process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+        let provider: AIAssistant = 'claude-code'; // Default
+
+        if (process.env.ANTHROPIC_API_KEY) provider = 'claude-code';
+        else if (process.env.GEMINI_API_KEY) provider = 'gemini';
+        else if (process.env.OPENAI_API_KEY) provider = 'codex';
+        else {
+             spinner.stop();
+             console.log(chalk.yellow('\n⚠️  No AI API Keys found in environment.'));
+             const providerChoice = await select({
+                 message: 'Select AI Provider:',
+                 choices: [
+                     { value: 'claude-code', name: 'Claude (Anthropic)' },
+                     { value: 'gemini', name: 'Gemini (Google)' },
+                     { value: 'codex', name: 'OpenAI' }
+                 ]
+             });
+             provider = providerChoice as AIAssistant;
+             
+             // In a real CLI we would use a password prompt, simple input for now
+             const key = await input({ message: 'Enter API Key:' }); 
+             apiKey = key;
+             spinner.start('Consulting AI Architect...');
+        }
+
+        try {
+            const suggestions = await aiService.analyzeProject(context, provider, apiKey!);
+            spinner.succeed('Analysis complete');
+            
+            console.log('\n' + createSummaryBox('🤖 AI Suggestions', [
+                { label: 'Architecture', value: `${suggestions.architecture.pattern} (${Math.round(suggestions.architecture.confidence * 100)}%)` },
+                { label: 'Project Type', value: suggestions.projectType },
+                { label: 'Level', value: suggestions.level },
+                { label: 'Testing', value: suggestions.testingMaturity },
+                { label: 'Reasoning', value: suggestions.reasoning }
+            ]));
+
+            const useSuggestions = await confirm({ message: 'Apply these suggestions?', default: true });
+            if (useSuggestions) {
+                wizard.updateState({
+                    language: suggestions.language,
+                    projectType: suggestions.projectType,
+                    architecture: suggestions.architecture.pattern,
+                    datasource: suggestions.datasource,
+                    level: suggestions.level,
+                    assistant: provider
+                });
+            }
+        } catch (e) {
+            spinner.fail('AI Analysis failed');
+            console.error(chalk.red((e as Error).message));
+        }
+    }
 
 
 

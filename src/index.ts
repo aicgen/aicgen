@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { initCommand } from './commands/init.js';
+import { configureCommand } from './commands/configure.js';
 import { statsCommand } from './commands/stats.js';
 import { updateCommand } from './commands/update.js';
 import { addGuidelineCommand } from './commands/add-guideline.js';
@@ -23,14 +23,13 @@ program
   .version(CONFIG.APP_VERSION);
 
 program
-  .command('init')
-  .description('Initialize AI configuration in current project')
+  .command('configure')
+  .alias('init')
+  .description('Configure AI assistant settings (auto-detects structure)')
   .option('-a, --assistant <name>', 'AI assistant (claude-code|copilot|antigravity)')
-  .option('-l, --level <level>', 'Instruction level (basic|standard|expert|full)')
-  .option('--architecture <type>', 'Architecture (modular-monolith|microservices|refactor|layered)')
+  .option('--analyze', 'Run deep AI analysis')
   .option('-f, --force', 'Overwrite existing configuration')
-  .option('--dry-run', 'Preview files without writing')
-  .action(initCommand);
+  .action(configureCommand);
 
 program
   .command('stats')

@@ -1,6 +1,6 @@
 {
   "name": "@aicgen/aicgen",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "AI Config Generator - Automated AI assistant configuration for your projects",
   "keywords": [
     "ai",
@@ -47,6 +47,7 @@
     "commander": "^12.1.0",
     "decompress": "^4.2.1",
     "decompress-targz": "^4.1.1",
+    "fast-glob": "^3.3.3",
     "ora": "^8.1.1",
     "winston": "^3.19.0",
     "yaml": "^2.6.1"

@@ -31,6 +31,7 @@ program
   .option('--architecture <type>', 'Architecture (modular-monolith|microservices|refactor|layered)')
   .option('-f, --force', 'Overwrite existing configuration')
   .option('--dry-run', 'Preview files without writing')
+  .option('--skip-ai-analysis', 'Skip AI-powered project analysis')
   .action(initCommand);
 
 program

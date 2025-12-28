@@ -11,6 +11,8 @@ import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
 import { selectGuidelines } from './guideline-selector.js';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
 import { ensureDataInitialized } from '../services/first-run-init.js';
+import { isAIAnalysisAvailable } from '../services/ai-analysis-service.js';
+import { runAIDetectionForInit, type AIEnhancedDetection } from '../services/init-ai-integration.js';
 
 
 interface InitOptions {
@@ -19,6 +21,7 @@ interface InitOptions {
   architecture?: string;
   force?: boolean;
   dryRun?: boolean;
+  skipAiAnalysis?: boolean;
 }
 
 const LANGUAGES: { value: Language; name: string }[] = [
@@ -95,11 +98,58 @@ export async function initCommand(options: InitOptions) {
       hasExistingConfig: detected.hasExistingConfig
     });
 
+    // Run AI analysis for enhanced detection
+    let aiDetection: AIEnhancedDetection | undefined;
+    if (!options.skipAiAnalysis && isAIAnalysisAvailable()) {
+      spinner.start('Running AI analysis...');
+
+      try {
+        const aiResult = await runAIDetectionForInit(projectPath, false);
+
+        if (aiResult.available && aiResult.result) {
+          aiDetection = aiResult.result;
+          spinner.succeed(`AI analysis complete (${aiDetection.executionTime}ms)`);
+
+          // Pre-populate wizard with AI insights
+          wizard.updateState({
+            projectType: aiDetection.projectType,
+            architecture: aiDetection.architecture,
+            datasource: aiDetection.datasource
+          });
+        } else {
+          spinner.info('AI analysis skipped');
+        }
+      } catch (error) {
+        spinner.warn('AI analysis failed, continuing with manual setup');
+      }
+    }
+
     // Show detection results in box
-    console.log('\n' + createSummaryBox('📁 Project Detection', [
+    const detectionSummary: Array<{ label: string; value: string }> = [
       { label: 'Name', value: detected.name },
       { label: 'Language', value: detected.language !== 'unknown' ? detected.language : 'Not detected' }
-    ]));
+    ];
+
+    if (aiDetection) {
+      if (aiDetection.projectType) {
+        detectionSummary.push({ label: 'Project Type', value: aiDetection.projectType });
+      }
+      if (aiDetection.architecture) {
+        detectionSummary.push({ label: 'Architecture', value: aiDetection.architecture });
+      }
+      if (aiDetection.frameworks.length > 0) {
+        detectionSummary.push({
+          label: 'Frameworks',
+          value: aiDetection.frameworks.slice(0, 3).join(', ') + (aiDetection.frameworks.length > 3 ? '...' : '')
+        });
+      }
+      if (aiDetection.datasource) {
+        detectionSummary.push({ label: 'Database', value: aiDetection.datasource.toUpperCase() });
+      }
+      detectionSummary.push({ label: 'AI Confidence', value: `${Math.round(aiDetection.confidence * 100)}%` });
+    }
+
+    console.log('\n' + createSummaryBox('📁 Project Detection', detectionSummary));
 
 
 

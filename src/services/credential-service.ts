@@ -1,4 +1,4 @@
-import { AIAssistant } from '../models/project.js';
+import { AIAssistant } from '../models/project';
 
 export class CredentialService {
   

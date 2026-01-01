@@ -1,6 +1,5 @@
-jest.mock('../../config.js');
-import { GuidelineLoader } from '../../services/guideline-loader.js';
-import type { Language, InstructionLevel, ArchitectureType, DatasourceType } from '../../models/profile.js';
+import { GuidelineLoader } from '../../services/guideline-loader';
+import type { Language, InstructionLevel, ArchitectureType, DatasourceType } from '../../models/profile';
 
 describe('GuidelineLoader', () => {
   let loader: GuidelineLoader;
@@ -18,7 +17,7 @@ describe('GuidelineLoader', () => {
 
     it('should have correct guideline count', async () => {
       const stats = loader.getStats();
-      expect(stats.totalGuidelines).toBe(82);
+      expect(stats.totalGuidelines).toBe(86);
     });
 
     it('should have expected categories', async () => {
@@ -262,7 +261,7 @@ describe('GuidelineLoader', () => {
     it('should provide comprehensive stats', async () => {
       const stats = loader.getStats();
 
-      expect(stats.totalGuidelines).toBe(82);
+      expect(stats.totalGuidelines).toBe(86);
       expect(Object.keys(stats.byLanguage).length).toBeGreaterThan(0);
       expect(Object.keys(stats.byLevel).length).toBeGreaterThan(0);
       expect(Object.keys(stats.byArchitecture).length).toBeGreaterThan(0);
@@ -272,10 +271,10 @@ describe('GuidelineLoader', () => {
     it('should have expected level counts', async () => {
       const stats = loader.getStats();
 
-      expect(stats.byLevel['basic']).toBe(17);
-      expect(stats.byLevel['standard']).toBe(68);
-      expect(stats.byLevel['expert']).toBe(82);
-      expect(stats.byLevel['full']).toBe(82);
+      expect(stats.byLevel['basic']).toBe(19);
+      expect(stats.byLevel['standard']).toBe(72);
+      expect(stats.byLevel['expert']).toBe(86);
+      expect(stats.byLevel['full']).toBe(86);
     });
   });
 });

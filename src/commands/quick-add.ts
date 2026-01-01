@@ -4,12 +4,12 @@ import { existsSync } from 'fs';
 import { readFile, writeFile, appendFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import ora from 'ora';
-import { AIAssistant, Language, ProjectType } from '../models/project.js';
-import { GuidelineLoader } from '../services/guideline-loader.js';
-import { showBanner } from '../utils/banner.js';
-import { AssistantFileWriter } from '../services/assistant-file-writer.js';
-import { ProfileSelection, ArchitectureType, InstructionLevel } from '../models/profile.js';
-import { ConfigGenerator } from '../services/config-generator.js';
+import { AIAssistant, Language, ProjectType } from '../models/project';
+import { GuidelineLoader } from '../services/guideline-loader';
+import { showBanner } from '../utils/banner';
+import { AssistantFileWriter } from '../services/assistant-file-writer';
+import { ProfileSelection, ArchitectureType, InstructionLevel } from '../models/profile';
+import { ConfigGenerator } from '../services/config-generator';
 
 interface CheckboxChoice {
   name: string;

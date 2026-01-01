@@ -1,5 +1,6 @@
-export { AIProvider, BaseAIProvider } from './base-provider.js';
-export { ClaudeProvider } from './claude.provider.js';
-export { GeminiProvider } from './gemini.provider.js';
-export { OpenAIProvider } from './openai.provider.js';
-export { ProviderFactory } from './provider.factory.js';
+export {BaseAIProvider} from './base-provider';
+export type { AIProvider } from './base-provider';
+export { ClaudeProvider } from './claude.provider';
+export { GeminiProvider } from './gemini.provider';
+export { OpenAIProvider } from './openai.provider';
+export { ProviderFactory } from './provider.factory';

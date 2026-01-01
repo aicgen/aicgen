@@ -1,5 +1,5 @@
-import { Language, ProjectType, AIAssistant } from '../models/project.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
+import { Language, ProjectType, AIAssistant } from '../models/project';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
 
 export type WizardStep =
   | 'language'

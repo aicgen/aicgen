@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { GuidelineLoader } from '../services/guideline-loader.js';
+import { GuidelineLoader } from '../services/guideline-loader';
 
 export async function statsCommand() {
   console.log(chalk.blue.bold('\n📊 Guideline Statistics\n'));

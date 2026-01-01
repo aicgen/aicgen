@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { configureCommand } from './commands/configure.js';
-import { statsCommand } from './commands/stats.js';
-import { updateCommand } from './commands/update.js';
-import { addGuidelineCommand } from './commands/add-guideline.js';
-import { removeGuidelineCommand } from './commands/remove-guideline.js';
-import { quickAddCommand } from './commands/quick-add.js';
-import { clearCommand } from './commands/clear.js';
-import { showBanner } from './utils/banner.js';
-import { CONFIG } from './config.js';
+import { configureCommand } from './commands/configure';
+import { statsCommand } from './commands/stats';
+import { updateCommand } from './commands/update';
+import { addGuidelineCommand } from './commands/add-guideline';
+import { removeGuidelineCommand } from './commands/remove-guideline';
+import { quickAddCommand } from './commands/quick-add';
+import { clearCommand } from './commands/clear';
+import { showBanner } from './utils/banner';
+import { CONFIG } from './config';
 
 const program = new Command();
 

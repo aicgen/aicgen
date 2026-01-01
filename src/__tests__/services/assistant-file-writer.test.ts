@@ -1,7 +1,6 @@
-jest.mock('../../config.js');
-import { AssistantFileWriter } from '../../services/assistant-file-writer.js';
-import { GuidelineLoader } from '../../services/guideline-loader.js';
-import type { ProfileSelection } from '../../models/profile.js';
+import { AssistantFileWriter } from '../../services/assistant-file-writer';
+import { GuidelineLoader } from '../../services/guideline-loader';
+import type { ProfileSelection } from '../../models/profile';
 
 describe('AssistantFileWriter', () => {
   let writer: AssistantFileWriter;

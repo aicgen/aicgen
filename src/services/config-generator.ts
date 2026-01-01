@@ -1,9 +1,9 @@
 import { join } from 'path';
-import { exists, readJSON } from '../utils/file.js';
-import { GuidelineLoader } from './guideline-loader.js';
-import { AssistantFileWriter } from './assistant-file-writer.js';
-import { DetectedProject, Language } from '../models/project.js';
-import { ProfileSelection } from '../models/profile.js';
+import { exists, readJSON } from '../utils/file';
+import { GuidelineLoader } from './guideline-loader';
+import { AssistantFileWriter } from './assistant-file-writer';
+import { DetectedProject, Language } from '../models/project';
+import { ProfileSelection } from '../models/profile';
 
 export interface GenerationOptions {
   projectPath: string;

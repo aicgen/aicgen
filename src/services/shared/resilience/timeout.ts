@@ -1,4 +1,4 @@
-import { TimeoutError } from '../errors/index.js';
+import { TimeoutError } from '../errors/index';
 
 /**
  * Execute an async operation with a timeout

@@ -1,4 +1,4 @@
-import { AppError } from './base.error.js';
+import { AppError } from './base.error';
 
 /**
  * Error thrown when validation fails

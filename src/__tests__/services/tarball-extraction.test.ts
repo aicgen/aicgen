@@ -1,5 +1,4 @@
-jest.mock('../../config.js');
-import { CONFIG } from '../../config.js';
+import { CONFIG } from '../../config';
 
 describe('Tarball Extraction Configuration', () => {
   describe('CONFIG-based Prefix', () => {

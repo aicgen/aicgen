@@ -1,10 +1,10 @@
 import { checkbox } from '@inquirer/prompts';
 import chalk from 'chalk';
-import { Language } from '../models/project.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
-import { GuidelineLoader } from '../services/guideline-loader.js';
-import { showCheckboxInstructions } from '../utils/banner.js';
-import { BACK_VALUE } from '../utils/wizard-state.js';
+import { Language } from '../models/project';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { GuidelineLoader } from '../services/guideline-loader';
+import { showCheckboxInstructions } from '../utils/banner';
+import { BACK_VALUE } from '../utils/wizard-state';
 
 interface CheckboxChoice {
   name: string;

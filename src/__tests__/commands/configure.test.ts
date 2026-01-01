@@ -1,6 +1,4 @@
-jest.mock('../../config.js');
-
-import type { ProfileSelection } from '../../models/profile.js';
+import type { ProfileSelection } from '../../models/profile';
 
 describe('Configure Command Logic', () => {
   describe('Profile Validation', () => {

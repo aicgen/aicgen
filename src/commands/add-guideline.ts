@@ -4,12 +4,12 @@ import { homedir } from 'os';
 import { join, dirname } from 'path';
 import { mkdir, writeFile, readFile, access } from 'fs/promises';
 import YAML from 'yaml';
-import { GuidelineLoader, GuidelineMapping } from '../services/guideline-loader.js';
-import { showBanner } from '../utils/banner.js';
-import { createSummaryBox } from '../utils/formatting.js';
-import { Language } from '../models/project.js';
-import { InstructionLevel, ArchitectureType } from '../models/profile.js';
-import { CONFIG } from '../config.js';
+import { GuidelineLoader, GuidelineMapping } from '../services/guideline-loader';
+import { showBanner } from '../utils/banner';
+import { createSummaryBox } from '../utils/formatting';
+import { Language } from '../models/project';
+import { InstructionLevel, ArchitectureType } from '../models/profile';
+import { CONFIG } from '../config';
 
 
 const LANGUAGES: { value: Language; name: string }[] = [

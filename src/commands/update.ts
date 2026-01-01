@@ -3,9 +3,9 @@ import chalk from 'chalk';
 import { homedir } from 'os';
 import { join } from 'path';
 import { mkdir, writeFile, rm, readdir, cp } from 'fs/promises';
-import { GuidelineLoader } from '../services/guideline-loader.js';
-import { createSummaryBox } from '../utils/formatting.js';
-import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
+import { GuidelineLoader } from '../services/guideline-loader';
+import { createSummaryBox } from '../utils/formatting';
+import { CONFIG, GITHUB_RELEASES_URL } from '../config';
 
 const DOWNLOAD_TIMEOUT_MS = 30000;
 const MAX_TARBALL_SIZE_BYTES = 10 * 1024 * 1024;

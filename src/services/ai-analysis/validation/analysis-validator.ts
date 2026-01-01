@@ -1,7 +1,7 @@
-import { AnalysisResult } from '../../ai-analysis-service.js';
-import { ValidationError, ValidationErrors } from '../../shared/errors/index.js';
-import { Language, ProjectType } from '../../../models/project.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../../../models/profile.js';
+import { AnalysisResult } from '../../ai-analysis-service';
+import { ValidationError, ValidationErrors } from '../../shared/errors/index';
+import { Language, ProjectType } from '../../../models/project';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../../../models/profile';
 
 /**
  * Validator for AI analysis results

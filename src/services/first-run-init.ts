@@ -3,8 +3,8 @@ import { join } from 'path';
 import { homedir } from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
-import { ConfigManager } from './config-manager.js';
+import { CONFIG, GITHUB_RELEASES_URL } from '../config';
+import { ConfigManager } from './config-manager';
 
 const DOWNLOAD_TIMEOUT_MS = 30000; // 30 seconds
 const MAX_TARBALL_SIZE_BYTES = 10 * 1024 * 1024; // 10MB max

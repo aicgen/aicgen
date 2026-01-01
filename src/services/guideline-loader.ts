@@ -1,6 +1,6 @@
-import { GuidelineMapping } from '../embedded-data.js';
-import { Language } from '../models/project.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
+import { GuidelineMapping } from '../embedded-data';
+import { Language } from '../models/project';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
 import { homedir } from 'os';
 import { join } from 'path';
 import {
@@ -10,8 +10,8 @@ import {
   CustomMappingsDataSource,
   EmbeddedDataSource,
   GuidelineData
-} from './data-source.js';
-import { CONFIG } from '../config.js';
+} from './data-source';
+import { CONFIG } from '../config';
 
 export type { GuidelineMapping };
 

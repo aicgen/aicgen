@@ -5,10 +5,10 @@ import { join } from 'path';
 import { readFile, writeFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import YAML from 'yaml';
-import { CONFIG } from '../config.js';
-import { showBanner } from '../utils/banner.js';
-import { addBackOption, BACK_VALUE } from '../utils/wizard-state.js';
-import { GuidelineMapping } from '../services/guideline-loader.js';
+import { CONFIG } from '../config';
+import { showBanner } from '../utils/banner';
+import { addBackOption, BACK_VALUE } from '../utils/wizard-state';
+import { GuidelineMapping } from '../services/guideline-loader';
 
 export async function removeGuidelineCommand() {
   showBanner();

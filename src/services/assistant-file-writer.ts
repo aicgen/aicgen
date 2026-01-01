@@ -1,10 +1,10 @@
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
-import { AIAssistant } from '../models/project.js';
-import { ProfileSelection } from '../models/profile.js';
-import { GuidelineLoader } from './guideline-loader.js';
-import { HookGenerator } from './hook-generator.js';
-import { SubAgentGenerator } from './subagent-generator.js';
+import { AIAssistant } from '../models/project';
+import { ProfileSelection } from '../models/profile';
+import { GuidelineLoader } from './guideline-loader';
+import { HookGenerator } from './hook-generator';
+import { SubAgentGenerator } from './subagent-generator';
 
 export interface GeneratedFile {
   path: string;

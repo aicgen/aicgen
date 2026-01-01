@@ -1,5 +1,5 @@
-import { retry, createRetrier } from './retry.js';
-import { RateLimitError, TimeoutError } from '../errors/index.js';
+import { retry, createRetrier } from './retry';
+import { RateLimitError, TimeoutError } from '../errors/index';
 
 describe('Retry Logic', () => {
   describe('retry()', () => {

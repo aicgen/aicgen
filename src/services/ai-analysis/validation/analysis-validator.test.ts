@@ -1,5 +1,5 @@
-import { AnalysisValidator } from './analysis-validator.js';
-import { ValidationError, ValidationErrors } from '../../shared/errors/index.js';
+import { AnalysisValidator } from './analysis-validator';
+import { ValidationError, ValidationErrors } from '../../shared/errors/index';
 
 describe('AnalysisValidator', () => {
   let validator: AnalysisValidator;

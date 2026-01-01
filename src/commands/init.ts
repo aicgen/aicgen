@@ -1,16 +1,16 @@
 import { select, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
-import { ConfigGenerator } from '../services/config-generator.js';
-import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
-import { AIAssistant, Language, ProjectType } from '../models/project.js';
-import { GuidelineLoader } from '../services/guideline-loader.js';
-import { showBanner, showInstructions } from '../utils/banner.js';
-import { WizardStateManager, BACK_VALUE, addBackOption } from '../utils/wizard-state.js';
-import { createSummaryBox, createMetricsBox } from '../utils/formatting.js';
-import { selectGuidelines } from './guideline-selector.js';
-import { CONFIG, GITHUB_RELEASES_URL } from '../config.js';
-import { ensureDataInitialized } from '../services/first-run-init.js';
+import { ConfigGenerator } from '../services/config-generator';
+import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { AIAssistant, Language, ProjectType } from '../models/project';
+import { GuidelineLoader } from '../services/guideline-loader';
+import { showBanner, showInstructions } from '../utils/banner';
+import { WizardStateManager, BACK_VALUE, addBackOption } from '../utils/wizard-state';
+import { createSummaryBox, createMetricsBox } from '../utils/formatting';
+import { selectGuidelines } from './guideline-selector';
+import { CONFIG, GITHUB_RELEASES_URL } from '../config';
+import { ensureDataInitialized } from '../services/first-run-init';
 import { input } from '@inquirer/prompts';
 
 
@@ -23,7 +23,7 @@ interface InitOptions {
   analyze?: boolean;
 }
 
-import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants.js';
+import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants';
 
 export async function initCommand(options: InitOptions) {
   showBanner();
@@ -61,11 +61,11 @@ export async function initCommand(options: InitOptions) {
     // AI Analysis Flow
     if (options.analyze || await confirm({ message: 'Run AI Project Analysis to suggest optimal config?', default: true })) {
         const { ProjectAnalyzer } = await import('../services/project-analyzer.js');
-        const { AIAnalysisServiceRefactored } = await import('../services/ai-analysis/core/ai-analysis-refactored.service.js');
+        const { AIAnalysisService } = await import('../services/ai-analysis/ai-analysis.service.js');
         const { TimeoutError, InvalidCredentialsError, ValidationErrors } = await import('../services/shared/errors/index.js');
 
         const analyzer = new ProjectAnalyzer(projectPath);
-        const aiService = new AIAnalysisServiceRefactored({
+        const aiService = new AIAnalysisService({
             timeoutMs: 30000,
             maxRetries: 3,
             initialRetryDelayMs: 1000

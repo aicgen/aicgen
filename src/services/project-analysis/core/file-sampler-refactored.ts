@@ -1,7 +1,7 @@
 import { join } from 'path';
-import { readFile } from '../../../utils/file.js';
-import { ProjectMetadata } from '../../project-analyzer.js';
-import { createLogger } from '../../shared/logging/logger.js';
+import { readFile } from '../../../utils/file';
+import { ProjectMetadata } from '../../project-analyzer';
+import { createLogger } from '../../shared/logging/logger';
 
 export interface FileSample {
   path: string;

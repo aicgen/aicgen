@@ -1,5 +1,5 @@
-import { AIAssistant, Language, ProjectType } from './models/project.js';
-import { ArchitectureType, DatasourceType } from './models/profile.js';
+import { AIAssistant, Language, ProjectType } from './models/project';
+import { ArchitectureType, DatasourceType } from './models/profile';
 
 export const LANGUAGES: { value: Language; name: string }[] = [
   { value: 'typescript', name: 'TypeScript' },

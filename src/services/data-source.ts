@@ -1,7 +1,7 @@
 import { readFile, readdir, access } from 'fs/promises';
 import { join } from 'path';
 import YAML from 'yaml';
-import { EMBEDDED_DATA, GuidelineMapping } from '../embedded-data.js';
+import { EMBEDDED_DATA, GuidelineMapping } from '../embedded-data';
 
 export interface GuidelineData {
   mappings: Record<string, GuidelineMapping>;

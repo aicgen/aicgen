@@ -1,5 +1,5 @@
-import { withTimeout, withAbortTimeout, createTimeoutWrapper } from './timeout.js';
-import { TimeoutError } from '../errors/index.js';
+import { withTimeout, withAbortTimeout, createTimeoutWrapper } from './timeout';
+import { TimeoutError } from '../errors/index';
 
 describe('Timeout Handling', () => {
   describe('withTimeout()', () => {

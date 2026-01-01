@@ -1,21 +1,36 @@
-import { AnalysisContext } from '../../project-analyzer.js';
-import { BaseAIProvider } from './base-provider.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AnalysisContext } from '../../project-analyzer';
+import { BaseAIProvider } from './base-provider';
+import { TimeoutError } from '../../shared/errors';
 
 export class GeminiProvider extends BaseAIProvider {
-  async analyze(_context: AnalysisContext, prompt: string): Promise<string> {
-    const response = await this.fetchWithErrorHandling(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      },
-      'Gemini'
-    );
+  private client: GoogleGenerativeAI;
 
-    const data = await response.json() as { candidates: { content: { parts: { text: string }[] } }[] };
-    return data.candidates[0].content.parts[0].text;
+  constructor(apiKey: string, options: { timeout?: number; maxRetries?: number } = {}) {
+    super(apiKey, options);
+    this.client = new GoogleGenerativeAI(apiKey);
+  }
+
+  async analyze(_context: AnalysisContext, prompt: string): Promise<string> {
+    try {
+      const model = this.client.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json'
+        }
+      });
+
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      return response.text();
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('timeout') || error.message.includes('timed out')) {
+          throw new TimeoutError('Gemini', this.options.timeout);
+        }
+        throw new Error(`Gemini API error: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }

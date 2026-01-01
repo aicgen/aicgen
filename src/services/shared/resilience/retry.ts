@@ -1,4 +1,4 @@
-import { RateLimitError, TimeoutError } from '../errors/index.js';
+import { RateLimitError, TimeoutError } from '../errors/index';
 
 /**
  * Backoff strategy for retries

@@ -1,16 +1,16 @@
 import { select, confirm, input } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
-import { ConfigGenerator } from '../services/config-generator.js';
-import { ProjectAnalyzer } from '../services/project-analyzer.js';
-import { AIAnalysisServiceRefactored } from '../services/ai-analysis/core/ai-analysis-refactored.service.js';
-import { CredentialService } from '../services/credential-service.js';
-import { AIAssistant, Language, ProjectType } from '../models/project.js';
-import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
-import { showBanner } from '../utils/banner.js';
-import { createSummaryBox } from '../utils/formatting.js';
-import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants.js';
-import { TimeoutError, InvalidCredentialsError, ValidationErrors } from '../services/shared/errors/index.js';
+import { ConfigGenerator } from '../services/config-generator';
+import { ProjectAnalyzer } from '../services/project-analyzer';
+import { AIAnalysisService } from '../services/ai-analysis/ai-analysis.service';
+import { CredentialService } from '../services/credential-service';
+import { AIAssistant, Language, ProjectType } from '../models/project';
+import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { showBanner } from '../utils/banner';
+import { createSummaryBox } from '../utils/formatting';
+import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants';
+import { TimeoutError, InvalidCredentialsError, ValidationErrors } from '../services/shared/errors/index';
 
 interface ConfigureOptions {
   analyze?: boolean;
@@ -25,7 +25,7 @@ export async function configureCommand(options: ConfigureOptions) {
   const analyzer = new ProjectAnalyzer(projectPath);
   const generator = await ConfigGenerator.create();
   const credService = new CredentialService();
-  const aiService = new AIAnalysisServiceRefactored({
+  const aiService = new AIAnalysisService({
     timeoutMs: 30000,
     maxRetries: 3,
     initialRetryDelayMs: 1000

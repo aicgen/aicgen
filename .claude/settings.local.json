@@ -5,7 +5,8 @@
       "Bash(dist/aicgen.exe --version:*)",
       "Bash(where:*)",
       "Bash(xargs:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(find:*)"
     ]
   }
 }

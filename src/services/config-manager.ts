@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir, access } from 'fs/promises';
 import { join } from 'path';
 import { homedir } from 'os';
 import YAML from 'yaml';
-import { CONFIG } from '../config.js';
+import { CONFIG } from '../config';
 
 export interface UserConfig {
   initialized?: boolean;

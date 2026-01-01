@@ -1,7 +1,7 @@
 import glob from 'fast-glob';
 import { join } from 'path';
-import { readFile, exists } from '../utils/file.js';
-import { Language } from '../models/project.js';
+import { readFile, exists } from '../utils/file';
+import { Language } from '../models/project';
 import { createHash } from 'crypto';
 
 export interface ProjectMetadata {

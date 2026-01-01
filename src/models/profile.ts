@@ -1,4 +1,4 @@
-import { AIAssistant, Language, ProjectType } from './project.js';
+import { AIAssistant, Language, ProjectType } from './project';
 
 export type InstructionLevel = 'basic' | 'standard' | 'expert' | 'full';
 export type ArchitectureType =

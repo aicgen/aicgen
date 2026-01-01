@@ -1,9 +1,9 @@
-import { AnalysisContext } from './project-analyzer.js';
-import { AIAssistant, Language, ProjectType } from '../models/project.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
-import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants.js';
-import { AIProvider } from './ai-analysis/providers/index.js';
-import { ProviderFactory } from './ai-analysis/providers/index.js';
+import { AnalysisContext } from './project-analyzer';
+import { AIAssistant, Language, ProjectType } from '../models/project';
+import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants';
+import { AIProvider } from './ai-analysis/providers/index';
+import { ProviderFactory } from './ai-analysis/providers/index';
 
 export interface AnalysisResult {
   architecture: {

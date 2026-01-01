@@ -3,7 +3,7 @@
 ## Project Overview
 
 **Language:** typescript
-**Type:** cli
+**Type:** other
 
 ## Development Guidelines
 
@@ -15,17 +15,11 @@ This project follows structured coding guidelines across multiple categories:
   - async
   - interfaces-types
 
-### Architecture
-
-  - boundaries
-  - communication
-  - data
-
 ### Testing
 
   - unit-fundamentals
   - unit-mocking
-  - integration
+  - basics
 
 ### Security
 
@@ -36,7 +30,6 @@ This project follows structured coding guidelines across multiple categories:
 ### Performance
 
   - basics
-  - caching
   - async
 
 ### API Design
@@ -55,10 +48,15 @@ This project follows structured coding guidelines across multiple categories:
   - strategy
   - basics
 
+### Architecture
+
+  - principles
+  - patterns
+  - patterns
+
 ### DevOps
 
   - ci-cd
-  - practices
   - observability
 
 ### Best Practices
@@ -70,8 +68,8 @@ This project follows structured coding guidelines across multiple categories:
 ### Design Patterns
 
   - base-patterns
-  - concurrency
   - data-access
+  - domain-logic
 
 
 ## Commands

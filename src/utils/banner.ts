@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { CONFIG } from '../config.js';
+import { CONFIG } from '../config';
 
 // Color palette matching logo.svg
 const colors = {

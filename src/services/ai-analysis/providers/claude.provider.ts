@@ -1,27 +1,41 @@
-import { AnalysisContext } from '../../project-analyzer.js';
-import { BaseAIProvider } from './base-provider.js';
+import Anthropic from '@anthropic-ai/sdk';
+import { AnalysisContext } from '../../project-analyzer';
+import { BaseAIProvider } from './base-provider';
+import { TimeoutError } from '../../shared/errors';
 
 export class ClaudeProvider extends BaseAIProvider {
-  async analyze(_context: AnalysisContext, prompt: string): Promise<string> {
-    const response = await this.fetchWithErrorHandling(
-      'https://api.anthropic.com/v1/messages',
-      {
-        method: 'POST',
-        headers: {
-          'x-api-key': this.apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      },
-      'Claude'
-    );
+  private client: Anthropic;
 
-    const data = await response.json() as { content: { text: string }[] };
-    return data.content[0].text;
+  constructor(apiKey: string, options: { timeout?: number; maxRetries?: number } = {}) {
+    super(apiKey, options);
+    this.client = new Anthropic({
+      apiKey,
+      timeout: options.timeout || 30000,
+      maxRetries: options.maxRetries || 3
+    });
+  }
+
+  async analyze(_context: AnalysisContext, prompt: string): Promise<string> {
+    try {
+      const message = await this.client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 8096,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const content = message.content[0];
+      if (content.type === 'text') {
+        return content.text;
+      }
+      throw new Error('Unexpected response format from Claude');
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('timeout') || error.message.includes('timed out')) {
+          throw new TimeoutError('Claude', this.options.timeout);
+        }
+        throw new Error(`Claude API error: ${error.message}`);
+      }
+      throw error;
+    }
   }
 }

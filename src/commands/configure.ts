@@ -3,13 +3,14 @@ import ora from 'ora';
 import chalk from 'chalk';
 import { ConfigGenerator } from '../services/config-generator.js';
 import { ProjectAnalyzer } from '../services/project-analyzer.js';
-import { AIAnalysisService } from '../services/ai-analysis-service.js';
+import { AIAnalysisServiceRefactored } from '../services/ai-analysis/core/ai-analysis-refactored.service.js';
 import { CredentialService } from '../services/credential-service.js';
 import { AIAssistant, Language, ProjectType } from '../models/project.js';
 import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile.js';
 import { showBanner } from '../utils/banner.js';
 import { createSummaryBox } from '../utils/formatting.js';
 import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants.js';
+import { TimeoutError, InvalidCredentialsError, ValidationErrors } from '../services/shared/errors/index.js';
 
 interface ConfigureOptions {
   analyze?: boolean;
@@ -24,7 +25,11 @@ export async function configureCommand(options: ConfigureOptions) {
   const analyzer = new ProjectAnalyzer(projectPath);
   const generator = await ConfigGenerator.create();
   const credService = new CredentialService();
-  const aiService = new AIAnalysisService();
+  const aiService = new AIAnalysisServiceRefactored({
+    timeoutMs: 30000,
+    maxRetries: 3,
+    initialRetryDelayMs: 1000
+  });
 
   // Tier 1 Analysis
   const analysisContext = await analyzer.analyze();
@@ -97,14 +102,14 @@ export async function configureCommand(options: ConfigureOptions) {
       try {
           const suggestions = await aiService.analyzeProject(analysisContext, provider, apiKey);
           spinner.succeed('AI Analysis Complete');
-          
+
           console.log('\n' + createSummaryBox('🤖 AI Suggestions', [
                 { label: 'Architecture', value: `${suggestions.architecture.pattern} (${Math.round(suggestions.architecture.confidence * 100)}%)` },
                 { label: 'Project Type', value: suggestions.projectType },
                 { label: 'Level', value: suggestions.level },
                 { label: 'Testing', value: suggestions.testingMaturity },
           ]));
-          
+
           if (await confirm({ message: 'Apply suggestions?', default: true })) {
               finalSelection = {
                   ...finalSelection,
@@ -117,7 +122,16 @@ export async function configureCommand(options: ConfigureOptions) {
           }
       } catch (e) {
           spinner.fail('AI Analysis Failed');
-          console.error((e as Error).message);
+          if (e instanceof InvalidCredentialsError) {
+              console.error(chalk.red('Invalid API key. Please check your credentials.'));
+          } else if (e instanceof TimeoutError) {
+              console.error(chalk.red('Analysis timed out. Please try again.'));
+          } else if (e instanceof ValidationErrors) {
+              console.error(chalk.red('AI returned invalid response:'));
+              e.errors.forEach(err => console.error(chalk.gray(`  - ${err}`)));
+          } else {
+              console.error(chalk.red((e as Error).message));
+          }
       }
   } else {
       // Manual Fallback (Wizard)

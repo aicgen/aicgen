@@ -61,10 +61,15 @@ export async function initCommand(options: InitOptions) {
     // AI Analysis Flow
     if (options.analyze || await confirm({ message: 'Run AI Project Analysis to suggest optimal config?', default: true })) {
         const { ProjectAnalyzer } = await import('../services/project-analyzer.js');
-        const { AIAnalysisService } = await import('../services/ai-analysis-service.js');
-        
+        const { AIAnalysisServiceRefactored } = await import('../services/ai-analysis/core/ai-analysis-refactored.service.js');
+        const { TimeoutError, InvalidCredentialsError, ValidationErrors } = await import('../services/shared/errors/index.js');
+
         const analyzer = new ProjectAnalyzer(projectPath);
-        const aiService = new AIAnalysisService();
+        const aiService = new AIAnalysisServiceRefactored({
+            timeoutMs: 30000,
+            maxRetries: 3,
+            initialRetryDelayMs: 1000
+        });
         
         spinner.start('Performing deep analysis...');
         const context = await analyzer.analyze();
@@ -99,7 +104,7 @@ export async function initCommand(options: InitOptions) {
         try {
             const suggestions = await aiService.analyzeProject(context, provider, apiKey!);
             spinner.succeed('Analysis complete');
-            
+
             console.log('\n' + createSummaryBox('🤖 AI Suggestions', [
                 { label: 'Architecture', value: `${suggestions.architecture.pattern} (${Math.round(suggestions.architecture.confidence * 100)}%)` },
                 { label: 'Project Type', value: suggestions.projectType },
@@ -121,7 +126,16 @@ export async function initCommand(options: InitOptions) {
             }
         } catch (e) {
             spinner.fail('AI Analysis failed');
-            console.error(chalk.red((e as Error).message));
+            if (e instanceof InvalidCredentialsError) {
+                console.error(chalk.red('Invalid API key. Please check your credentials.'));
+            } else if (e instanceof TimeoutError) {
+                console.error(chalk.red('Analysis timed out. Please try again.'));
+            } else if (e instanceof ValidationErrors) {
+                console.error(chalk.red('AI returned invalid response:'));
+                e.errors.forEach(err => console.error(chalk.gray(`  - ${err}`)));
+            } else {
+                console.error(chalk.red((e as Error).message));
+            }
         }
     }
 

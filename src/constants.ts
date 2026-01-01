@@ -9,7 +9,8 @@ export const LANGUAGES: { value: Language; name: string }[] = [
   { value: 'rust', name: 'Rust' },
   { value: 'java', name: 'Java' },
   { value: 'csharp', name: 'C#' },
-  { value: 'ruby', name: 'Ruby' }
+  { value: 'ruby', name: 'Ruby' },
+  { value: 'dart', name: 'Dart' }
 ];
 
 export const PROJECT_TYPES: { value: ProjectType; name: string; description: string }[] = [

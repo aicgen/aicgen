@@ -3,7 +3,9 @@
     "allow": [
       "Bash(xargs git tag -d)",
       "Bash(dist/aicgen.exe --version:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(xargs:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

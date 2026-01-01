@@ -7,6 +7,7 @@ export type Language =
   | 'java'
   | 'csharp'
   | 'ruby'
+  | 'dart'
   | 'unknown';
 
 export type ProjectType =
@@ -34,6 +35,7 @@ export type PackageManager =
   | 'poetry'
   | 'cargo'
   | 'go'
+  | 'pub'
   | 'unknown';
 
 export interface DetectedProject {

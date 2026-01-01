@@ -1,29 +1,29 @@
-import { describe, test, expect } from 'bun:test';
+jest.mock('../../config.js');
 import { CONFIG } from '../../config.js';
 
 describe('Tarball Extraction Configuration', () => {
   describe('CONFIG-based Prefix', () => {
-    test('should have correct GitHub owner configured', () => {
+    it('should have correct GitHub owner configured', () => {
       expect(CONFIG.GITHUB_REPO_OWNER).toBe('aicgen');
     });
 
-    test('should have correct GitHub repo configured', () => {
+    it('should have correct GitHub repo configured', () => {
       expect(CONFIG.GITHUB_REPO_NAME).toBe('aicgen-data');
     });
 
-    test('should construct correct expected prefix', () => {
+    it('should construct correct expected prefix', () => {
       const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
       expect(expectedPrefix).toBe('aicgen-aicgen-data-');
     });
 
-    test('should not use hardcoded lpsandaruwan prefix', () => {
+    it('should not use hardcoded lpsandaruwan prefix', () => {
       const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
       expect(expectedPrefix).not.toBe('lpsandaruwan-aicgen-docs-');
     });
   });
 
   describe('Directory Name Matching', () => {
-    test('should match correct tarball directory format', () => {
+    it('should match correct tarball directory format', () => {
       const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
       const sampleDirectories = [
         'aicgen-aicgen-data-abc123',
@@ -36,7 +36,7 @@ describe('Tarball Extraction Configuration', () => {
       });
     });
 
-    test('should not match incorrect directory formats', () => {
+    it('should not match incorrect directory formats', () => {
       const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
       const incorrectDirectories = [
         'lpsandaruwan-aicgen-docs-abc123',
@@ -49,7 +49,7 @@ describe('Tarball Extraction Configuration', () => {
       });
     });
 
-    test('should find correct directory in mixed entries', () => {
+    it('should find correct directory in mixed entries', () => {
       const expectedPrefix = `${CONFIG.GITHUB_REPO_OWNER}-${CONFIG.GITHUB_REPO_NAME}-`;
       const entries = [
         'archive.tar.gz',
@@ -64,40 +64,40 @@ describe('Tarball Extraction Configuration', () => {
   });
 
   describe('GitHub API URLs', () => {
-    test('should construct correct releases URL', () => {
+    it('should construct correct releases URL', () => {
       const repoUrl = `${CONFIG.GITHUB_API_BASE}/repos/${CONFIG.GITHUB_REPO_OWNER}/${CONFIG.GITHUB_REPO_NAME}`;
       expect(repoUrl).toBe('https://api.github.com/repos/aicgen/aicgen-data');
     });
 
-    test('should construct correct releases latest URL', () => {
+    it('should construct correct releases latest URL', () => {
       const releasesUrl = `${CONFIG.GITHUB_API_BASE}/repos/${CONFIG.GITHUB_REPO_OWNER}/${CONFIG.GITHUB_REPO_NAME}/releases/latest`;
       expect(releasesUrl).toBe('https://api.github.com/repos/aicgen/aicgen-data/releases/latest');
     });
   });
 
   describe('Cache Directory Structure', () => {
-    test('should have correct cache directory name', () => {
+    it('should have correct cache directory name', () => {
       expect(CONFIG.CACHE_DIR_NAME).toBe('.aicgen');
     });
 
-    test('should have correct data directory name', () => {
+    it('should have correct data directory name', () => {
       expect(CONFIG.DATA_DIR).toBe('data');
     });
 
-    test('should have correct cache subdirectory', () => {
+    it('should have correct cache subdirectory', () => {
       expect(CONFIG.CACHE_DIR).toBe('cache/official');
     });
   });
 
   describe('Version Management', () => {
-    test('should have valid version format', () => {
+    it('should have valid version format', () => {
       const version = CONFIG.APP_VERSION;
       // Valid version: X.Y.Z-prerelease or X.Y-prerelease (e.g., "1.0.0-beta.1" or "1.0-beta")
       const versionPattern = /^\d+\.\d+(\.\d+)?(-[a-z0-9.]+)?$/i;
       expect(versionPattern.test(version)).toBe(true);
     });
 
-    test('should not have invalid version patterns', () => {
+    it('should not have invalid version patterns', () => {
       const version = CONFIG.APP_VERSION;
       // Should not match invalid patterns like "0.1.0b1" or "0.1b"
       expect(version).not.toMatch(/\d+\.\d+\.\d+b\d*/);
@@ -106,7 +106,7 @@ describe('Tarball Extraction Configuration', () => {
   });
 
   describe('Environment Variable Override', () => {
-    test('should allow GitHub owner override via env', () => {
+    it('should allow GitHub owner override via env', () => {
       // This tests that the priority system exists (ENV > Config > Default)
       // Actual override would need to be tested in integration tests
       const hasEnvSupport = CONFIG.GITHUB_REPO_OWNER === (
@@ -115,7 +115,7 @@ describe('Tarball Extraction Configuration', () => {
       expect(hasEnvSupport).toBe(true);
     });
 
-    test('should allow GitHub repo override via env', () => {
+    it('should allow GitHub repo override via env', () => {
       const hasEnvSupport = CONFIG.GITHUB_REPO_NAME === (
         process.env.AICGEN_GITHUB_REPO || 'aicgen-data'
       );

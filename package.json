@@ -35,7 +35,9 @@
     "build:all": "bun run build:binary:windows && bun run build:binary:linux && bun run build:binary:macos",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
-    "test": "bun test",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src"
@@ -55,11 +57,14 @@
   "devDependencies": {
     "@types/bun": "^1.1.13",
     "@types/decompress": "^4.2.7",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.17.9",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.1",
+    "jest": "^30.2.0",
     "prettier": "^3.4.2",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.7.2"
   }
 }

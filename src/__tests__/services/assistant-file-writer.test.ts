@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from 'bun:test';
+jest.mock('../../config.js');
 import { AssistantFileWriter } from '../../services/assistant-file-writer.js';
 import { GuidelineLoader } from '../../services/guideline-loader.js';
 import type { ProfileSelection } from '../../models/profile.js';
@@ -22,7 +22,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Claude Code Files', () => {
-    test('should generate files for Claude Code', async () => {
+    it('should generate files for Claude Code', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -43,7 +43,7 @@ describe('AssistantFileWriter', () => {
       expect(files.some(f => f.path.endsWith('settings.json'))).toBe(true);
     });
 
-    test('should create separate guideline files by category', async () => {
+    it('should create separate guideline files by category', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -65,7 +65,7 @@ describe('AssistantFileWriter', () => {
       expect(guidelineFiles.some(f => f.path.includes('language.md'))).toBe(true);
     });
 
-    test('should create CLAUDE.md with references not content', async () => {
+    it('should create CLAUDE.md with references not content', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -86,7 +86,7 @@ describe('AssistantFileWriter', () => {
       expect(claudeFile!.content).toContain('## Guidelines');
     });
 
-    test('should concatenate guidelines within each category file', async () => {
+    it('should concatenate guidelines within each category file', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         'full', // Use full to get more guidelines
@@ -108,7 +108,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Copilot Files', () => {
-    test('should generate files for GitHub Copilot', async () => {
+    it('should generate files for GitHub Copilot', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -128,7 +128,7 @@ describe('AssistantFileWriter', () => {
       expect(files.some(f => f.path.includes('.github') && f.path.includes('instructions'))).toBe(true);
     });
 
-    test('should create instruction files with frontmatter', async () => {
+    it('should create instruction files with frontmatter', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -153,7 +153,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Gemini Files', () => {
-    test('should generate single instructions file for Gemini', async () => {
+    it('should generate single instructions file for Gemini', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -172,7 +172,7 @@ describe('AssistantFileWriter', () => {
       expect(files.some(f => f.path.includes('.gemini') && f.path.includes('instructions.md'))).toBe(true);
     });
 
-    test('should inline all guidelines in Gemini file', async () => {
+    it('should inline all guidelines in Gemini file', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -195,7 +195,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Antigravity Files', () => {
-    test('should generate files for Antigravity', async () => {
+    it('should generate files for Antigravity', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -216,7 +216,7 @@ describe('AssistantFileWriter', () => {
       expect(files.some(f => f.path.includes('.agent') && f.path.includes('workflows'))).toBe(true);
     });
 
-    test('should create workflow files based on level', async () => {
+    it('should create workflow files based on level', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         'expert',
@@ -235,7 +235,7 @@ describe('AssistantFileWriter', () => {
       expect(workflowFiles.length).toBeGreaterThan(2); // Expert should have more workflows
     });
 
-    test('should create rule index with references', async () => {
+    it('should create rule index with references', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -258,7 +258,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Codex Files', () => {
-    test('should generate single instructions file for Codex', async () => {
+    it('should generate single instructions file for Codex', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -279,7 +279,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Universal AGENTS.md', () => {
-    test('should generate AGENTS.md for all assistants', async () => {
+    it('should generate AGENTS.md for all assistants', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -312,7 +312,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('File Paths', () => {
-    test('should prepend project path to all file paths', async () => {
+    it('should prepend project path to all file paths', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -335,7 +335,7 @@ describe('AssistantFileWriter', () => {
   });
 
   describe('Content Validation', () => {
-    test('all generated files should have non-empty content', async () => {
+    it('all generated files should have non-empty content', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -356,7 +356,7 @@ describe('AssistantFileWriter', () => {
       });
     });
 
-    test('should include project name in main files', async () => {
+    it('should include project name in main files', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,
@@ -376,7 +376,7 @@ describe('AssistantFileWriter', () => {
       expect(claudeFile!.content).toContain(testSelection.projectName);
     });
 
-    test('should include language and architecture in main files', async () => {
+    it('should include language and architecture in main files', async () => {
       const guidelineIds = loader.getGuidelinesForProfile(
         testSelection.language,
         testSelection.level,

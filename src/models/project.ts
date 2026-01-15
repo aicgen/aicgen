@@ -1,45 +1,46 @@
 export type Language =
-  | 'typescript'
-  | 'javascript'
-  | 'python'
-  | 'go'
-  | 'rust'
-  | 'java'
-  | 'csharp'
-  | 'ruby'
-  | 'dart'
-  | 'unknown';
+    | 'typescript'
+    | 'javascript'
+    | 'python'
+    | 'go'
+    | 'rust'
+    | 'java'
+    | 'csharp'
+    | 'ruby'
+    | 'dart'
+    | 'swift'
+    | 'unknown';
 
 export type ProjectType =
-  | 'web'
-  | 'api'
-  | 'cli'
-  | 'library'
-  | 'desktop'
-  | 'mobile'
-  | 'other';
+    | 'web'
+    | 'api'
+    | 'cli'
+    | 'library'
+    | 'desktop'
+    | 'mobile'
+    | 'other';
 
 export type AIAssistant =
-  | 'claude-code'
-  | 'copilot'
-  | 'gemini'
-  | 'antigravity'
-  | 'codex';
+    | 'claude-code'
+    | 'copilot'
+    | 'gemini'
+    | 'antigravity'
+    | 'codex';
 
 export type PackageManager =
-  | 'npm'
-  | 'yarn'
-  | 'pnpm'
-  | 'bun'
-  | 'pip'
-  | 'poetry'
-  | 'cargo'
-  | 'go'
-  | 'pub'
-  | 'unknown';
+    | 'npm'
+    | 'yarn'
+    | 'pnpm'
+    | 'bun'
+    | 'pip'
+    | 'poetry'
+    | 'cargo'
+    | 'go'
+    | 'pub'
+    | 'unknown';
 
 export interface DetectedProject {
-  name: string;
-  language: Language;
-  hasExistingConfig: boolean;
+    name: string;
+    language: Language;
+    hasExistingConfig: boolean;
 }

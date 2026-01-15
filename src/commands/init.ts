@@ -62,6 +62,7 @@ export async function initCommand(options: InitOptions) {
     if (options.analyze || await confirm({ message: 'Run AI Project Analysis to suggest optimal config?', default: true })) {
         const { ProjectAnalyzer } = await import('../services/project-analyzer.js');
         const { AIAnalysisService } = await import('../services/ai-analysis/ai-analysis.service.js');
+        const { CredentialService } = await import('../services/credential-service.js');
         const { TimeoutError, InvalidCredentialsError, ValidationErrors } = await import('../services/shared/errors/index.js');
 
         const analyzer = new ProjectAnalyzer(projectPath);
@@ -70,50 +71,90 @@ export async function initCommand(options: InitOptions) {
             maxRetries: 3,
             initialRetryDelayMs: 1000
         });
-        
+        const credService = new CredentialService();
+
         spinner.start('Performing deep analysis...');
         const context = await analyzer.analyze();
         spinner.text = 'Consulting AI Architect...';
-        
+
         // Check for API Keys
-        let apiKey = process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+        spinner.stop();
+
+        // Check environment variables first
+        let apiKey: string | null = null;
         let provider: AIAssistant = 'claude-code'; // Default
 
-        if (process.env.ANTHROPIC_API_KEY) provider = 'claude-code';
-        else if (process.env.GEMINI_API_KEY) provider = 'gemini';
-        else if (process.env.OPENAI_API_KEY) provider = 'codex';
-        else {
-             spinner.stop();
-             console.log(chalk.yellow('\n⚠️  No AI API Keys found in environment.'));
-             const providerChoice = await select({
-                 message: 'Select AI Provider:',
-                 choices: [
-                     { value: 'claude-code', name: 'Claude (Anthropic)' },
-                     { value: 'gemini', name: 'Gemini (Google)' },
-                     { value: 'codex', name: 'OpenAI' }
-                 ]
-             });
-             provider = providerChoice as AIAssistant;
-             
-             // In a real CLI we would use a password prompt, simple input for now
-             const key = await input({ message: 'Enter API Key:' }); 
-             apiKey = key;
-             spinner.start('Consulting AI Architect...');
+        if (process.env.ANTHROPIC_API_KEY) {
+            provider = 'claude-code';
+            apiKey = process.env.ANTHROPIC_API_KEY;
+        } else if (process.env.GEMINI_API_KEY) {
+            provider = 'gemini';
+            apiKey = process.env.GEMINI_API_KEY;
+        } else if (process.env.OPENAI_API_KEY) {
+            provider = 'codex';
+            apiKey = process.env.OPENAI_API_KEY;
         }
+
+        if (!apiKey) {
+            console.log(chalk.yellow('\n⚠️  No AI API Keys found in environment.'));
+
+            // Select provider
+            const providerChoice = await select({
+                message: 'Select AI Provider:',
+                choices: [
+                    { value: 'claude-code', name: 'Claude (Anthropic)' },
+                    { value: 'gemini', name: 'Gemini (Google)' },
+                    { value: 'codex', name: 'OpenAI' }
+                ]
+            });
+            provider = providerChoice as AIAssistant;
+
+            // Check for stored key
+            const storedKey = await credService.getStoredKey(provider);
+
+            if (storedKey) {
+                const useStored = await confirm({
+                    message: `Use stored ${provider} API key (${storedKey.substring(0, 4)}...${storedKey.substring(storedKey.length - 4)})?`,
+                    default: true
+                });
+
+                if (useStored) {
+                    apiKey = storedKey;
+                }
+            }
+
+            // If still no key, ask for manual entry
+            if (!apiKey) {
+                const key = await input({ message: 'Enter API Key:' });
+                apiKey = key;
+
+                // Save the key
+                try {
+                    await credService.saveKey(provider, apiKey);
+                    console.log(chalk.gray('✓ API key saved for future use'));
+                } catch (error) {
+                    console.log(chalk.yellow('⚠ Failed to save API key'));
+                }
+            }
+        }
+
+        spinner.start('Consulting AI Architect...');
 
         try {
             const suggestions = await aiService.analyzeProject(context, provider, apiKey!);
             spinner.succeed('Analysis complete');
 
             console.log('\n' + createSummaryBox('🤖 AI Suggestions', [
+                { label: 'Language', value: suggestions.language },
                 { label: 'Architecture', value: `${suggestions.architecture.pattern} (${Math.round(suggestions.architecture.confidence * 100)}%)` },
                 { label: 'Project Type', value: suggestions.projectType },
-                { label: 'Level', value: suggestions.level },
-                { label: 'Testing', value: suggestions.testingMaturity },
+                { label: 'Datasource', value: suggestions.datasource },
+                { label: 'Instruction Level', value: suggestions.level },
+                { label: 'Testing Maturity', value: suggestions.testingMaturity },
                 { label: 'Reasoning', value: suggestions.reasoning }
             ]));
 
-            const useSuggestions = await confirm({ message: 'Apply these suggestions?', default: true });
+            const useSuggestions = await confirm({ message: 'Apply AI suggestions?', default: true });
             if (useSuggestions) {
                 wizard.updateState({
                     language: suggestions.language,

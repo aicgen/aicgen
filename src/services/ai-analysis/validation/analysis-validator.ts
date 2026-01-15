@@ -1,7 +1,5 @@
 import { AnalysisResult } from '../../ai-analysis-service';
 import { ValidationError, ValidationErrors } from '../../shared/errors/index';
-import { Language, ProjectType } from '../../../models/project';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../../../models/profile';
 
 /**
  * Validator for AI analysis results
@@ -30,7 +28,7 @@ export class AnalysisValidator {
     ]);
 
     this.validDatasources = new Set<string>([
-      'postgresql', 'mysql', 'mongodb', 'redis', 'sqlite', 'none', 'other'
+      'sql', 'nosql', 'none'
     ]);
 
     this.validLevels = new Set<string>(['basic', 'standard', 'expert', 'full']);

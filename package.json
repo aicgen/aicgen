@@ -1,12 +1,14 @@
 {
   "name": "@aicgen/aicgen",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "AI Config Generator - Automated AI assistant configuration for your projects",
   "keywords": [
     "ai",
     "cli",
     "code-generator",
     "claude",
+    "gemini",
+    "openai",
     "config",
     "assistant"
   ],

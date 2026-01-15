@@ -3,8 +3,7 @@
 ## Project Overview
 
 **Language:** typescript
-**Type:** cli
-**Architecture:** layered
+**Type:** other
 
 ## Development Guidelines
 
@@ -52,7 +51,7 @@ This project follows structured coding guidelines across multiple categories:
 ### Architecture
 
   - principles
-  - layers
+  - patterns
   - patterns
 
 ### DevOps
@@ -103,10 +102,6 @@ See tool-specific instruction files for detailed code style guidelines:
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Gemini: `.gemini/instructions.md`
 - Antigravity: `.agent/rules/instructions.md`
-
-## Architecture
-
-This project follows **layered** architecture. See architecture guidelines in tool-specific files.
 
 ## Testing
 

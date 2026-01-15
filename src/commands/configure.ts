@@ -76,41 +76,78 @@ export async function configureCommand(options: ConfigureOptions) {
       
       // Credential Selection
       const envKey = credService.getEnvKey(provider);
+      const storedKey = await credService.getStoredKey(provider);
       const cliKey = await credService.getCLIKey(provider);
-      
+
       const choices = [];
       if (envKey) choices.push({ value: envKey, name: `Environment Variable (${maskKey(envKey)})` });
+      if (storedKey) choices.push({ value: storedKey, name: `Stored Credential (${maskKey(storedKey)})` });
       if (cliKey) choices.push({ value: cliKey, name: `CLI Configuration (${maskKey(cliKey)})` });
       choices.push({ value: 'manual', name: 'Enter Manually' });
 
       let apiKey: string;
+      let shouldSaveKey = false;
+
       if (choices.length > 1) {
           const choice = await select({
               message: 'Select Credential Source:',
               choices
           });
-          if (choice === 'manual') apiKey = await input({ message: 'Enter API Key:' });
-          else apiKey = choice;
+          if (choice === 'manual') {
+              apiKey = await input({ message: 'Enter API Key:' });
+              shouldSaveKey = true;
+          } else {
+              apiKey = choice;
+          }
       } else if (choices.length === 1 && choices[0].value !== 'manual') {
           apiKey = choices[0].value;
           console.log(chalk.gray(`Using ${choices[0].name}`));
       } else {
           apiKey = await input({ message: 'Enter API Key:' });
+          shouldSaveKey = true;
       }
 
-      spinner.start('Consulting AI Architect (Tier 3 Analysis)...');
+      // Save manually entered key
+      if (shouldSaveKey) {
+          try {
+              await credService.saveKey(provider, apiKey);
+              console.log(chalk.gray('✓ API key saved for future use'));
+          } catch (error) {
+              console.log(chalk.yellow('⚠ Failed to save API key'));
+          }
+      }
+
+      // Select analysis tier (how much data to pass to AI)
+      const analysisTier = await select({
+          message: 'Select analysis depth:',
+          choices: [
+              { value: 'basic', name: 'Tier 1 - Basic', description: 'File structure and package.json only' },
+              { value: 'standard', name: 'Tier 2 - Standard', description: 'File structure + key files analysis' },
+              { value: 'deep', name: 'Tier 3 - Deep', description: 'Full code analysis with dependencies' }
+          ]
+      });
+
+      const tierLabels = {
+          basic: 'Tier 1',
+          standard: 'Tier 2',
+          deep: 'Tier 3'
+      };
+
+      spinner.start(`Consulting AI Architect (${tierLabels[analysisTier]} Analysis)...`);
       try {
           const suggestions = await aiService.analyzeProject(analysisContext, provider, apiKey);
           spinner.succeed('AI Analysis Complete');
 
           console.log('\n' + createSummaryBox('🤖 AI Suggestions', [
+                { label: 'Language', value: suggestions.language },
                 { label: 'Architecture', value: `${suggestions.architecture.pattern} (${Math.round(suggestions.architecture.confidence * 100)}%)` },
                 { label: 'Project Type', value: suggestions.projectType },
-                { label: 'Level', value: suggestions.level },
-                { label: 'Testing', value: suggestions.testingMaturity },
+                { label: 'Datasource', value: suggestions.datasource },
+                { label: 'Instruction Level', value: suggestions.level },
+                { label: 'Testing Maturity', value: suggestions.testingMaturity },
           ]));
 
-          if (await confirm({ message: 'Apply suggestions?', default: true })) {
+          if (await confirm({ message: 'Apply AI suggestions?', default: true })) {
               finalSelection = {
                   ...finalSelection,
                   language: suggestions.language,
@@ -119,6 +156,10 @@ export async function configureCommand(options: ConfigureOptions) {
                   datasource: suggestions.datasource,
                   level: suggestions.level
               };
+          } else {
+              // User rejected AI suggestions - run manual wizard
+              console.log(chalk.yellow('\n📝 Manual Configuration'));
+              finalSelection = await runManualWizard(analysisContext.metadata.language);
           }
       } catch (e) {
           spinner.fail('AI Analysis Failed');
@@ -135,8 +176,8 @@ export async function configureCommand(options: ConfigureOptions) {
       }
   } else {
       // Manual Fallback (Wizard)
-      // For brevity, we assume standard wizard logic or simply use defaults if manual skipped
-      console.log(chalk.gray('Skipping AI analysis. Using detected defaults.'));
+      console.log(chalk.yellow('\n📝 Manual Configuration'));
+      finalSelection = await runManualWizard(analysisContext.metadata.language);
   }
 
   // Generation
@@ -147,6 +188,81 @@ export async function configureCommand(options: ConfigureOptions) {
       dryRun: false
   });
   spinner.succeed('Configuration Generated!');
+}
+
+async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSelection> {
+  // Language
+  let language: Language;
+  if (detectedLanguage && detectedLanguage !== 'unknown') {
+      const useDetected = await confirm({
+          message: `Detected ${detectedLanguage}. Use this?`,
+          default: true
+      });
+      language = useDetected ? detectedLanguage : await selectLanguage();
+  } else {
+      language = await selectLanguage();
+  }
+
+  // Project Type
+  const projectType = await select({
+      message: 'Select project type:',
+      choices: PROJECT_TYPES.map(pt => ({
+          value: pt.value,
+          name: pt.label,
+          description: pt.description
+      }))
+  }) as ProjectType;
+
+  // Architecture
+  const architecture = await select({
+      message: 'Select architecture pattern:',
+      choices: ARCHITECTURES.map(arch => ({
+          value: arch.value,
+          name: arch.label,
+          description: arch.description
+      }))
+  }) as ArchitectureType;
+
+  // Datasource
+  const datasource = await select({
+      message: 'Select datasource type:',
+      choices: DATASOURCES.map(ds => ({
+          value: ds.value,
+          name: ds.label,
+          description: ds.description
+      }))
+  }) as DatasourceType;
+
+  // Instruction Level
+  const level = await select({
+      message: 'Select instruction level:',
+      choices: [
+          { value: 'basic', name: 'Basic', description: 'Essential guidelines only' },
+          { value: 'standard', name: 'Standard', description: 'Common patterns and best practices' },
+          { value: 'expert', name: 'Expert', description: 'Advanced patterns and optimizations' },
+          { value: 'full', name: 'Full', description: 'Complete coverage including edge cases' }
+      ]
+  }) as InstructionLevel;
+
+  return {
+      assistant: 'claude-code',
+      language,
+      projectType,
+      architecture,
+      datasource,
+      projectName: 'my-project',
+      level
+  };
+}
+
+async function selectLanguage(): Promise<Language> {
+  return await select({
+      message: 'Select programming language:',
+      choices: LANGUAGES.map(lang => ({
+          value: lang.value,
+          name: lang.label
+      }))
+  }) as Language;
 }
 
 function maskKey(key: string): string {

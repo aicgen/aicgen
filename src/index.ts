@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import chalk from 'chalk';
 import { configureCommand } from './commands/configure';
 import { statsCommand } from './commands/stats';
 import { updateCommand } from './commands/update';
@@ -7,6 +8,7 @@ import { addGuidelineCommand } from './commands/add-guideline';
 import { removeGuidelineCommand } from './commands/remove-guideline';
 import { quickAddCommand } from './commands/quick-add';
 import { clearCommand } from './commands/clear';
+import { credentialsCommand } from './commands/credentials';
 import { showBanner } from './utils/banner';
 import { CONFIG } from './config';
 
@@ -62,5 +64,17 @@ program
   .description('Remove all AI configurations from the project')
   .option('-f, --force', 'Skip confirmation prompt')
   .action(clearCommand);
+
+program
+  .command('credentials <action>')
+  .description('Manage stored API credentials (list|flush)')
+  .action((action) => {
+    if (action !== 'list' && action !== 'flush') {
+      console.error(chalk.red(`Invalid action: ${action}`));
+      console.log(chalk.gray('Valid actions: list, flush'));
+      process.exit(1);
+    }
+    credentialsCommand({ action });
+  });
 
 program.parse();

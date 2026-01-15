@@ -16,7 +16,7 @@ export class AnalysisValidator {
   constructor() {
     // Initialize valid values
     this.validLanguages = new Set<string>([
-      'typescript', 'javascript', 'python', 'go', 'rust', 'java', 'csharp', 'ruby', 'dart', 'unknown'
+      'typescript', 'javascript', 'python', 'go', 'rust', 'java', 'csharp', 'ruby', 'dart', 'swift', 'kotlin', 'php', 'unknown'
     ]);
 
     this.validProjectTypes = new Set<string>([
@@ -33,6 +33,8 @@ export class AnalysisValidator {
       'ddd',
       'serverless',
       'monorepo',  // Repository organization strategy
+      'bounded-contexts', // Domain-driven partitioning
+      'component-based', // Common for frontend/mobile
       'other'
     ]);
 

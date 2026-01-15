@@ -96,9 +96,9 @@ jobs:
             dist/aicgen_x86_64.rpm
 
   # ----------------------------------------------------------------
-  # JOB: BUILD MACOS
+  # JOB: HOMEBREW TAP
   # ----------------------------------------------------------------
-  release-macos:
+  homebrew-tap:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -106,36 +106,82 @@ jobs:
           submodules: true
 
       - uses: oven-sh/setup-bun@v1
-      
+
       - name: Build macOS Binary
         run: |
           bun install
           bun run build:binary:macos
-          
-      - name: Create PKG Installer
+
+      - name: Create Tarball
         run: |
-          # Structure
-          mkdir -p dist/pkg/usr/local/bin
-          cp dist/aicgen-macos dist/pkg/usr/local/bin/aicgen
-          chmod +x dist/pkg/usr/local/bin/aicgen
-          
-          # Build PKG
-          pkgbuild --root dist/pkg \
-            --identifier com.lpsandaruwan.aicgen \
-            --version ${{ github.ref_name }} \
-            --install-location / \
-            --scripts packaging/macos/scripts \
-            dist/aicgen.pkg
-            
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+          mkdir -p dist/homebrew
+          cp dist/aicgen-macos dist/homebrew/aicgen
+          chmod +x dist/homebrew/aicgen
+          tar -czf dist/aicgen-macos.tar.gz -C dist/homebrew aicgen
+
+      - name: Calculate SHA256
+        id: sha256
+        run: |
+          SHA256=$(shasum -a 256 dist/aicgen-macos.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload Tarball to Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: macos-installer
-          path: dist/aicgen.pkg
+          files: dist/aicgen-macos.tar.gz
+
+      - name: Update Homebrew Tap
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA256: ${{ steps.sha256.outputs.sha256 }}
+        run: |
+          # Clone the tap repository
+          git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/aicgen/homebrew-aicgen.git tap
+          cd tap
+
+          # Create Formula directory if it doesn't exist
+          mkdir -p Formula
+
+          # Generate the formula
+          cat > Formula/aicgen.rb << 'EOF'
+          class Aicgen < Formula
+            desc "Configuration generator for AI coding assistants"
+            homepage "https://github.com/aicgen/aicgen"
+            url "https://github.com/aicgen/aicgen/releases/download/v${VERSION}/aicgen-macos.tar.gz"
+            sha256 "${SHA256}"
+            version "${VERSION}"
+
+            def install
+              bin.install "aicgen"
+            end
+
+            test do
+              system "#{bin}/aicgen", "--version"
+            end
+          end
+          EOF
+
+          # Replace placeholders with actual values
+          sed -i '' "s/\${VERSION}/$VERSION/g" Formula/aicgen.rb
+          sed -i '' "s/\${SHA256}/$SHA256/g" Formula/aicgen.rb
+
+          # Commit and push
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Formula/aicgen.rb
+          git commit -m "Update aicgen to version $VERSION" || echo "No changes to commit"
+          git push
 
   # ----------------------------------------------------------------
   publish-npm:
-    needs: [release-windows, release-linux, release-macos]
+    needs: [release-windows, release-linux, homebrew-tap]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -162,11 +208,11 @@ jobs:
   # JOB: PUBLISH RELEASE
   # ----------------------------------------------------------------
   publish-release:
-    needs: [release-windows, release-linux, release-macos]
+    needs: [release-windows, release-linux, homebrew-tap]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -174,7 +220,26 @@ jobs:
             windows-installer/aicgen-setup-x64.exe
             linux-package/aicgen_amd64.deb
             linux-package/aicgen_x86_64.rpm
-            macos-installer/aicgen.pkg
           draft: false
           prerelease: false
           generate_release_notes: true
+          body: |
+            ## Installation
+
+            ### Windows
+            Download and run `aicgen-setup-x64.exe`
+
+            ### Linux
+            **Debian/Ubuntu**: `sudo dpkg -i aicgen_amd64.deb`
+            **Fedora/RHEL**: `sudo rpm -i aicgen_x86_64.rpm`
+
+            ### macOS (via Homebrew)
+            ```bash
+            brew tap aicgen/aicgen
+            brew install aicgen
+            ```
+
+            ### All Platforms (via npm)
+            ```bash
+            npm install -g @aicgen/aicgen
+            ```

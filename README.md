@@ -55,17 +55,33 @@ npm install -g @aicgen/aicgen
 npx @aicgen/aicgen init
 ```
 
-### From Binary (Standalone)
-
-Download the latest binary for your platform from the [releases page](https://github.com/aicgen/aicgen/releases):
-
-- **Windows**: `aicgen.exe`
-- **Linux**: `aicgen-linux`
-- **macOS**: `aicgen-macos`
+### From Homebrew (macOS)
 
 ```bash
-# Windows
-.\aicgen.exe init
+# Add the tap
+brew tap aicgen/aicgen
+
+# Install aicgen
+brew install aicgen
+```
+
+### From Binary (Standalone)
+
+Download the latest installer for your platform from the [releases page](https://github.com/aicgen/aicgen/releases):
+
+- **Windows**: `aicgen-setup-x64.exe` installer
+- **Linux (Debian/Ubuntu)**: `aicgen_amd64.deb`
+- **Linux (Fedora/RHEL)**: `aicgen_x86_64.rpm`
+
+```bash
+# Windows - run the installer
+aicgen-setup-x64.exe
+
+# Linux (Debian/Ubuntu)
+sudo dpkg -i aicgen_amd64.deb
+
+# Linux (Fedora/RHEL)
+sudo rpm -i aicgen_x86_64.rpm
 ```
 
 ### From Source

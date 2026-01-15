@@ -173,6 +173,20 @@ export async function configureCommand(options: ConfigureOptions) {
           } else {
               console.error(chalk.red((e as Error).message));
           }
+
+          // Offer manual wizard or exit
+          const continueWithManual = await confirm({
+              message: 'Would you like to configure manually instead?',
+              default: true
+          });
+
+          if (!continueWithManual) {
+              console.log(chalk.gray('Configuration cancelled.'));
+              return;
+          }
+
+          console.log(chalk.yellow('\n📝 Manual Configuration'));
+          finalSelection = await runManualWizard(analysisContext.metadata.language);
       }
   } else {
       // Manual Fallback (Wizard)

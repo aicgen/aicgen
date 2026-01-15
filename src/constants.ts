@@ -40,6 +40,7 @@ export const ARCHITECTURES: { value: ArchitectureType; name: string; description
   { value: 'clean-architecture', name: 'Clean Architecture', description: 'Uncle Bob\'s concentric layers with dependency rule' },
   { value: 'ddd', name: 'Domain-Driven Design', description: 'Bounded contexts, aggregates, domain events' },
   { value: 'serverless', name: 'Serverless', description: 'FaaS, event triggers, managed services' },
+  { value: 'monorepo', name: 'Monorepo', description: 'Multiple projects in single repository with shared tooling' },
   { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
 ];
 

@@ -10,6 +10,7 @@ export type ArchitectureType =
   | 'clean-architecture'
   | 'ddd'
   | 'serverless'
+  | 'monorepo'
   | 'other';
 export type DatasourceType = 'sql' | 'nosql' | 'none';
 

@@ -177,6 +177,18 @@ export async function initCommand(options: InitOptions) {
             } else {
                 console.error(chalk.red((e as Error).message));
             }
+
+            // Offer to continue with manual wizard or exit
+            const continueManually = await confirm({
+                message: 'Would you like to continue with manual configuration?',
+                default: true
+            });
+
+            if (!continueManually) {
+                console.log(chalk.gray('Setup cancelled.'));
+                process.exit(0);
+            }
+            console.log(chalk.yellow('\n📝 Manual Configuration\n'));
         }
     }
 

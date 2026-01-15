@@ -24,7 +24,16 @@ export class AnalysisValidator {
     ]);
 
     this.validArchitectures = new Set<string>([
-      'modular-monolith', 'microservices', 'serverless', 'layered', 'clean', 'mvc', 'other'
+      'layered',
+      'modular-monolith',
+      'microservices',
+      'event-driven',
+      'hexagonal',
+      'clean-architecture',
+      'ddd',
+      'serverless',
+      'monorepo',  // Repository organization strategy
+      'other'
     ]);
 
     this.validDatasources = new Set<string>([

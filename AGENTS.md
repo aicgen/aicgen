@@ -3,7 +3,8 @@
 ## Project Overview
 
 **Language:** typescript
-**Type:** other
+**Type:** cli
+**Architecture:** event-driven
 
 ## Development Guidelines
 
@@ -51,7 +52,7 @@ This project follows structured coding guidelines across multiple categories:
 ### Architecture
 
   - principles
-  - patterns
+  - messaging
   - patterns
 
 ### DevOps
@@ -102,6 +103,10 @@ See tool-specific instruction files for detailed code style guidelines:
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Gemini: `.gemini/instructions.md`
 - Antigravity: `.agent/rules/instructions.md`
+
+## Architecture
+
+This project follows **event-driven** architecture. See architecture guidelines in tool-specific files.
 
 ## Testing
 

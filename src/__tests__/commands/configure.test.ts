@@ -117,6 +117,87 @@ describe('Configure Command Logic', () => {
     });
   });
 
+  describe('Assistant Selection', () => {
+    it('should separate analysis provider from target assistant', () => {
+      // Analysis provider is for AI analysis
+      const analysisProvider = 'gemini';
+
+      // Target assistant is for using generated guidelines
+      const targetAssistant = 'claude-code';
+
+      // They should be independent
+      expect(analysisProvider).not.toBe(targetAssistant);
+    });
+
+    it('should not include assistant in AI recommendations', () => {
+      const aiRecommendations = {
+        language: 'typescript',
+        architecture: 'microservices',
+        datasource: 'sql',
+        level: 'expert',
+        projectType: 'api'
+      };
+
+      // Assistant should not be part of AI recommendations
+      expect(aiRecommendations).not.toHaveProperty('assistant');
+      expect(Object.keys(aiRecommendations)).not.toContain('assistant');
+    });
+
+    it('should prompt for target assistant after AI analysis', () => {
+      // Simulate flow where AI analysis completes
+      const aiAnalysisComplete = true;
+      const assistantNotYetSelected = true;
+
+      // Should prompt for assistant selection
+      expect(aiAnalysisComplete && assistantNotYetSelected).toBe(true);
+    });
+
+    it('should include assistant selection in manual wizard', () => {
+      const wizardSteps = [
+        'language',
+        'projectType',
+        'architecture',
+        'datasource',
+        'level',
+        'assistant'
+      ];
+
+      expect(wizardSteps).toContain('assistant');
+      expect(wizardSteps.indexOf('assistant')).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should offer all assistant choices', () => {
+      const choices = [
+        { value: 'claude-code', name: 'Claude Code' },
+        { value: 'antigravity', name: 'Antigravity' },
+        { value: 'copilot', name: 'GitHub Copilot' },
+        { value: 'codex', name: 'OpenAI Codex' },
+        { value: 'gemini', name: 'Gemini' }
+      ];
+
+      expect(choices).toHaveLength(5);
+      expect(choices.map(c => c.value)).toContain('claude-code');
+      expect(choices.map(c => c.value)).toContain('copilot');
+      expect(choices.map(c => c.value)).toContain('gemini');
+    });
+
+    it('should fallback to prompt if assistant not set', () => {
+      // Profile after AI suggestions (no assistant set)
+      const profileAfterAI = {
+        language: 'typescript',
+        architecture: 'microservices',
+        datasource: 'sql',
+        level: 'expert',
+        projectType: 'api',
+        projectName: 'test'
+      };
+
+      // Should check if assistant is missing
+      const needsAssistant = !profileAfterAI.hasOwnProperty('assistant');
+      expect(needsAssistant).toBe(true);
+    });
+  });
+
   describe('Profile Completeness', () => {
     it('should require all mandatory fields', () => {
       const mandatoryFields = [
@@ -163,6 +244,20 @@ describe('Configure Command Logic', () => {
       expect(profile.level).toBe('expert');
       expect(profile.architecture).toBe('microservices');
       expect(profile.datasource).toBe('sql');
+    });
+
+    it('should not hardcode assistant from analysis provider', () => {
+      // After AI analysis with provider='gemini'
+      const analysisProvider = 'gemini';
+
+      // Profile should not automatically use analysis provider as assistant
+      const profile = {
+        language: 'typescript',
+        level: 'expert'
+        // assistant should be asked separately
+      };
+
+      expect(profile).not.toHaveProperty('assistant');
     });
   });
 

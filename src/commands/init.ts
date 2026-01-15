@@ -161,8 +161,8 @@ export async function initCommand(options: InitOptions) {
                     projectType: suggestions.projectType,
                     architecture: suggestions.architecture.pattern,
                     datasource: suggestions.datasource,
-                    level: suggestions.level,
-                    assistant: provider
+                    level: suggestions.level
+                    // Don't set assistant here - let wizard ask for target coding assistant
                 });
             }
         } catch (e) {
@@ -194,33 +194,7 @@ export async function initCommand(options: InitOptions) {
 
 
 
-    // Check for existing config
-    if (detected.hasExistingConfig && !options.force) {
-      console.log(chalk.yellow('\n⚠️  Existing AI config detected'));
-
-      const action = await select({
-        message: 'How would you like to proceed?',
-        choices: [
-          { value: 'overwrite', name: 'Overwrite existing config', description: 'Keep other AI configs, replace matching ones' },
-          { value: 'clear', name: 'Clear all configs first', description: 'Remove all AI configs, then generate new' },
-          { value: 'cancel', name: 'Cancel', description: 'Exit without making changes' }
-        ]
-      });
-
-      if (action === 'cancel') {
-        console.log(chalk.gray('\nCancelled.'));
-        return;
-      }
-
-      if (action === 'clear') {
-        // Import and run clear command logic
-        const { clearCommand } = await import('./clear.js');
-        await clearCommand({ force: true });
-        console.log(''); // Add spacing
-      }
-    }
-
-    // Wizard loop with back navigation
+    // Wizard loop with back navigation (existing config check moved to after assistant selection)
     while (!wizard.isComplete()) {
       const state = wizard.getState();
 
@@ -313,6 +287,58 @@ export async function initCommand(options: InitOptions) {
       projectName: detected.name,
       datasource: state.datasource!
     };
+
+    // Check if config for THIS assistant already exists
+    if (!options.force) {
+      const { exists } = await import('../utils/file.js');
+      const { join } = await import('path');
+
+      let configPath: string | null = null;
+      let assistantName = selection.assistant;
+
+      // Map assistant to config path
+      if (selection.assistant === 'claude-code') {
+        configPath = join(projectPath, '.claude');
+        assistantName = 'Claude Code';
+      } else if (selection.assistant === 'antigravity') {
+        configPath = join(projectPath, '.agent');
+        assistantName = 'Antigravity';
+      } else if (selection.assistant === 'copilot') {
+        configPath = join(projectPath, '.github', 'copilot-instructions.md');
+        assistantName = 'GitHub Copilot';
+      } else if (selection.assistant === 'gemini') {
+        configPath = join(projectPath, '.gemini');
+        assistantName = 'Gemini';
+      } else if (selection.assistant === 'codex') {
+        configPath = join(projectPath, '.codex');
+        assistantName = 'Codex';
+      }
+
+      if (configPath && await exists(configPath)) {
+        console.log(chalk.yellow(`\n⚠️  Existing ${assistantName} configuration detected`));
+
+        const action = await select({
+          message: 'How would you like to proceed?',
+          choices: [
+            { value: 'overwrite', name: `Overwrite ${assistantName} config`, description: 'Replace existing config for this assistant only' },
+            { value: 'clear', name: 'Clear ALL AI configs first', description: 'Remove all AI configs, then generate new' },
+            { value: 'cancel', name: 'Cancel', description: 'Exit without making changes' }
+          ]
+        });
+
+        if (action === 'cancel') {
+          console.log(chalk.gray('\nCancelled.'));
+          return;
+        }
+
+        if (action === 'clear') {
+          const { clearCommand } = await import('./clear.js');
+          await clearCommand({ force: true });
+          console.log(''); // Add spacing
+        }
+        // If 'overwrite', just continue - generation will overwrite files
+      }
+    }
 
     spinner.start('Generating configuration...');
 

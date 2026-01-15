@@ -35,22 +35,8 @@ export async function configureCommand(options: ConfigureOptions) {
   const analysisContext = await analyzer.analyze();
   spinner.succeed('Project detected');
 
-  // Check existing
-  if (analysisContext.metadata.files.some(f => f.includes('.claude') || f.includes('.aicgen'))) {
-      const mode = await select({
-          message: 'Existing configuration found. What would you like to do?',
-          choices: [
-              { value: 'update', name: 'Update / Merge', description: 'Add new guidelines, keep existing' },
-              { value: 'overwrite', name: 'Overwrite', description: 'Replace entirely' },
-              { value: 'cancel', name: 'Cancel' }
-          ]
-      });
-      if (mode === 'cancel') return;
-      if (mode === 'overwrite') options.force = true;
-  }
-
-  let finalSelection: ProfileSelection = {
-      assistant: 'claude-code',
+  let finalSelection: Partial<ProfileSelection> = {
+      // Don't set assistant here - will be asked later
       language: analysisContext.metadata.language,
       projectType: 'other',
       architecture: 'other',
@@ -62,17 +48,17 @@ export async function configureCommand(options: ConfigureOptions) {
   // AI Analysis Flow
   if (options.analyze || await confirm({ message: 'Use AI to analyze architecture and suggest config?', default: true })) {
       
-      // select Provider
+      // select Provider for analysis
       const provider = await select({
-          message: 'Select AI Provider:',
+          message: 'Select AI Provider for Analysis:',
           choices: [
               { value: 'claude-code', name: 'Claude (Anthropic)' },
               { value: 'gemini', name: 'Gemini (Google)' },
               { value: 'codex', name: 'OpenAI' }
           ]
       }) as AIAssistant;
-      
-      finalSelection.assistant = provider;
+
+      // Don't set assistant here - will be asked separately
       
       // Credential Selection
       const envKey = credService.getEnvKey(provider);
@@ -194,11 +180,83 @@ export async function configureCommand(options: ConfigureOptions) {
       finalSelection = await runManualWizard(analysisContext.metadata.language);
   }
 
+  // Ask for target coding assistant if not already set
+  if (!finalSelection.assistant) {
+      finalSelection.assistant = await select({
+          message: 'Which coding assistant will use these guidelines?',
+          choices: [
+              { value: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude CLI tool' },
+              { value: 'antigravity', name: 'Antigravity', description: 'Anthropic Claude in editor' },
+              { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub AI assistant' },
+              { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI code model' },
+              { value: 'gemini', name: 'Gemini', description: 'Google AI assistant' }
+          ]
+      }) as AIAssistant;
+  }
+
+  // Ensure all required fields are set
+  if (!finalSelection.assistant) {
+      console.error(chalk.red('\n❌ Error: Assistant not selected'));
+      process.exit(1);
+  }
+
+  // Check if config for THIS assistant already exists
+  if (!options.force) {
+    const { exists } = await import('../utils/file.js');
+    const { join } = await import('path');
+
+    let configPath: string | null = null;
+    let assistantName = finalSelection.assistant;
+
+    // Map assistant to config path
+    if (finalSelection.assistant === 'claude-code') {
+      configPath = join(projectPath, '.claude');
+      assistantName = 'Claude Code';
+    } else if (finalSelection.assistant === 'antigravity') {
+      configPath = join(projectPath, '.agent');
+      assistantName = 'Antigravity';
+    } else if (finalSelection.assistant === 'copilot') {
+      configPath = join(projectPath, '.github', 'copilot-instructions.md');
+      assistantName = 'GitHub Copilot';
+    } else if (finalSelection.assistant === 'gemini') {
+      configPath = join(projectPath, '.gemini');
+      assistantName = 'Gemini';
+    } else if (finalSelection.assistant === 'codex') {
+      configPath = join(projectPath, '.codex');
+      assistantName = 'Codex';
+    }
+
+    if (configPath && await exists(configPath)) {
+      console.log(chalk.yellow(`\n⚠️  Existing ${assistantName} configuration detected`));
+
+      const action = await select({
+        message: 'How would you like to proceed?',
+        choices: [
+          { value: 'overwrite', name: `Overwrite ${assistantName} config`, description: 'Replace existing config for this assistant only' },
+          { value: 'clear', name: 'Clear ALL AI configs first', description: 'Remove all AI configs, then generate new' },
+          { value: 'cancel', name: 'Cancel', description: 'Exit without making changes' }
+        ]
+      });
+
+      if (action === 'cancel') {
+        console.log(chalk.gray('\nCancelled.'));
+        return;
+      }
+
+      if (action === 'clear') {
+        const { clearCommand } = await import('./clear.js');
+        await clearCommand({ force: true });
+        console.log(''); // Add spacing
+      }
+      // If 'overwrite', just continue - generation will overwrite files
+    }
+  }
+
   // Generation
   spinner.start('Generating configuration...');
   await generator.generate({
       projectPath,
-      selection: finalSelection,
+      selection: finalSelection as ProfileSelection,
       dryRun: false
   });
   spinner.succeed('Configuration Generated!');
@@ -258,8 +316,20 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       ]
   }) as InstructionLevel;
 
+  // Target Coding Assistant
+  const assistant = await select({
+      message: 'Which coding assistant will use these guidelines?',
+      choices: [
+          { value: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude CLI tool' },
+          { value: 'antigravity', name: 'Antigravity', description: 'Anthropic Claude in editor' },
+          { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub AI assistant' },
+          { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI code model' },
+          { value: 'gemini', name: 'Gemini', description: 'Google AI assistant' }
+      ]
+  }) as AIAssistant;
+
   return {
-      assistant: 'claude-code',
+      assistant,
       language,
       projectType,
       architecture,

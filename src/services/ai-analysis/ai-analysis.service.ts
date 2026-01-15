@@ -143,42 +143,54 @@ export class AIAnalysisService {
   }
 
   private buildPrompt(context: AnalysisContext): string {
-    const availableOptions = {
-      languages: LANGUAGES.map(l => l.value),
-      projectTypes: PROJECT_TYPES.map(p => p.value),
-      architectures: ARCHITECTURES.map(a => a.value),
-      datasources: DATASOURCES.map(d => d.value),
-      levels: ['basic', 'standard', 'expert', 'full']
-    };
+    const { metadata, samples } = context;
 
-    return `You are a codebase architecture analyzer.
-Use the provided static analysis and file samples.
-Return ONLY valid JSON matching the schema.
+    return `You are an expert codebase architecture analyzer. Analyze the project and return a JSON response.
 
-METADATA:
-${JSON.stringify(context.metadata, null, 2)}
+## PROJECT DETECTION RESULTS
 
-FILE SAMPLES:
-${context.samples.map(s => `--- ${s.path} ---\n${s.content}\n---`).join('\n')}
+**Language**: ${metadata.language}
+**Frameworks**: ${metadata.frameworks.join(', ') || 'none detected'}
+**Build Tools**: ${metadata.buildTools.join(', ') || 'none'}
+**Package Manager**: ${metadata.packageManager}
+**Repo Type**: ${metadata.repoType}
 
-AVAILABLE OPTIONS:
-${JSON.stringify(availableOptions, null, 2)}
+**Architecture Hints**: ${metadata.architectureHints.join(', ') || 'none'}
+**Database Hints**: ${metadata.databaseHints.detected.join(', ') || 'none'} (SQL: ${metadata.databaseHints.hasSql}, NoSQL: ${metadata.databaseHints.hasNoSql})
+**Testing**: ${metadata.testingHints.hasTests ? `${metadata.testingHints.testFileCount} test files` : 'no tests detected'}
+**Project Type Hints**: ${metadata.projectTypeHints.join(', ') || 'none'}
 
-SCHEMA:
+**Directory Structure** (key folders):
+${metadata.structure.slice(0, 15).join('\n')}
+
+## FILE SAMPLES
+${samples.slice(0, 3).map(s => `=== ${s.path} ===\n${s.content.substring(0, 1000)}${s.content.length > 1000 ? '...' : ''}`).join('\n\n')}
+
+## REQUIRED JSON RESPONSE
+
+Return ONLY valid JSON with these EXACT fields:
+
 {
-  "language": "value",
-  "projectType": "value",
+  "language": "<one of: ${LANGUAGES.map(l => l.value).join(', ')}>",
+  "projectType": "<one of: ${PROJECT_TYPES.map(p => p.value).join(', ')}>",
   "architecture": {
-    "pattern": "value",
-    "confidence": 0.0-1.0
+    "pattern": "<one of: ${ARCHITECTURES.map(a => a.value).join(', ')}>",
+    "confidence": <number between 0.0-1.0>
   },
-  "datasource": "value",
-  "level": "value",
-  "backendStyle": "optional short string",
-  "frontendStyle": "optional short string",
-  "testingMaturity": "low|medium|high",
-  "reasoning": "short explanation"
-}`;
+  "datasource": "<one of: ${DATASOURCES.map(d => d.value).join(', ')}>",
+  "level": "<one of: basic, standard, expert, full>",
+  "testingMaturity": "<one of: low, medium, high>",
+  "reasoning": "<brief 1-2 sentence explanation>"
+}
+
+IMPORTANT:
+- Use architectureHints to determine architecture.pattern
+- Use databaseHints to determine datasource (sql if hasSql=true, nosql if hasNoSql=true, none if both false)
+- Use testingHints to determine testingMaturity (low: <5 tests, medium: 5-20 tests, high: >20 tests)
+- Use projectTypeHints to determine projectType
+- Choose level based on project complexity (basic: simple scripts, standard: typical apps, expert: complex systems, full: large enterprise)
+- Set confidence high (>0.8) if hints are strong, medium (0.5-0.8) if unclear, low (<0.5) if guessing
+- Return ONLY the JSON object, no markdown, no explanations outside the JSON`;
   }
 
   private generateCorrelationId(): string {

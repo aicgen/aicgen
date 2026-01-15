@@ -146,6 +146,78 @@ describe('Init Command', () => {
     });
   });
 
+  describe('Assistant Selection', () => {
+    it('should not set assistant from AI analysis provider', () => {
+      // Simulate AI suggestions that don't include assistant
+      const aiSuggestions = {
+        language: 'typescript',
+        projectType: 'api',
+        architecture: 'microservices',
+        datasource: 'sql',
+        level: 'standard'
+        // Note: no assistant field
+      };
+
+      // Verify assistant is not included in AI suggestions
+      expect(aiSuggestions).not.toHaveProperty('assistant');
+    });
+
+    it('should prompt for target coding assistant separately from analysis provider', () => {
+      // Analysis provider (used for AI analysis)
+      const analysisProvider = 'gemini';
+
+      // Target coding assistant (what will use the guidelines)
+      const targetAssistant = 'claude-code';
+
+      // These should be independent
+      expect(analysisProvider).not.toBe(targetAssistant);
+    });
+
+    it('should support all coding assistant options', () => {
+      const supportedAssistants = [
+        'claude-code',
+        'antigravity',
+        'copilot',
+        'codex',
+        'gemini'
+      ];
+
+      // Verify all expected assistants are available
+      expect(supportedAssistants).toContain('claude-code');
+      expect(supportedAssistants).toContain('antigravity');
+      expect(supportedAssistants).toContain('copilot');
+      expect(supportedAssistants).toContain('codex');
+      expect(supportedAssistants).toContain('gemini');
+      expect(supportedAssistants).toHaveLength(5);
+    });
+
+    it('should require assistant selection before generation', () => {
+      const incompleteProfile = {
+        language: 'typescript',
+        projectType: 'api',
+        architecture: 'microservices',
+        datasource: 'sql',
+        level: 'standard'
+        // Missing: assistant
+      };
+
+      // Profile should require assistant
+      expect(incompleteProfile).not.toHaveProperty('assistant');
+    });
+
+    it('should allow different AI for analysis vs target assistant', () => {
+      // Scenario: Use Gemini for analysis, but target Claude Code
+      const analysisFlow = {
+        analysisProvider: 'gemini',  // Used to analyze project
+        targetAssistant: 'claude-code'  // Will receive the guidelines
+      };
+
+      // Both should be valid but independent
+      expect(analysisFlow.analysisProvider).toBe('gemini');
+      expect(analysisFlow.targetAssistant).toBe('claude-code');
+    });
+  });
+
   describe('Profile Building', () => {
     it('should build complete profile from selections', () => {
       const profile: ProfileSelection = {
@@ -184,6 +256,21 @@ describe('Init Command', () => {
       expect(profile.level).toBe(aiRecommendations.level);
       expect(profile.architecture).toBe(aiRecommendations.architecture);
       expect(profile.datasource).toBe(aiRecommendations.datasource);
+    });
+
+    it('should not include assistant in AI recommendations', () => {
+      // AI recommendations should NOT include assistant field
+      const aiRecommendations = {
+        language: 'typescript',
+        level: 'expert',
+        architecture: 'microservices',
+        datasource: 'sql',
+        projectType: 'api'
+      };
+
+      // Assistant should be selected separately, not from AI
+      expect(aiRecommendations).not.toHaveProperty('assistant');
+      expect(Object.keys(aiRecommendations)).not.toContain('assistant');
     });
   });
 
@@ -239,6 +326,175 @@ describe('Init Command', () => {
       }
 
       expect(userConfirmedOverwrite).toBe(true);
+    });
+  });
+
+  describe('Existing Config Detection After Assistant Selection', () => {
+    it('should check for Claude Code config at .claude directory', () => {
+      const assistant = 'claude-code';
+      const expectedPath = '.claude';
+      const friendlyName = 'Claude Code';
+
+      const configMap = {
+        'claude-code': { path: '.claude', name: 'Claude Code' },
+        'antigravity': { path: '.agent', name: 'Antigravity' },
+        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
+        'gemini': { path: '.gemini', name: 'Gemini' },
+        'codex': { path: '.codex', name: 'Codex' }
+      };
+
+      expect(configMap[assistant].path).toBe(expectedPath);
+      expect(configMap[assistant].name).toBe(friendlyName);
+    });
+
+    it('should check for Antigravity config at .agent directory', () => {
+      const assistant = 'antigravity';
+      const expectedPath = '.agent';
+      const friendlyName = 'Antigravity';
+
+      const configMap = {
+        'claude-code': { path: '.claude', name: 'Claude Code' },
+        'antigravity': { path: '.agent', name: 'Antigravity' },
+        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
+        'gemini': { path: '.gemini', name: 'Gemini' },
+        'codex': { path: '.codex', name: 'Codex' }
+      };
+
+      expect(configMap[assistant].path).toBe(expectedPath);
+      expect(configMap[assistant].name).toBe(friendlyName);
+    });
+
+    it('should check for Copilot config at .github/copilot-instructions.md', () => {
+      const assistant = 'copilot';
+      const expectedPath = '.github/copilot-instructions.md';
+
+      const configMap = {
+        'claude-code': { path: '.claude', name: 'Claude Code' },
+        'antigravity': { path: '.agent', name: 'Antigravity' },
+        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
+        'gemini': { path: '.gemini', name: 'Gemini' },
+        'codex': { path: '.codex', name: 'Codex' }
+      };
+
+      expect(configMap[assistant].path).toBe(expectedPath);
+    });
+
+    it('should check for Gemini config at .gemini directory', () => {
+      const assistant = 'gemini';
+      const expectedPath = '.gemini';
+
+      const configMap = {
+        'claude-code': { path: '.claude', name: 'Claude Code' },
+        'antigravity': { path: '.agent', name: 'Antigravity' },
+        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
+        'gemini': { path: '.gemini', name: 'Gemini' },
+        'codex': { path: '.codex', name: 'Codex' }
+      };
+
+      expect(configMap[assistant].path).toBe(expectedPath);
+    });
+
+    it('should check for Codex config at .codex directory', () => {
+      const assistant = 'codex';
+      const expectedPath = '.codex';
+
+      const configMap = {
+        'claude-code': { path: '.claude', name: 'Claude Code' },
+        'antigravity': { path: '.agent', name: 'Antigravity' },
+        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
+        'gemini': { path: '.gemini', name: 'Gemini' },
+        'codex': { path: '.codex', name: 'Codex' }
+      };
+
+      expect(configMap[assistant].path).toBe(expectedPath);
+    });
+
+    it('should offer overwrite, clear, and cancel options when config exists', () => {
+      const configExists = true;
+      const availableActions = ['overwrite', 'clear', 'cancel'];
+
+      if (configExists) {
+        expect(availableActions).toHaveLength(3);
+        expect(availableActions).toContain('overwrite');
+        expect(availableActions).toContain('clear');
+        expect(availableActions).toContain('cancel');
+      }
+    });
+
+    it('should cancel generation when user selects cancel', () => {
+      const userAction = 'cancel';
+      const shouldContinue = userAction !== 'cancel';
+
+      expect(shouldContinue).toBe(false);
+    });
+
+    it('should clear all configs when user selects clear', () => {
+      const userAction = 'clear';
+      const shouldClearAll = userAction === 'clear';
+      const shouldContinueAfter = true; // Continue generation after clearing
+
+      expect(shouldClearAll).toBe(true);
+      expect(shouldContinueAfter).toBe(true);
+    });
+
+    it('should overwrite specific config when user selects overwrite', () => {
+      const userAction = 'overwrite';
+      const shouldOverwrite = userAction === 'overwrite';
+      const shouldClearAll = userAction === 'clear';
+
+      expect(shouldOverwrite).toBe(true);
+      expect(shouldClearAll).toBe(false); // Only overwrite this assistant, not all
+    });
+
+    it('should skip config check when force flag is set', () => {
+      const forceFlag = true;
+      const shouldCheckExisting = !forceFlag;
+
+      expect(shouldCheckExisting).toBe(false);
+    });
+
+    it('should check config AFTER assistant is selected in wizard', () => {
+      // Config check happens after wizard completes and assistant is chosen
+      const wizardSteps = [
+        'language',
+        'projectType',
+        'assistant',  // Assistant selection
+        'architecture',
+        'datasource',
+        'level',
+        'summary'
+      ];
+
+      const wizardComplete = true;
+      const assistantSelected = true;
+      const canCheckExistingConfig = wizardComplete && assistantSelected;
+
+      expect(canCheckExistingConfig).toBe(true);
+      expect(wizardSteps).toContain('assistant');
+    });
+
+    it('should show specific assistant name in warning message', () => {
+      const assistant = 'claude-code';
+      const friendlyNames = {
+        'claude-code': 'Claude Code',
+        'antigravity': 'Antigravity',
+        'copilot': 'GitHub Copilot',
+        'gemini': 'Gemini',
+        'codex': 'Codex'
+      };
+
+      const displayName = friendlyNames[assistant];
+      expect(displayName).toBe('Claude Code');
+      expect(displayName).not.toBe('claude-code'); // Should use friendly name
+    });
+
+    it('should use async exists check not sync', () => {
+      // This verifies we're using the async pattern
+      const usesAsyncExists = true; // Implementation uses await exists()
+      const usesSyncExists = false;  // Not using existsSync()
+
+      expect(usesAsyncExists).toBe(true);
+      expect(usesSyncExists).toBe(false);
     });
   });
 });

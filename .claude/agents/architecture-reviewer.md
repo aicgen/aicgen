@@ -1,5 +1,6 @@
 ---
 model: "claude-sonnet-4-5"
+temperature: 0.5
 description: "Reviews architectural decisions and patterns"
 ---
 

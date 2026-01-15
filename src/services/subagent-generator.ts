@@ -1,11 +1,21 @@
+import { getSubAgentConfig } from '../config/ai-providers.config.js';
+
 export interface SubAgentTemplate {
   name: string;
   content: string;
 }
 
-const EMBEDDED_AGENTS: Record<string, string> = {
-  'guideline-checker': `---
-model: "claude-opus-4-5"
+/**
+ * Generate sub-agent templates with configured models
+ * Models can be customized via environment variables or ~/.aicgen/config.yml
+ */
+function getEmbeddedAgents(): Record<string, string> {
+  const config = getSubAgentConfig();
+
+  return {
+    'guideline-checker': `---
+model: "${config.guidelineChecker.model}"
+temperature: ${config.guidelineChecker.temperature}
 description: "Verifies code changes comply with project guidelines"
 ---
 
@@ -79,8 +89,9 @@ Overall: 3 issues require attention
 - Acknowledge good practices when found
 `,
 
-  'architecture-reviewer': `---
-model: "claude-sonnet-4-5"
+    'architecture-reviewer': `---
+model: "${config.architectureReviewer.model}"
+temperature: ${config.architectureReviewer.temperature}
 description: "Reviews architectural decisions and patterns"
 ---
 
@@ -169,9 +180,9 @@ Recommendation: Address critical dependency violation before merging
 - Balance idealism with pragmatism
 `,
 
-  'security-auditor': `---
-model: "claude-opus-4-5"
-temperature: 0.3
+    'security-auditor': `---
+model: "${config.securityAuditor.model}"
+temperature: ${config.securityAuditor.temperature}
 description: "Identifies security vulnerabilities and risks"
 ---
 
@@ -278,11 +289,13 @@ Risk Level: [Low/Medium/High/Critical]
 - Balance security with usability
 - Don't create false positives unnecessarily
 `
-};
+  };
+}
 
 export class SubAgentGenerator {
   async generateSubAgents(guidelineIds: string[]): Promise<SubAgentTemplate[]> {
     const agents: SubAgentTemplate[] = [];
+    const EMBEDDED_AGENTS = getEmbeddedAgents();
 
     agents.push({
       name: 'guideline-checker',

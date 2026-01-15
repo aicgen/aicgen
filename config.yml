@@ -1,0 +1,38 @@
+github:
+  owner: aicgen
+  repo: aicgen-data
+
+# AI Provider Configuration
+ai:
+  gemini:
+    model: gemini-2.0-flash-exp
+    timeout: 30000
+    maxRetries: 3
+    maxTokens: 8192
+
+  claude:
+    model: claude-3-5-sonnet-20241022
+    timeout: 30000
+    maxRetries: 3
+    maxTokens: 8096
+    temperature: 0.7
+
+  openai:
+    model: gpt-4o
+    timeout: 30000
+    maxRetries: 3
+    maxTokens: 4096
+    temperature: 0.7
+
+  subAgents:
+    guidelineChecker:
+      model: claude-opus-4-5
+      temperature: 0.3
+
+    architectureReviewer:
+      model: claude-sonnet-4-5
+      temperature: 0.5
+
+    securityAuditor:
+      model: claude-opus-4-5
+      temperature: 0.3

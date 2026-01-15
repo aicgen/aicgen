@@ -166,6 +166,12 @@ export class AnalysisValidator {
       );
     }
 
+    // Handle Gemini wrapping response in an array
+    // Gemini with responseMimeType='application/json' sometimes returns [{ ... }] instead of { ... }
+    if (Array.isArray(parsed) && parsed.length === 1) {
+      parsed = parsed[0];
+    }
+
     // Validate structure
     this.validate(parsed);
 

@@ -1,5 +1,6 @@
 ---
 model: "claude-opus-4-5"
+temperature: 0.3
 description: "Verifies code changes comply with project guidelines"
 ---
 

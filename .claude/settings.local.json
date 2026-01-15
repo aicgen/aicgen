@@ -6,7 +6,10 @@
       "Bash(where:*)",
       "Bash(xargs:*)",
       "Bash(npm test:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebSearch",
+      "Bash(GEMINI_API_KEY=AIzaSyDnth9UMRxCyAfDl_Ux2o9hEFoNEYJi9fs bun run:*)",
+      "Bash(GEMINI_API_KEY=AIzaSyDnth9UMRxCyAfDl_Ux2o9hEFoNEYJi9fs npm run start:*)"
     ]
   }
 }

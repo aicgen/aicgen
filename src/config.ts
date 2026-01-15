@@ -33,11 +33,66 @@ interface UserConfig {
     owner?: string;
     repo?: string;
   };
+  ai?: {
+    gemini?: {
+      model?: string;
+      timeout?: number;
+      maxRetries?: number;
+      maxTokens?: number;
+    };
+    claude?: {
+      model?: string;
+      timeout?: number;
+      maxRetries?: number;
+      maxTokens?: number;
+      temperature?: number;
+    };
+    openai?: {
+      model?: string;
+      timeout?: number;
+      maxRetries?: number;
+      maxTokens?: number;
+      temperature?: number;
+    };
+    subAgents?: {
+      guidelineChecker?: {
+        model?: string;
+        temperature?: number;
+      };
+      architectureReviewer?: {
+        model?: string;
+        temperature?: number;
+      };
+      securityAuditor?: {
+        model?: string;
+        temperature?: number;
+      };
+    };
+  };
+}
+
+/**
+ * Get the path to the user config file
+ * Works in both development and bundled executables
+ *
+ * @returns Full path to config.yml (e.g., C:\Users\username\.aicgen\config.yml on Windows)
+ */
+export function getUserConfigPath(): string {
+  return join(homedir(), '.aicgen', 'config.yml');
+}
+
+/**
+ * Get the directory where user config should be stored
+ *
+ * @returns Full path to config directory (e.g., C:\Users\username\.aicgen on Windows)
+ */
+export function getConfigDir(): string {
+  return join(homedir(), '.aicgen');
 }
 
 function loadUserConfig(): UserConfig {
   try {
-    const configPath = join(homedir(), '.aicgen', 'config.yml');
+    const configPath = getUserConfigPath();
     if (existsSync(configPath)) {
       const content = readFileSync(configPath, 'utf-8');
       return YAML.parse(content) as UserConfig;
@@ -49,6 +104,9 @@ function loadUserConfig(): UserConfig {
 }
 
 const userConfig = loadUserConfig();
+
+export { userConfig };
+export type { UserConfig };
 
 export const CONFIG = {
   APP_VERSION: getPackageVersion(),

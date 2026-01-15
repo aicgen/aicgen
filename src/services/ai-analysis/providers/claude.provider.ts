@@ -2,25 +2,42 @@ import Anthropic from '@anthropic-ai/sdk';
 import { AnalysisContext } from '../../project-analyzer';
 import { BaseAIProvider } from './base-provider';
 import { TimeoutError } from '../../shared/errors';
+import { getProviderConfig } from '../../../config/ai-providers.config.js';
 
 export class ClaudeProvider extends BaseAIProvider {
   private client: Anthropic;
+  private modelConfig: ReturnType<typeof getProviderConfig>;
 
   constructor(apiKey: string, options: { timeout?: number; maxRetries?: number } = {}) {
     super(apiKey, options);
+    this.modelConfig = getProviderConfig('claude');
+
+    // Override with runtime options if provided
+    const timeout = options.timeout || this.modelConfig.timeout;
+    const maxRetries = options.maxRetries || this.modelConfig.maxRetries;
+
     this.client = new Anthropic({
       apiKey,
-      timeout: options.timeout || 30000,
-      maxRetries: options.maxRetries || 3
+      timeout,
+      maxRetries,
     });
+
+    // Update modelConfig with runtime options
+    if (options.timeout) {
+      this.modelConfig.timeout = options.timeout;
+    }
+    if (options.maxRetries) {
+      this.modelConfig.maxRetries = options.maxRetries;
+    }
   }
 
   async analyze(_context: AnalysisContext, prompt: string): Promise<string> {
     try {
       const message = await this.client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 8096,
-        messages: [{ role: 'user', content: prompt }]
+        model: this.modelConfig.model,
+        max_tokens: this.modelConfig.maxTokens || 8096,
+        temperature: this.modelConfig.temperature,
+        messages: [{ role: 'user', content: prompt }],
       });
 
       const content = message.content[0];
@@ -31,7 +48,7 @@ export class ClaudeProvider extends BaseAIProvider {
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes('timeout') || error.message.includes('timed out')) {
-          throw new TimeoutError('Claude', this.options.timeout);
+          throw new TimeoutError('Claude', this.modelConfig.timeout);
         }
         throw new Error(`Claude API error: ${error.message}`);
       }

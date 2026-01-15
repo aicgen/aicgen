@@ -13,15 +13,11 @@ export default {
         useESM: true,
         tsconfig: {
           module: 'ESNext',
-          target: 'ES2022'
+          target: 'ES2022',
+          esModuleInterop: true,
         }
       },
     ],
-  },
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
   },
   testMatch: [
     '**/__tests__/**/*.ts',

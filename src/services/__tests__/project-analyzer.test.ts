@@ -11,9 +11,7 @@ jest.mock('../../utils/file', () => ({
 const glob = require('fast-glob') as jest.Mock;
 const { exists, readFile } = require('../../utils/file');
 
-// TODO: These tests need to be fixed to match the exact directory matching patterns in project-analyzer.ts
-// Skipping for now - not critical for main functionality (76 other tests pass)
-describe.skip('ProjectAnalyzer', () => {
+describe('ProjectAnalyzer', () => {
   let analyzer: ProjectAnalyzer;
   const testProjectPath = '/test/project';
 
@@ -21,8 +19,8 @@ describe.skip('ProjectAnalyzer', () => {
     analyzer = new ProjectAnalyzer(testProjectPath);
     jest.clearAllMocks();
 
-    // Default mocks - override in individual tests
-    glob.mockResolvedValue([]);
+    // Default mocks - will be overridden in individual tests
+    // Don't set glob here - it conflicts with mockImplementation in tests
     exists.mockResolvedValue(false);
     readFile.mockResolvedValue('{}');
   });

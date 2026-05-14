@@ -1,5 +1,5 @@
 Name:       aicgen
-Version:    1.0.0
+Version:    1.1.0
 Release:    1%{?dist}
 Summary:    AI Config Generator
 License:    MIT
@@ -19,5 +19,8 @@ chmod 755 %{buildroot}/usr/bin/aicgen
 /usr/bin/aicgen
 
 %changelog
+* Wed May 14 2026 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.1.0-1
+- Add SDLC workflow slash commands (/spec, /research, /plan, /build, /check, /ship) injected into all assistant configs
+
 * Thu Dec 11 2025 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.0.0-1
 - Initial release

@@ -1,13 +1,23 @@
 import chalk from 'chalk';
 import { GuidelineLoader } from '../services/guideline-loader';
+import { WorkflowInjector } from '../services/workflow-injector';
 
 export async function statsCommand() {
-  console.log(chalk.blue.bold('\n📊 Guideline Statistics\n'));
+  console.log(chalk.blue.bold('\n📊 aicgen Statistics\n'));
 
-  const loader = await GuidelineLoader.create();
+  const [loader, injector] = await Promise.all([
+    GuidelineLoader.create(),
+    WorkflowInjector.create(),
+  ]);
+
   const stats = loader.getStats();
+  const workflows = injector.getCommands();
 
   console.log(chalk.cyan('Total Guidelines:'), chalk.white(stats.totalGuidelines));
+  console.log(chalk.cyan('SDLC Workflows:  '), chalk.white(workflows.length));
+  workflows.forEach(w => {
+    console.log(`   ${chalk.gray(('/' + w.name).padEnd(12))} ${chalk.dim(w.description)}`);
+  });
 
   console.log(chalk.cyan('\n📋 By Language:'));
   Object.entries(stats.byLanguage)

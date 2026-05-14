@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { AIAssistant } from '../models/project.js';
+import { EMBEDDED_SDLC_CONTENT } from '../embedded-data.js';
 
 export interface GeneratedFile {
   path: string;
@@ -22,17 +23,15 @@ export class WorkflowInjector {
   }
 
   static async create(dataDir?: string): Promise<WorkflowInjector> {
-    const root = dataDir ?? process.cwd();
-    const sdlcPath = join(root, 'data/workflows/sdlc.md');
+    if (!dataDir) {
+      return WorkflowInjector.fromContent(EMBEDDED_SDLC_CONTENT);
+    }
+    const sdlcPath = join(dataDir, 'data/workflows/sdlc.md');
     try {
       const content = await readFile(sdlcPath, 'utf-8');
       return WorkflowInjector.fromContent(content);
-    } catch (err) {
-      throw new Error(
-        `WorkflowInjector: could not read "${sdlcPath}". ` +
-        `Pass the aicgen package root as dataDir, or ensure process.cwd() is the package root. ` +
-        `Original error: ${(err as Error).message}`
-      );
+    } catch {
+      return WorkflowInjector.fromContent(EMBEDDED_SDLC_CONTENT);
     }
   }
 

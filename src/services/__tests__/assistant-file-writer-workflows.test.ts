@@ -1,6 +1,23 @@
 import { AssistantFileWriter } from '../assistant-file-writer.js';
 import { WorkflowInjector } from '../workflow-injector.js';
 
+// Mock modules that transitively import config.ts (which uses import.meta.url,
+// incompatible with Jest's CJS transform mode).
+jest.mock('../guideline-loader', () => ({
+  GuidelineLoader: {
+    create: jest.fn().mockResolvedValue({
+      getMapping: jest.fn().mockReturnValue(undefined),
+      loadGuideline: jest.fn().mockReturnValue(''),
+    }),
+  },
+}));
+
+jest.mock('../subagent-generator', () => ({
+  SubAgentGenerator: jest.fn().mockImplementation(() => ({
+    generateSubAgents: jest.fn().mockResolvedValue([]),
+  })),
+}));
+
 const SAMPLE_SDLC_CONTENT = `# SDLC Workflows
 
 ## /spec [name]

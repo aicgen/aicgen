@@ -63,6 +63,11 @@ async function embedData() {
 
   console.log(`  Loaded ${Object.keys(guidelines).length} markdown files`);
 
+  // Read SDLC workflow content
+  const sdlcPath = join(dataDir, 'workflows/sdlc.md');
+  const sdlcContent = await readFile(sdlcPath, 'utf-8');
+  console.log('  Loaded SDLC workflow content');
+
   const data: EmbeddedData = { mappings, guidelines };
 
   // Generate TypeScript file
@@ -89,6 +94,7 @@ export const EMBEDDED_DATA: EmbeddedData = ${JSON.stringify(data, null, 2)};
 
 export const GUIDELINE_COUNT = ${Object.keys(guidelines).length};
 export const MAPPING_COUNT = ${Object.keys(mappings).length};
+export const EMBEDDED_SDLC_CONTENT = ${JSON.stringify(sdlcContent)};
 `;
 
   const outputPath = join(process.cwd(), 'src', 'embedded-data.ts');

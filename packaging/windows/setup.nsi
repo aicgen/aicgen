@@ -59,7 +59,7 @@ Section "aicgen (required)" SecCore
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayName" "aicgen"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "Publisher" "lpsandaruwan"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayVersion" "1.1.0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayVersion" "1.1.1"
   
   ; Add to PATH
   EnVar::SetHKLM

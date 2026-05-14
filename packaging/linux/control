@@ -1,9 +1,9 @@
 Package: aicgen
-Version: 1.1.0
+Version: 1.1.1
 Section: devel
 Priority: optional
 Architecture: amd64
 Maintainer: lpsandaruwan
 Description: AI Config Generator
- AI-assisted configuration generator for better coding.
- Automatically analyzes your project and suggests optimal configurations.
+  AI-assisted configuration generator for better coding.
+  Automatically analyzes your project and suggests optimal configurations.

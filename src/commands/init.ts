@@ -12,6 +12,8 @@ import { selectGuidelines } from './guideline-selector';
 import { CONFIG, GITHUB_RELEASES_URL } from '../config';
 import { ensureDataInitialized } from '../services/first-run-init';
 import { input } from '@inquirer/prompts';
+import { getAssistantConfigPaths, getAssistantDefinition, listAssistantDefinitions } from '../services/assistant-registry.js';
+import { AIProviderId, getAIProviderDisplayName } from '../models/ai-provider.js';
 
 
 interface InitOptions {
@@ -23,7 +25,7 @@ interface InitOptions {
   analyze?: boolean;
 }
 
-import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants';
+import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants';
 
 export async function initCommand(options: InitOptions) {
   showBanner();
@@ -82,16 +84,16 @@ export async function initCommand(options: InitOptions) {
 
         // Check environment variables first
         let apiKey: string | null = null;
-        let provider: AIAssistant = 'claude-code'; // Default
+        let provider: AIProviderId = 'anthropic';
 
         if (process.env.ANTHROPIC_API_KEY) {
-            provider = 'claude-code';
+            provider = 'anthropic';
             apiKey = process.env.ANTHROPIC_API_KEY;
         } else if (process.env.GEMINI_API_KEY) {
-            provider = 'gemini';
+            provider = 'google';
             apiKey = process.env.GEMINI_API_KEY;
         } else if (process.env.OPENAI_API_KEY) {
-            provider = 'codex';
+            provider = 'openai';
             apiKey = process.env.OPENAI_API_KEY;
         }
 
@@ -101,13 +103,12 @@ export async function initCommand(options: InitOptions) {
             // Select provider
             const providerChoice = await select({
                 message: 'Select AI Provider:',
-                choices: [
-                    { value: 'claude-code', name: 'Claude (Anthropic)' },
-                    { value: 'gemini', name: 'Gemini (Google)' },
-                    { value: 'codex', name: 'OpenAI' }
-                ]
+                choices: (['anthropic', 'google', 'openai'] as AIProviderId[]).map(value => ({
+                    value,
+                    name: getAIProviderDisplayName(value)
+                }))
             });
-            provider = providerChoice as AIAssistant;
+            provider = providerChoice as AIProviderId;
 
             // Check for stored key
             const storedKey = await credService.getStoredKey(provider);
@@ -291,30 +292,14 @@ export async function initCommand(options: InitOptions) {
     // Check if config for THIS assistant already exists
     if (!options.force) {
       const { exists } = await import('../utils/file.js');
-      const { join } = await import('path');
 
-      let configPath: string | null = null;
-      let assistantName = selection.assistant;
+      const definition = getAssistantDefinition(selection.assistant);
+      const configPaths = getAssistantConfigPaths(selection.assistant, projectPath);
+      const assistantName = definition.displayName;
 
-      // Map assistant to config path
-      if (selection.assistant === 'claude-code') {
-        configPath = join(projectPath, '.claude');
-        assistantName = 'Claude Code';
-      } else if (selection.assistant === 'antigravity') {
-        configPath = join(projectPath, '.agent');
-        assistantName = 'Antigravity';
-      } else if (selection.assistant === 'copilot') {
-        configPath = join(projectPath, '.github', 'copilot-instructions.md');
-        assistantName = 'GitHub Copilot';
-      } else if (selection.assistant === 'gemini') {
-        configPath = join(projectPath, '.gemini');
-        assistantName = 'Gemini';
-      } else if (selection.assistant === 'codex') {
-        configPath = join(projectPath, '.codex');
-        assistantName = 'Codex';
-      }
+      const hasExistingConfig = (await Promise.all(configPaths.map(path => exists(path)))).some(Boolean);
 
-      if (configPath && await exists(configPath)) {
+      if (hasExistingConfig) {
         console.log(chalk.yellow(`\n⚠️  Existing ${assistantName} configuration detected`));
 
         const action = await select({
@@ -363,6 +348,11 @@ export async function initCommand(options: InitOptions) {
       console.log(chalk.yellow('\n📋 Files that would be generated:'));
     } else {
       console.log(chalk.green('\n✅ Generated files:'));
+    }
+
+    if (result.conflicts.length > 0) {
+      const verb = options.dryRun ? 'would be refreshed' : 'were refreshed';
+      console.log(chalk.yellow(`\n⚠️  ${result.conflicts.length} existing file(s) ${verb}.`));
     }
 
     result.filesGenerated.forEach(file => {
@@ -441,15 +431,20 @@ async function handleAssistantStep(wizard: WizardStateManager, options: InitOpti
   if (state.assistant) return state.assistant;
 
   if (options.assistant) {
+    try {
+      getAssistantDefinition(options.assistant as AIAssistant);
+    } catch {
+      throw new Error(`Unsupported assistant "${options.assistant}". Gemini CLI generation was removed; use "antigravity" for Google agentic coding profiles.`);
+    }
     wizard.updateState({ assistant: options.assistant as AIAssistant });
     return options.assistant;
   }
 
   const choices = addBackOption(
-    ASSISTANTS.map(a => ({
-      value: a.value,
-      name: a.name,
-      description: a.description
+    listAssistantDefinitions().map(assistant => ({
+      value: assistant.id,
+      name: assistant.displayName,
+      description: assistant.description
     })),
     wizard.canGoBack()
   );
@@ -610,7 +605,7 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
     state.datasource
   );
 
-  const metrics = loader.getMetrics(guidelineIds);
+  const metrics = loader.getMetrics(guidelineIds, state.level!);
 
   console.log('\n' + createSummaryBox('📋 Configuration Summary', [
     { label: 'Assistant', value: state.assistant! },
@@ -668,7 +663,7 @@ async function getLevelsWithMetrics(language: Language, architecture: Architectu
 
   return levels.map(level => {
     const guidelineIds = loader.getGuidelinesForProfile(language, level, architecture, datasource);
-    const metrics = loader.getMetrics(guidelineIds);
+    const metrics = loader.getMetrics(guidelineIds, level);
 
     const descriptions: Record<InstructionLevel, string> = {
       basic: 'Essential guidelines for quick projects',
@@ -686,31 +681,10 @@ async function getLevelsWithMetrics(language: Language, architecture: Architectu
 }
 
 function printNextSteps(assistant: AIAssistant) {
-  switch (assistant) {
-    case 'claude-code':
-      console.log(chalk.gray('   1. Review .claude/CLAUDE.md'));
-      console.log(chalk.gray('   2. Check .claude/settings.json for hooks'));
-      console.log(chalk.gray('   3. Review sub-agents in .claude/agents/'));
-      console.log(chalk.gray('   4. Open project in Claude Code'));
-      break;
-    case 'copilot':
-      console.log(chalk.gray('   1. Review .github/copilot-instructions.md'));
-      console.log(chalk.gray('   2. Check .github/instructions/ for details'));
-      console.log(chalk.gray('   3. Open project in VS Code'));
-      break;
-    case 'gemini':
-      console.log(chalk.gray('   1. Review .gemini/instructions.md'));
-      console.log(chalk.gray('   2. Configure Gemini integration'));
-      break;
-    case 'antigravity':
-      console.log(chalk.gray('   1. Review .agent/rules/instructions.md'));
-      console.log(chalk.gray('   2. Open project in Antigravity'));
-      break;
-    case 'codex':
-      console.log(chalk.gray('   1. Review .codex/instructions.md'));
-      console.log(chalk.gray('   2. Configure Codex integration'));
-      break;
-  }
+  const definition = getAssistantDefinition(assistant);
+  definition.nextSteps.forEach((step, index) => {
+    console.log(chalk.gray(`   ${index + 1}. ${step}`));
+  });
   console.log(chalk.gray('   \n   Also check AGENTS.md for universal instructions'));
 }
 
@@ -758,5 +732,3 @@ async function checkForUpdatesInBackground() {
     // Silently fail if can't check for updates
   }
 }
-
-

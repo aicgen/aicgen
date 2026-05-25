@@ -11,6 +11,8 @@ export type ArchitectureType =
   | 'ddd'
   | 'serverless'
   | 'monorepo'
+  | 'bounded-contexts'
+  | 'component-based'
   | 'other';
 export type DatasourceType = 'sql' | 'nosql' | 'none';
 

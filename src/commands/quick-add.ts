@@ -10,6 +10,8 @@ import { showBanner } from '../utils/banner';
 import { AssistantFileWriter } from '../services/assistant-file-writer';
 import { ProfileSelection, ArchitectureType, InstructionLevel } from '../models/profile';
 import { ConfigGenerator } from '../services/config-generator';
+import { CONFIG } from '../config.js';
+import { detectAssistant } from '../services/assistant-registry.js';
 
 interface CheckboxChoice {
   name: string;
@@ -202,25 +204,6 @@ export async function quickAddCommand() {
   }
 }
 
-async function detectAssistant(projectPath: string): Promise<AIAssistant | null> {
-  const configs = [
-    { path: 'CLAUDE.md', assistant: 'claude-code' as AIAssistant },
-    { path: '.claude', assistant: 'claude-code' as AIAssistant },
-    { path: '.github/copilot-instructions.md', assistant: 'copilot' as AIAssistant },
-    { path: '.gemini', assistant: 'gemini' as AIAssistant },
-    { path: '.agent', assistant: 'antigravity' as AIAssistant },
-    { path: '.codex', assistant: 'codex' as AIAssistant }
-  ];
-
-  for (const config of configs) {
-    if (existsSync(join(projectPath, config.path))) {
-      return config.assistant;
-    }
-  }
-
-  return null;
-}
-
 async function loadExistingConfig(projectPath: string, assistant: AIAssistant): Promise<ProfileSelection> {
   // Default fallback - get project name from path
   const pathParts = projectPath.split(/[/\\]/);
@@ -263,9 +246,6 @@ async function loadExistingConfig(projectPath: string, assistant: AIAssistant): 
       }
       case 'copilot':
         filePath = join(projectPath, '.github', 'copilot-instructions.md');
-        break;
-      case 'gemini':
-        filePath = join(projectPath, '.gemini', 'instructions.md');
         break;
       case 'antigravity':
         filePath = join(projectPath, '.agent', 'rules', 'instructions.md');
@@ -327,9 +307,6 @@ async function appendGuidelines(
       break;
     case 'copilot':
       await appendToCopilot(projectPath, guidelines);
-      break;
-    case 'gemini':
-      await appendToGemini(projectPath, guidelines);
       break;
     case 'antigravity':
       await appendToAntigravity(projectPath, guidelines);
@@ -440,42 +417,6 @@ ${guidelines.join('\n\n---\n\n')}`;
   }
 }
 
-async function appendToGemini(projectPath: string, guidelines: string[]): Promise<void> {
-  const instructionsPath = join(projectPath, '.gemini', 'instructions.md');
-
-  if (!existsSync(instructionsPath)) {
-    throw new Error('instructions.md not found');
-  }
-
-  // Create guidelines directory
-  const geminiDir = join(projectPath, '.gemini');
-  await mkdir(geminiDir, { recursive: true });
-
-  // Create additional guidelines file
-  const additionalFile = join(geminiDir, 'additional-guidelines.md');
-  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
-
-  if (existsSync(additionalFile)) {
-    // Append to existing file
-    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
-  } else {
-    // Create new file
-    await writeFile(additionalFile, additionalContent, 'utf-8');
-  }
-
-  // Update instructions.md with import reference if not already present
-  const content = await readFile(instructionsPath, 'utf-8');
-
-  if (content.includes('additional-guidelines.md')) {
-    // Reference already exists
-    return;
-  }
-
-  // Add reference before the closing section
-  const newContent = content.trimEnd() + `\n\n## Additional Guidelines\n\nSee: additional-guidelines.md\n`;
-  await writeFile(instructionsPath, newContent, 'utf-8');
-}
-
 async function appendToAntigravity(
   projectPath: string,
   guidelines: string[]
@@ -574,7 +515,7 @@ async function regenerateConfig(
   const allIds = [...new Set([...existingIds, ...additionalIds])];
 
   // Regenerate configuration with all guidelines
-  const fileWriter = await AssistantFileWriter.create();
+  const fileWriter = await AssistantFileWriter.create(undefined, CONFIG.APP_VERSION);
   const files = await fileWriter.generateFiles(
     existingConfig.assistant,
     allIds,

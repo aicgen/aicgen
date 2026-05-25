@@ -1,5 +1,6 @@
 import { AnalysisContext } from '../project-analyzer';
-import { AIAssistant, Language, ProjectType } from '../../models/project';
+import { Language, ProjectType } from '../../models/project';
+import { AIProviderId, AIProviderLike, normalizeAIProvider } from '../../models/ai-provider.js';
 import { InstructionLevel, ArchitectureType, DatasourceType } from '../../models/profile';
 import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../../constants';
 import { retry } from '../shared/resilience';
@@ -50,26 +51,27 @@ export class AIAnalysisService {
 
   async analyzeProject(
     context: AnalysisContext,
-    assistant: AIAssistant,
+    providerInput: AIProviderLike,
     apiKey: string
   ): Promise<AnalysisResult> {
     const startTime = Date.now();
     const correlationId = this.generateCorrelationId();
+    const providerId = normalizeAIProvider(providerInput);
 
     this.serviceLogger.info('AI analysis started', {
       correlationId,
-      provider: assistant,
+      provider: providerId,
       fileCount: context.metadata.files.length,
       sampleCount: context.samples.length
     });
 
     try {
-      const provider = this.getProvider(assistant, apiKey);
+      const provider = this.getProvider(providerId, apiKey);
       const prompt = this.buildPrompt(context);
 
       this.serviceLogger.debug('Sending request to AI provider', {
         correlationId,
-        provider: assistant,
+        provider: providerId,
         promptLength: prompt.length
       });
 
@@ -85,7 +87,7 @@ export class AIAnalysisService {
           onRetry: (attempt, error, delayMs) => {
             this.serviceLogger.warn('Retrying AI analysis', {
               correlationId,
-              provider: assistant,
+              provider: providerId,
               attempt,
               delayMs,
               error: error.message
@@ -99,7 +101,7 @@ export class AIAnalysisService {
       const duration = Date.now() - startTime;
       this.serviceLogger.info('AI analysis completed', {
         correlationId,
-        provider: assistant,
+        provider: providerId,
         duration,
         architecture: result.architecture.pattern,
         language: result.language
@@ -112,7 +114,7 @@ export class AIAnalysisService {
 
       this.serviceLogger.error('AI analysis failed', error as Error, {
         correlationId,
-        provider: assistant,
+        provider: providerId,
         duration
       });
 
@@ -122,21 +124,21 @@ export class AIAnalysisService {
 
       throw new AIProviderError(
         `AI analysis failed: ${(error as Error).message}`,
-        assistant,
+        providerId,
         error as Error
       );
     }
   }
 
-  private getProvider(assistant: AIAssistant, apiKey: string): AIProvider {
+  private getProvider(provider: AIProviderId, apiKey: string): AIProvider {
     if (!apiKey?.trim()) {
       throw new InvalidCredentialsError(
-        `API key required for ${assistant}`,
-        assistant
+        `API key required for ${provider}`,
+        provider
       );
     }
 
-    return ProviderFactory.create(assistant, apiKey, {
+    return ProviderFactory.create(provider, apiKey, {
       timeout: this.config.timeoutMs,
       maxRetries: this.config.maxRetries
     });

@@ -12,6 +12,7 @@ import {
   GuidelineData
 } from './data-source';
 import { CONFIG } from '../config';
+import { isProfileAtLeast } from './agentic-capabilities.js';
 
 export type { GuidelineMapping };
 
@@ -180,7 +181,7 @@ export class GuidelineLoader {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  getMetrics(guidelineIds: string[]): ProfileMetrics {
+  getMetrics(guidelineIds: string[], level: InstructionLevel = 'standard'): ProfileMetrics {
     const categories: Record<string, number> = {};
 
     for (const id of guidelineIds) {
@@ -193,34 +194,38 @@ export class GuidelineLoader {
 
     return {
       guidelineCount: guidelineIds.length,
-      hooksCount: this.estimateHooks(guidelineIds),
-      subAgentsCount: this.estimateSubAgents(guidelineIds),
+      hooksCount: this.estimateHooks(guidelineIds, level),
+      subAgentsCount: this.estimateSubAgents(guidelineIds, level),
       estimatedSize: this.estimateSize(guidelineIds),
       categories: Object.entries(categories).map(([name, count]) => ({ name, count }))
     };
   }
 
-  private estimateHooks(guidelineIds: string[]): number {
-    const hasFormatting = guidelineIds.some(id => id.includes('style') || id.includes('typescript') || id.includes('python'));
+  private estimateHooks(guidelineIds: string[], level: InstructionLevel): number {
+    if (!isProfileAtLeast(level, 'expert')) {
+      return 0;
+    }
+
     const hasSecurity = guidelineIds.some(id => id.includes('security'));
     const hasTesting = guidelineIds.some(id => id.includes('testing'));
 
     let count = 0;
-    if (hasFormatting) count += 1;
-    if (hasSecurity) count += 2;
+    if (hasSecurity) count += 3;
     if (hasTesting) count += 1;
     return count;
   }
 
-  private estimateSubAgents(guidelineIds: string[]): number {
+  private estimateSubAgents(guidelineIds: string[], level: InstructionLevel): number {
+    if (!isProfileAtLeast(level, 'expert')) {
+      return 0;
+    }
+
     const hasArchitecture = guidelineIds.some(id => id.includes('architecture'));
     const hasSecurity = guidelineIds.some(id => id.includes('security'));
-    const hasStyle = guidelineIds.some(id => id.includes('style'));
 
     let count = 1;
     if (hasArchitecture) count += 1;
     if (hasSecurity) count += 1;
-    if (hasStyle && guidelineIds.length > 10) count += 1;
     return count;
   }
 

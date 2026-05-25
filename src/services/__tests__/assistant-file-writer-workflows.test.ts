@@ -15,6 +15,7 @@ jest.mock('../guideline-loader', () => ({
 jest.mock('../subagent-generator', () => ({
   SubAgentGenerator: jest.fn().mockImplementation(() => ({
     generateSubAgents: jest.fn().mockResolvedValue([]),
+    generateSkills: jest.fn().mockResolvedValue([]),
   })),
 }));
 
@@ -109,10 +110,10 @@ describe('AssistantFileWriter — workflow injection', () => {
   });
 
   describe('copilot', () => {
-    it('should include 1 workflow file in generated output', async () => {
+    it('should include workflow instructions and prompt files in generated output', async () => {
       const files = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot' }, '/tmp/test');
       const workflowFiles = files.filter(f => f.type === 'workflow');
-      expect(workflowFiles).toHaveLength(1);
+      expect(workflowFiles).toHaveLength(7);
     });
 
     it('should generate workflow file at .github/instructions/workflows.instructions.md', async () => {
@@ -120,13 +121,44 @@ describe('AssistantFileWriter — workflow injection', () => {
       const workflowFile = files.find(f => f.type === 'workflow');
       expect(workflowFile?.path).toContain('workflows.instructions.md');
     });
+
+    it('should generate reusable prompt files for each SDLC command', async () => {
+      const files = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot' }, '/tmp/test');
+
+      expect(files.some(f => f.path.endsWith('.github/prompts/spec.prompt.md'))).toBe(true);
+      expect(files.some(f => f.path.endsWith('.github/prompts/ship.prompt.md'))).toBe(true);
+    });
   });
 
-  describe('gemini', () => {
-    it('should include SDLC Workflows section in .gemini/instructions.md', async () => {
-      const files = await writer.generateFiles('gemini', [], { ...MOCK_SELECTION, assistant: 'gemini' }, '/tmp/test');
-      const geminiFile = files.find(f => f.path.endsWith('instructions.md'));
-      expect(geminiFile?.content).toContain('## SDLC Workflows');
+  describe('codex', () => {
+    it('should include project-local plugin files with 6 namespaced skills', async () => {
+      const files = await writer.generateFiles('codex', [], { ...MOCK_SELECTION, assistant: 'codex' }, '/tmp/test');
+      const pluginFiles = files.filter(f => f.type === 'plugin');
+      const skillFiles = pluginFiles.filter(f => f.path.includes('/skills/'));
+
+      expect(pluginFiles.some(f => f.path.endsWith('plugins/aicgen-sdlc/.codex-plugin/plugin.json'))).toBe(true);
+      expect(skillFiles).toHaveLength(6);
+      expect(skillFiles.some(f => f.path.endsWith('plugins/aicgen-sdlc/skills/aicgen-plan/SKILL.md'))).toBe(true);
+    });
+
+    it('should include installed-by-default marketplace entry', async () => {
+      const files = await writer.generateFiles('codex', [], { ...MOCK_SELECTION, assistant: 'codex' }, '/tmp/test');
+      const marketplaceFile = files.find(f => f.path.endsWith('.agents/plugins/marketplace.json'));
+      const marketplace = JSON.parse(marketplaceFile!.content);
+
+      expect(marketplace.plugins[0].name).toBe('aicgen-sdlc');
+      expect(marketplace.plugins[0].policy.installation).toBe('INSTALLED_BY_DEFAULT');
+    });
+
+    it('should list namespaced workflow commands in Codex instructions and AGENTS.md', async () => {
+      const files = await writer.generateFiles('codex', [], { ...MOCK_SELECTION, assistant: 'codex' }, '/tmp/test');
+      const codexFile = files.find(f => f.path.endsWith('.codex/instructions.md'));
+      const agentsMd = files.find(f => f.path.endsWith('AGENTS.md'));
+
+      expect(codexFile?.content).toContain('/aicgen-spec');
+      expect(codexFile?.content).toContain('/aicgen-plan');
+      expect(agentsMd?.content).toContain('/aicgen-spec');
+      expect(agentsMd?.content).toContain('aicgen-sdlc');
     });
   });
 
@@ -136,6 +168,40 @@ describe('AssistantFileWriter — workflow injection', () => {
       const workflowFiles = files.filter(f => f.type === 'workflow');
       expect(workflowFiles).toHaveLength(6);
       expect(workflowFiles[0].path).toContain('.agent/workflows/spec.md');
+    });
+  });
+
+  describe('profile gating', () => {
+    it('should keep basic profiles instruction-only for workflow surfaces', async () => {
+      const files = await writer.generateFiles(
+        'claude-code',
+        [],
+        { ...MOCK_SELECTION, level: 'basic' },
+        '/tmp/test'
+      );
+
+      expect(files.filter(f => f.type === 'workflow')).toHaveLength(0);
+      expect(files.filter(f => f.type === 'agent')).toHaveLength(0);
+      expect(files.filter(f => f.type === 'skill')).toHaveLength(0);
+    });
+
+    it('should generate Codex hooks only for expert profiles and above', async () => {
+      const standardFiles = await writer.generateFiles(
+        'codex',
+        [],
+        { ...MOCK_SELECTION, assistant: 'codex', level: 'standard' },
+        '/tmp/test'
+      );
+      const expertFiles = await writer.generateFiles(
+        'codex',
+        [],
+        { ...MOCK_SELECTION, assistant: 'codex', level: 'expert' },
+        '/tmp/test'
+      );
+
+      expect(standardFiles.some(f => f.path.endsWith('.codex/hooks.json'))).toBe(false);
+      expect(expertFiles.some(f => f.path.endsWith('.codex/hooks.json'))).toBe(true);
+      expect(expertFiles.some(f => f.path.endsWith('.codex/hooks/aicgen_session_start.py'))).toBe(true);
     });
   });
 

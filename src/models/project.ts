@@ -9,6 +9,8 @@ export type Language =
     | 'ruby'
     | 'dart'
     | 'swift'
+    | 'kotlin'
+    | 'php'
     | 'unknown';
 
 export type ProjectType =
@@ -23,7 +25,6 @@ export type ProjectType =
 export type AIAssistant =
     | 'claude-code'
     | 'copilot'
-    | 'gemini'
     | 'antigravity'
     | 'codex';
 
@@ -37,6 +38,7 @@ export type PackageManager =
     | 'cargo'
     | 'go'
     | 'pub'
+    | 'composer'
     | 'unknown';
 
 export interface DetectedProject {

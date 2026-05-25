@@ -18,10 +18,26 @@ async function testGeminiProvider() {
 
   const mockContext: AnalysisContext = {
     metadata: {
+      structure: [],
       files: ['test.ts'],
-      packages: [],
-      frameworksDetected: [],
-      databases: []
+      language: 'typescript',
+      frameworks: [],
+      buildTools: [],
+      packageManager: 'unknown',
+      repoType: 'unknown',
+      fingerprint: 'manual-test',
+      architectureHints: [],
+      databaseHints: {
+        hasSql: false,
+        hasNoSql: false,
+        detected: []
+      },
+      testingHints: {
+        frameworks: [],
+        hasTests: false,
+        testFileCount: 0
+      },
+      projectTypeHints: []
     },
     samples: [
       {

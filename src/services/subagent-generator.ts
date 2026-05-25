@@ -1,6 +1,13 @@
 import { getSubAgentConfig } from '../config/ai-providers.config.js';
+import { InstructionLevel } from '../models/profile.js';
+import { isProfileAtLeast } from './agentic-capabilities.js';
 
 export interface SubAgentTemplate {
+  name: string;
+  content: string;
+}
+
+export interface SkillTemplate {
   name: string;
   content: string;
 }
@@ -293,7 +300,14 @@ Risk Level: [Low/Medium/High/Critical]
 }
 
 export class SubAgentGenerator {
-  async generateSubAgents(guidelineIds: string[]): Promise<SubAgentTemplate[]> {
+  async generateSubAgents(
+    guidelineIds: string[],
+    level: InstructionLevel = 'standard'
+  ): Promise<SubAgentTemplate[]> {
+    if (!isProfileAtLeast(level, 'expert')) {
+      return [];
+    }
+
     const agents: SubAgentTemplate[] = [];
     const EMBEDDED_AGENTS = getEmbeddedAgents();
 
@@ -319,5 +333,61 @@ export class SubAgentGenerator {
     }
 
     return agents;
+  }
+
+  async generateSkills(
+    guidelineIds: string[],
+    level: InstructionLevel = 'standard'
+  ): Promise<SkillTemplate[]> {
+    if (!isProfileAtLeast(level, 'expert')) {
+      return [];
+    }
+
+    const agents = await this.generateSubAgents(guidelineIds, level);
+    return agents.map(agent => ({
+      name: this.skillName(agent.name),
+      content: this.buildSkill(agent),
+    }));
+  }
+
+  private skillName(agentName: string): string {
+    const names: Record<string, string> = {
+      'guideline-checker': 'aicgen-guideline-review',
+      'architecture-reviewer': 'aicgen-architecture-review',
+      'security-auditor': 'aicgen-security-audit',
+    };
+
+    return names[agentName] || `aicgen-${agentName}`;
+  }
+
+  private buildSkill(agent: SubAgentTemplate): string {
+    const skillName = this.skillName(agent.name);
+    const description = this.skillDescription(agent.name);
+
+    return `---
+name: ${skillName}
+description: ${JSON.stringify(description)}
+---
+
+# ${skillName}
+
+Use this skill when the user asks for ${description.toLowerCase()}.
+
+Review the current task, inspect the relevant code, and report only actionable findings with file paths, severity, and concrete remediation steps.
+
+## Review Prompt
+
+${agent.content}
+`;
+  }
+
+  private skillDescription(agentName: string): string {
+    const descriptions: Record<string, string> = {
+      'guideline-checker': 'AICGEN guideline compliance review',
+      'architecture-reviewer': 'AICGEN architecture review',
+      'security-auditor': 'AICGEN security audit',
+    };
+
+    return descriptions[agentName] || 'AICGEN focused code review';
   }
 }

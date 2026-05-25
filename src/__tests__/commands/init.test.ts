@@ -118,7 +118,7 @@ describe('Init Command', () => {
 
   describe('Interactive Mode', () => {
     it('should allow manual assistant selection', () => {
-      const assistants = ['claude-code', 'copilot', 'gemini', 'antigravity', 'codex'];
+      const assistants = ['claude-code', 'copilot', 'antigravity', 'codex'];
       const selectedAssistant = 'claude-code';
 
       expect(assistants).toContain(selectedAssistant);
@@ -178,8 +178,7 @@ describe('Init Command', () => {
         'claude-code',
         'antigravity',
         'copilot',
-        'codex',
-        'gemini'
+        'codex'
       ];
 
       // Verify all expected assistants are available
@@ -187,8 +186,8 @@ describe('Init Command', () => {
       expect(supportedAssistants).toContain('antigravity');
       expect(supportedAssistants).toContain('copilot');
       expect(supportedAssistants).toContain('codex');
-      expect(supportedAssistants).toContain('gemini');
-      expect(supportedAssistants).toHaveLength(5);
+      expect(supportedAssistants).not.toContain('gemini');
+      expect(supportedAssistants).toHaveLength(4);
     });
 
     it('should require assistant selection before generation', () => {
@@ -339,7 +338,6 @@ describe('Init Command', () => {
         'claude-code': { path: '.claude', name: 'Claude Code' },
         'antigravity': { path: '.agent', name: 'Antigravity' },
         'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
-        'gemini': { path: '.gemini', name: 'Gemini' },
         'codex': { path: '.codex', name: 'Codex' }
       };
 
@@ -356,7 +354,6 @@ describe('Init Command', () => {
         'claude-code': { path: '.claude', name: 'Claude Code' },
         'antigravity': { path: '.agent', name: 'Antigravity' },
         'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
-        'gemini': { path: '.gemini', name: 'Gemini' },
         'codex': { path: '.codex', name: 'Codex' }
       };
 
@@ -372,22 +369,6 @@ describe('Init Command', () => {
         'claude-code': { path: '.claude', name: 'Claude Code' },
         'antigravity': { path: '.agent', name: 'Antigravity' },
         'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
-        'gemini': { path: '.gemini', name: 'Gemini' },
-        'codex': { path: '.codex', name: 'Codex' }
-      };
-
-      expect(configMap[assistant].path).toBe(expectedPath);
-    });
-
-    it('should check for Gemini config at .gemini directory', () => {
-      const assistant = 'gemini';
-      const expectedPath = '.gemini';
-
-      const configMap = {
-        'claude-code': { path: '.claude', name: 'Claude Code' },
-        'antigravity': { path: '.agent', name: 'Antigravity' },
-        'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
-        'gemini': { path: '.gemini', name: 'Gemini' },
         'codex': { path: '.codex', name: 'Codex' }
       };
 
@@ -402,7 +383,6 @@ describe('Init Command', () => {
         'claude-code': { path: '.claude', name: 'Claude Code' },
         'antigravity': { path: '.agent', name: 'Antigravity' },
         'copilot': { path: '.github/copilot-instructions.md', name: 'GitHub Copilot' },
-        'gemini': { path: '.gemini', name: 'Gemini' },
         'codex': { path: '.codex', name: 'Codex' }
       };
 
@@ -479,7 +459,6 @@ describe('Init Command', () => {
         'claude-code': 'Claude Code',
         'antigravity': 'Antigravity',
         'copilot': 'GitHub Copilot',
-        'gemini': 'Gemini',
         'codex': 'Codex'
       };
 

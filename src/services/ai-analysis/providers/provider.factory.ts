@@ -1,4 +1,4 @@
-import { AIAssistant } from '../../../models/project';
+import { AIProviderLike, normalizeAIProvider } from '../../../models/ai-provider.js';
 import { AIProvider, ProviderOptions } from './base-provider';
 import { ClaudeProvider } from './claude.provider';
 import { GeminiProvider } from './gemini.provider';
@@ -6,22 +6,17 @@ import { OpenAIProvider } from './openai.provider';
 
 export class ProviderFactory {
   static create(
-    assistant: AIAssistant,
+    provider: AIProviderLike,
     apiKey: string,
     options?: ProviderOptions
   ): AIProvider {
-    if (assistant === 'claude-code' || assistant === 'antigravity') {
-      return new ClaudeProvider(apiKey, options);
+    switch (normalizeAIProvider(provider)) {
+      case 'anthropic':
+        return new ClaudeProvider(apiKey, options);
+      case 'google':
+        return new GeminiProvider(apiKey, options);
+      case 'openai':
+        return new OpenAIProvider(apiKey, options);
     }
-
-    if (assistant === 'gemini') {
-      return new GeminiProvider(apiKey, options);
-    }
-
-    if (assistant === 'codex' || assistant === 'copilot') {
-      return new OpenAIProvider(apiKey, options);
-    }
-
-    throw new Error(`Provider ${assistant} not supported for analysis yet.`);
   }
 }

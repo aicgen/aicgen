@@ -4,7 +4,7 @@
  * Generate version.json with dynamic stats calculated from guideline-mappings.yml
  */
 
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { parse as parseYAML } from 'yaml';
 import { join } from 'path';
 
@@ -26,6 +26,7 @@ interface VersionData {
   version: string;
   lastUpdated: string;
   totalGuidelines: number;
+  totalWorkflows: number;
   categories: Record<string, number>;
   languages: Record<string, number>;
   architectures: Record<string, number>;
@@ -33,9 +34,38 @@ interface VersionData {
   datasources: Record<string, number>;
 }
 
-const DATA_DIR = join(__dirname, '../data');
+const DATA_DIR = process.env.AICGEN_DATA_DIR || join(__dirname, '../data');
 const MAPPINGS_FILE = join(DATA_DIR, 'guideline-mappings.yml');
 const VERSION_FILE = join(DATA_DIR, 'version.json');
+const SDLC_WORKFLOW_FILE = join(DATA_DIR, 'workflows/sdlc.md');
+
+function validateDataDir(): void {
+  const missing = [MAPPINGS_FILE, SDLC_WORKFLOW_FILE].filter(file => !existsSync(file));
+  if (missing.length > 0) {
+    throw new Error(
+      [
+        `Missing aicgen data files under ${DATA_DIR}:`,
+        ...missing.map(file => `  - ${file}`),
+        'Set AICGEN_DATA_DIR=/path/to/aicgen-data or initialize the data submodule with:',
+        '  git submodule update --init --recursive data',
+      ].join('\n')
+    );
+  }
+}
+
+function readExistingVersion(): string {
+  try {
+    const existing = JSON.parse(readFileSync(VERSION_FILE, 'utf-8')) as Partial<VersionData>;
+    return existing.version || '1.0.0';
+  } catch {
+    return '1.0.0';
+  }
+}
+
+function countWorkflowCommands(): number {
+  const content = readFileSync(SDLC_WORKFLOW_FILE, 'utf-8');
+  return (content.match(/^## \//gm) || []).length;
+}
 
 function calculateStats(mappings: GuidelineMappings): Omit<VersionData, 'version' | 'lastUpdated'> {
   const categories: Record<string, number> = {};
@@ -107,6 +137,7 @@ function calculateStats(mappings: GuidelineMappings): Omit<VersionData, 'version
 
   return {
     totalGuidelines: guidelineIds.length,
+    totalWorkflows: countWorkflowCommands(),
     categories,
     languages,
     architectures,
@@ -117,6 +148,9 @@ function calculateStats(mappings: GuidelineMappings): Omit<VersionData, 'version
 
 function main() {
   console.log('📊 Generating version.json with dynamic stats...\n');
+  console.log(`Data source: ${DATA_DIR}\n`);
+
+  validateDataDir();
 
   // Read guideline mappings
   const mappingsContent = readFileSync(MAPPINGS_FILE, 'utf-8');
@@ -130,7 +164,7 @@ function main() {
 
   // Create version data
   const versionData: VersionData = {
-    version: '1.0.0',
+    version: readExistingVersion(),
     lastUpdated: today,
     ...stats
   };
@@ -140,6 +174,7 @@ function main() {
 
   console.log(`✅ Generated ${VERSION_FILE}`);
   console.log(`   Total guidelines: ${stats.totalGuidelines}`);
+  console.log(`   Total workflows: ${stats.totalWorkflows}`);
   console.log(`   Categories: ${Object.keys(stats.categories).length}`);
   console.log(`   Languages: ${Object.keys(stats.languages).length}`);
   console.log(`   Architectures: ${Object.keys(stats.architectures).length}`);

@@ -20,10 +20,10 @@
 
 ## ✨ Features
 
-- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Gemini, Antigravity, Codex
-- **📚 82+ Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
+- **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Antigravity, Codex
+- **📚 99 Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
 - **🎨 Interactive CLI** - Professional wizard with smart defaults and back navigation
-- **⚡ Hooks & Sub-Agents** - Auto-generates Claude Code hooks and verification agents
+- **⚡ Agentic Profiles** - Profile-gated instructions, workflows, skills, plugins, hooks, and MCP templates
 - **🏗️ Architecture Aware** - Supports Microservices, Modular Monoliths, Hexagonal, and more
 - **📦 Zero External Dependencies** - All guideline data is embedded in the binary
 
@@ -89,6 +89,7 @@ sudo rpm -i aicgen_x86_64.rpm
 ```bash
 git clone https://github.com/aicgen/aicgen.git
 cd aicgen
+git submodule update --init --recursive data
 bun install
 bun run build:binary
 bun run start init
@@ -98,7 +99,7 @@ bun run start init
 
 ## 📚 Guideline System
 
-aicgen uses a **modular guideline architecture** with **82+ guidelines** organized into **12 categories**.
+aicgen uses a **modular guideline architecture** with **99 guidelines** organized into **12 categories**. Release builds embed content from the `data/` submodule, or from `AICGEN_DATA_DIR` when developing against a sibling `aicgen-data` checkout.
 
 ```bash
 # View guideline statistics
@@ -106,7 +107,7 @@ aicgen stats
 ```
 
 **Categories:**
-- **Language** - TypeScript, Python, Go, Rust, Java, C#, Ruby, JavaScript
+- **Language** - TypeScript, JavaScript, Python, Go, Rust, Java, C#, Ruby, Dart, Swift, Kotlin, PHP
 - **Architecture** - Layered, Modular Monolith, Microservices, Event-Driven, Hexagonal
 - **DevOps** - CI/CD, Docker, Observability (Log formats, Metrics)
 - **Best Practices** - SOLID, DRY, Clean Code principles
@@ -134,11 +135,26 @@ CLAUDE.md                      # Master instructions (project root)
 └── instructions/              # Topic-specific files
 ```
 
-### For Gemini / Antigravity
+### For Antigravity
 ```text
-.gemini/                       # or .agent/
-└── instructions.md            # Consolidated system prompt
+.agent/
+├── rules/
+│   └── instructions.md        # Workspace rule index
+└── workflows/                 # Profile-enabled workflows
 ```
+
+### For Codex
+```text
+.codex/
+├── instructions.md            # Codex development guide
+└── hooks.json                 # Expert/full safe lifecycle hook
+.agents/
+└── plugins/marketplace.json   # Project-local plugin install entry
+plugins/
+└── aicgen-sdlc/               # SDLC lifecycle plugin
+```
+
+> Gemini CLI generation has been removed from active assistant targets. Use Antigravity for Google-side agentic coding profiles.
 
 ---
 
@@ -147,10 +163,10 @@ CLAUDE.md                      # Master instructions (project root)
 ### ✅ Completed
 
 - [x] Interactive CLI wizard with back navigation
-- [x] Multi-assistant support (Claude Code, Copilot, Gemini, Antigravity, Codex)
-- [x] 82+ guidelines across 12 categories
+- [x] Multi-assistant support (Claude Code, Copilot, Antigravity, Codex)
+- [x] 99 guidelines across 12 categories
 - [x] Architecture-aware configuration (Layered, Modular Monolith, Microservices, etc.)
-- [x] Auto-generated hooks and sub-agents for Claude Code
+- [x] Profile-gated agentic surfaces for workflows, skills, plugins, hooks, and MCP templates
 - [x] Custom guideline management (add/remove)
 - [x] GitHub-based guideline updates
 
@@ -164,9 +180,12 @@ CLAUDE.md                      # Master instructions (project root)
 
 ### Running Tests
 
-The project includes a comprehensive test suite with 60+ tests covering all core functionality:
+The project includes a comprehensive test suite with 135+ tests covering all core functionality:
 
 ```bash
+# Check embedded instruction data is fresh
+bun run check:embedded-data
+
 # Run all tests
 bun test
 
@@ -184,7 +203,7 @@ Current test coverage: **94%** (93.44% function coverage, 94.52% line coverage)
 **Test Suite Includes:**
 - ✅ GuidelineLoader tests (filtering, level selection, architecture handling)
 - ✅ Tarball extraction tests (CONFIG-based prefix validation)
-- ✅ AssistantFileWriter tests (all 5 assistants - Claude Code, Copilot, Gemini, Antigravity, Codex)
+- ✅ AssistantFileWriter tests (all active assistants - Claude Code, Copilot, Antigravity, Codex)
 - ✅ File generation and path handling (cross-platform compatibility)
 - ✅ Content validation and metadata inclusion
 
@@ -212,4 +231,4 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ## 📄 License
 
-MIT © 2025
+MIT © 2026

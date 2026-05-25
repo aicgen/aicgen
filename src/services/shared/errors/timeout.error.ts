@@ -9,6 +9,7 @@ export class TimeoutError extends AppError {
     public readonly timeoutMs: number,
     details?: unknown
   ) {
-    super(message, 408, 'TIMEOUT_ERROR', { timeoutMs, ...details });
+    const detailObject = details && typeof details === 'object' ? details as Record<string, unknown> : {};
+    super(message, 408, 'TIMEOUT_ERROR', { timeoutMs, ...detailObject });
   }
 }

@@ -10,7 +10,8 @@ export class AIProviderError extends AppError {
     public readonly originalError?: Error,
     details?: unknown
   ) {
-    super(message, 502, 'AI_PROVIDER_ERROR', { provider, originalError: originalError?.message, ...details });
+    const detailObject = details && typeof details === 'object' ? details as Record<string, unknown> : {};
+    super(message, 502, 'AI_PROVIDER_ERROR', { provider, originalError: originalError?.message, ...detailObject });
   }
 }
 

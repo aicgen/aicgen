@@ -4,12 +4,13 @@
  * Run: bun run scripts/embed-data.ts
  */
 
-import { readFile, readdir, writeFile } from 'fs/promises';
+import { access, readFile, readdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import YAML from 'yaml';
 
 interface GuidelineMapping {
   path: string;
+  category?: string;
   languages?: string[];
   levels?: string[];
   architectures?: string[];
@@ -22,9 +23,40 @@ interface EmbeddedData {
   guidelines: Record<string, string>;
 }
 
+export function getDataDir(): string {
+  return process.env.AICGEN_DATA_DIR || join(process.cwd(), 'data');
+}
+
+export async function validateDataDir(dataDir: string): Promise<void> {
+  const requiredFiles = [
+    'guideline-mappings.yml',
+    'workflows/sdlc.md',
+  ];
+
+  const missing: string[] = [];
+  for (const file of requiredFiles) {
+    try {
+      await access(join(dataDir, file));
+    } catch {
+      missing.push(file);
+    }
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      [
+        `Missing aicgen data files in ${dataDir}: ${missing.join(', ')}`,
+        'Set AICGEN_DATA_DIR=/path/to/aicgen-data or initialize the data submodule with:',
+        '  git submodule update --init --recursive data',
+      ].join('\n')
+    );
+  }
+}
+
 async function readGuidelinesRecursively(dir: string, basePath: string = ''): Promise<Record<string, string>> {
   const guidelines: Record<string, string> = {};
-  const entries = await readdir(dir, { withFileTypes: true });
+  const entries = (await readdir(dir, { withFileTypes: true }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
@@ -42,17 +74,13 @@ async function readGuidelinesRecursively(dir: string, basePath: string = ''): Pr
   return guidelines;
 }
 
-async function embedData() {
-  console.log('📦 Embedding guideline data into TypeScript...\n');
-
-  const dataDir = join(process.cwd(), 'data');
+export async function buildEmbeddedDataOutput(dataDir: string): Promise<{ output: string; mappingCount: number; guidelineCount: number }> {
+  await validateDataDir(dataDir);
   const mappingsPath = join(dataDir, 'guideline-mappings.yml');
 
   // Read mappings
   const mappingsContent = await readFile(mappingsPath, 'utf-8');
   const mappings = YAML.parse(mappingsContent) as Record<string, GuidelineMapping>;
-
-  console.log(`  Loaded ${Object.keys(mappings).length} guideline mappings`);
 
   // Read all guidelines from data directory
   const guidelines = await readGuidelinesRecursively(dataDir);
@@ -61,12 +89,9 @@ async function embedData() {
   delete guidelines['guideline-mappings.yml'];
   delete guidelines['index.md'];
 
-  console.log(`  Loaded ${Object.keys(guidelines).length} markdown files`);
-
   // Read SDLC workflow content
   const sdlcPath = join(dataDir, 'workflows/sdlc.md');
   const sdlcContent = await readFile(sdlcPath, 'utf-8');
-  console.log('  Loaded SDLC workflow content');
 
   const data: EmbeddedData = { mappings, guidelines };
 
@@ -97,15 +122,35 @@ export const MAPPING_COUNT = ${Object.keys(mappings).length};
 export const EMBEDDED_SDLC_CONTENT = ${JSON.stringify(sdlcContent)};
 `;
 
+  return {
+    output,
+    mappingCount: Object.keys(mappings).length,
+    guidelineCount: Object.keys(guidelines).length,
+  };
+}
+
+async function embedData() {
+  console.log('📦 Embedding guideline data into TypeScript...\n');
+
+  const dataDir = getDataDir();
+  const { output, mappingCount, guidelineCount } = await buildEmbeddedDataOutput(dataDir);
+
+  console.log(`  Data source: ${dataDir}`);
+  console.log(`  Loaded ${mappingCount} guideline mappings`);
+  console.log(`  Loaded ${guidelineCount} markdown files`);
+  console.log('  Loaded SDLC workflow content');
+
   const outputPath = join(process.cwd(), 'src', 'embedded-data.ts');
   await writeFile(outputPath, output, 'utf-8');
 
   const sizeKB = (output.length / 1024).toFixed(1);
   console.log(`\n✅ Generated src/embedded-data.ts (${sizeKB} KB)`);
-  console.log(`   ${Object.keys(mappings).length} mappings, ${Object.keys(guidelines).length} guidelines embedded`);
+  console.log(`   ${mappingCount} mappings, ${guidelineCount} guidelines embedded`);
 }
 
-embedData().catch(err => {
-  console.error('❌ Failed to embed data:', err);
-  process.exit(1);
-});
+if (import.meta.main) {
+  embedData().catch(err => {
+    console.error('❌ Failed to embed data:', err);
+    process.exit(1);
+  });
+}

@@ -114,11 +114,15 @@ export class ProjectAnalyzer {
     if (await exists(join(this.projectPath, 'package.json'))) return 'javascript';
     if (await exists(join(this.projectPath, 'go.mod'))) return 'go';
     if (await exists(join(this.projectPath, 'Cargo.toml'))) return 'rust';
+    if (await exists(join(this.projectPath, 'build.gradle.kts')) ||
+        await exists(join(this.projectPath, 'settings.gradle.kts')) ||
+        await exists(join(this.projectPath, 'src/main/kotlin'))) return 'kotlin';
     if (await exists(join(this.projectPath, 'pom.xml'))) return 'java';
     if (await exists(join(this.projectPath, 'Gemfile'))) return 'ruby';
     if (await exists(join(this.projectPath, 'requirements.txt')) || await exists(join(this.projectPath, 'pyproject.toml'))) return 'python';
     if (await exists(join(this.projectPath, 'pubspec.yaml'))) return 'dart';
     if (await exists(join(this.projectPath, 'Package.swift'))) return 'swift';
+    if (await exists(join(this.projectPath, 'composer.json'))) return 'php';
     return 'unknown';
   }
 
@@ -155,6 +159,14 @@ export class ProjectAnalyzer {
       else if (await exists(join(this.projectPath, 'pnpm-lock.yaml'))) packageManager = 'pnpm';
       else if (await exists(join(this.projectPath, 'bun.lockb')) || await exists(join(this.projectPath, 'bun.lock'))) packageManager = 'bun';
       else packageManager = 'npm';
+    }
+
+    if (await exists(join(this.projectPath, 'composer.json'))) {
+      packageManager = 'composer';
+    }
+
+    if (await exists(join(this.projectPath, 'pubspec.yaml'))) {
+      packageManager = 'pub';
     }
 
     return { frameworks, buildTools, packageManager };

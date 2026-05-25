@@ -4,6 +4,8 @@ import { GuidelineLoader } from './guideline-loader';
 import { AssistantFileWriter } from './assistant-file-writer';
 import { DetectedProject, Language } from '../models/project';
 import { ProfileSelection } from '../models/profile';
+import { CONFIG } from '../config.js';
+import { getAssistantConfigPaths, listAssistantDefinitions } from './assistant-registry.js';
 
 export interface GenerationOptions {
   projectPath: string;
@@ -15,6 +17,7 @@ export interface GenerationOptions {
 export interface GenerationResult {
   success: boolean;
   filesGenerated: string[];
+  conflicts: string[];
   errors: string[];
 }
 
@@ -24,7 +27,7 @@ export class ConfigGenerator {
 
   static async create(): Promise<ConfigGenerator> {
     const guidelineLoader = await GuidelineLoader.create();
-    const fileWriter = await AssistantFileWriter.create();
+    const fileWriter = await AssistantFileWriter.create(undefined, CONFIG.APP_VERSION);
     return new ConfigGenerator(guidelineLoader, fileWriter);
   }
 
@@ -44,6 +47,7 @@ export class ConfigGenerator {
   async generate(options: GenerationOptions): Promise<GenerationResult> {
     const errors: string[] = [];
     const filesGenerated: string[] = [];
+    const conflicts: string[] = [];
 
     try {
       const guidelineIds = options.customGuidelineIds || this.guidelineLoader.getGuidelinesForProfile(
@@ -65,19 +69,23 @@ export class ConfigGenerator {
       );
 
       if (options.dryRun) {
+        conflicts.push(...await this.findConflicts(files.map(file => file.path)));
         return {
           success: true,
           filesGenerated: files.map(f => f.path),
+          conflicts,
           errors: []
         };
       }
 
+      conflicts.push(...await this.findConflicts(files.map(file => file.path)));
       await this.fileWriter.writeFiles(files);
       files.forEach(f => filesGenerated.push(f.path));
 
       return {
         success: true,
         filesGenerated,
+        conflicts,
         errors: []
       };
     } catch (error) {
@@ -85,6 +93,7 @@ export class ConfigGenerator {
       return {
         success: false,
         filesGenerated,
+        conflicts,
         errors
       };
     }
@@ -134,17 +143,40 @@ export class ConfigGenerator {
     if (await exists(join(projectPath, 'Gemfile'))) {
       return 'ruby';
     }
+    if (await exists(join(projectPath, 'pubspec.yaml'))) {
+      return 'dart';
+    }
+    if (await exists(join(projectPath, 'Package.swift'))) {
+      return 'swift';
+    }
+    if (await exists(join(projectPath, 'build.gradle.kts')) ||
+        await exists(join(projectPath, 'settings.gradle.kts')) ||
+        await exists(join(projectPath, 'src/main/kotlin'))) {
+      return 'kotlin';
+    }
+    if (await exists(join(projectPath, 'composer.json'))) {
+      return 'php';
+    }
     return 'unknown';
   }
 
   private async hasExistingConfig(projectPath: string): Promise<boolean> {
-    return (
-      await exists(join(projectPath, 'claude.md')) ||
-      await exists(join(projectPath, '.claude')) ||
-      await exists(join(projectPath, '.github', 'copilot-instructions.md')) ||
-      await exists(join(projectPath, '.gemini')) ||
-      await exists(join(projectPath, '.agent')) ||
-      await exists(join(projectPath, '.codex'))
-    );
+    const checks = listAssistantDefinitions()
+      .flatMap(definition => getAssistantConfigPaths(definition.id, projectPath))
+      .map(path => exists(path));
+
+    return (await Promise.all(checks)).some(Boolean);
+  }
+
+  private async findConflicts(paths: string[]): Promise<string[]> {
+    const uniquePaths = [...new Set(paths)];
+    const results = await Promise.all(uniquePaths.map(async path => ({
+      path,
+      exists: await exists(path),
+    })));
+
+    return results
+      .filter(result => result.exists)
+      .map(result => result.path);
   }
 }

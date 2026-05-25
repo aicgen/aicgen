@@ -11,6 +11,7 @@ import { clearCommand } from './commands/clear';
 import { credentialsCommand } from './commands/credentials';
 import { showBanner } from './utils/banner';
 import { CONFIG } from './config';
+import { listAssistantDefinitions } from './services/assistant-registry.js';
 
 const program = new Command();
 
@@ -28,7 +29,7 @@ program
   .command('configure')
   .alias('init')
   .description('Configure AI assistant settings (auto-detects structure)')
-  .option('-a, --assistant <name>', 'AI assistant (claude-code|copilot|antigravity)')
+  .option('-a, --assistant <name>', `AI assistant (${listAssistantDefinitions().map(assistant => assistant.id).join('|')})`)
   .option('--analyze', 'Run deep AI analysis')
   .option('-f, --force', 'Overwrite existing configuration')
   .action(configureCommand);
@@ -77,4 +78,20 @@ program
     credentialsCommand({ action });
   });
 
-program.parse();
+if (process.argv.length === 2) {
+  program.outputHelp();
+  process.exit(0);
+}
+
+async function main(): Promise<void> {
+  await program.parseAsync(process.argv);
+}
+
+main()
+  .then(() => {
+    process.exit(process.exitCode ?? 0);
+  })
+  .catch((error) => {
+    console.error(chalk.red((error as Error).message));
+    process.exit(1);
+  });

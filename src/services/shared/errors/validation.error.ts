@@ -9,7 +9,8 @@ export class ValidationError extends AppError {
     public readonly field?: string,
     details?: unknown
   ) {
-    super(message, 400, 'VALIDATION_ERROR', { field, ...details });
+    const detailObject = details && typeof details === 'object' ? details as Record<string, unknown> : {};
+    super(message, 400, 'VALIDATION_ERROR', { field, ...detailObject });
   }
 }
 

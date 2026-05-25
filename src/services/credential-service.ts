@@ -1,7 +1,7 @@
-import { AIAssistant } from '../models/project';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { AIProviderLike, normalizeAIProvider } from '../models/ai-provider.js';
 
 interface StoredCredentials {
   anthropic?: string;
@@ -21,7 +21,7 @@ export class CredentialService {
   /**
    * Get API key for provider (checks in order: env, stored, CLI)
    */
-  async getKey(provider: AIAssistant): Promise<string | null> {
+  async getKey(provider: AIProviderLike): Promise<string | null> {
     // Priority 1: Environment variable
     const envKey = this.getFromEnv(provider);
     if (envKey) return envKey;
@@ -31,19 +31,19 @@ export class CredentialService {
     if (storedKey) return storedKey;
 
     // Priority 3: CLI config (e.g., Claude CLI)
-    if (provider === 'claude-code' || provider === 'antigravity') {
+    if (normalizeAIProvider(provider) === 'anthropic') {
       return this.getFromClaudeCLI();
     }
 
     return null;
   }
 
-  getEnvKey(provider: AIAssistant): string | null {
+  getEnvKey(provider: AIProviderLike): string | null {
     return this.getFromEnv(provider);
   }
 
-  async getCLIKey(provider: AIAssistant): Promise<string | null> {
-    if (provider === 'claude-code' || provider === 'antigravity') {
+  async getCLIKey(provider: AIProviderLike): Promise<string | null> {
+    if (normalizeAIProvider(provider) === 'anthropic') {
       return this.getFromClaudeCLI();
     }
     return null;
@@ -52,20 +52,16 @@ export class CredentialService {
   /**
    * Get stored API key for provider
    */
-  async getStoredKey(provider: AIAssistant): Promise<string | null> {
+  async getStoredKey(provider: AIProviderLike): Promise<string | null> {
     try {
       const credentials = await this.loadCredentials();
-      switch (provider) {
-        case 'claude-code':
-        case 'antigravity':
+      switch (normalizeAIProvider(provider)) {
+        case 'anthropic':
           return credentials.anthropic || null;
-        case 'gemini':
+        case 'google':
           return credentials.gemini || null;
-        case 'codex':
-        case 'copilot':
+        case 'openai':
           return credentials.openai || null;
-        default:
-          return null;
       }
     } catch {
       return null;
@@ -75,21 +71,19 @@ export class CredentialService {
   /**
    * Save API key for provider
    */
-  async saveKey(provider: AIAssistant, apiKey: string): Promise<void> {
+  async saveKey(provider: AIProviderLike, apiKey: string): Promise<void> {
     await this.ensureConfigDir();
 
     const credentials = await this.loadCredentials();
 
-    switch (provider) {
-      case 'claude-code':
-      case 'antigravity':
+    switch (normalizeAIProvider(provider)) {
+      case 'anthropic':
         credentials.anthropic = apiKey;
         break;
-      case 'gemini':
+      case 'google':
         credentials.gemini = apiKey;
         break;
-      case 'codex':
-      case 'copilot':
+      case 'openai':
         credentials.openai = apiKey;
         break;
     }
@@ -144,18 +138,14 @@ export class CredentialService {
     }
   }
 
-  private getFromEnv(provider: AIAssistant): string | null {
-    switch (provider) {
-      case 'claude-code':
-      case 'antigravity':
+  private getFromEnv(provider: AIProviderLike): string | null {
+    switch (normalizeAIProvider(provider)) {
+      case 'anthropic':
         return process.env.ANTHROPIC_API_KEY || null;
-      case 'gemini':
+      case 'google':
         return process.env.GEMINI_API_KEY || null;
-      case 'codex':
-      case 'copilot':
+      case 'openai':
         return process.env.OPENAI_API_KEY || null;
-      default:
-        return null;
     }
   }
 

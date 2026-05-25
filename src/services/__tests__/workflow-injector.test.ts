@@ -1,4 +1,7 @@
 import { WorkflowInjector } from '../workflow-injector.js';
+import { mkdir, mkdtemp, rm, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 const SAMPLE_SDLC_CONTENT = `# SDLC Workflows
 
@@ -135,17 +138,37 @@ describe('WorkflowInjector', () => {
     });
   });
 
-  describe('generateWorkflowFiles - gemini', () => {
-    it('should return empty array for gemini (inline injection)', () => {
-      const files = injector.generateWorkflowFiles('gemini');
-      expect(files).toHaveLength(0);
-    });
-  });
-
   describe('generateWorkflowFiles - codex', () => {
     it('should return empty array for codex (inline injection)', () => {
       const files = injector.generateWorkflowFiles('codex');
       expect(files).toHaveLength(0);
+    });
+  });
+
+  describe('create', () => {
+    it('should load workflow content from user data before official cache and embedded fallback', async () => {
+      const tempDir = await mkdtemp(join(tmpdir(), 'aicgen-workflows-'));
+      const userDataPath = join(tempDir, 'user-data');
+      const officialCachePath = join(tempDir, 'official-cache');
+      const userWorkflowPath = join(userDataPath, 'guidelines', 'workflows');
+      const officialWorkflowPath = join(officialCachePath, 'guidelines', 'workflows');
+
+      try {
+        await mkdir(userWorkflowPath, { recursive: true });
+        await mkdir(officialWorkflowPath, { recursive: true });
+        await writeFile(join(userWorkflowPath, 'sdlc.md'), SAMPLE_SDLC_CONTENT.replace('Capture the full specification', 'User data specification'), 'utf-8');
+        await writeFile(join(officialWorkflowPath, 'sdlc.md'), SAMPLE_SDLC_CONTENT.replace('Capture the full specification', 'Official cache specification'), 'utf-8');
+
+        const sourcedInjector = await WorkflowInjector.create({
+          userDataPath,
+          officialCachePath,
+          embeddedContent: SAMPLE_SDLC_CONTENT.replace('Capture the full specification', 'Embedded specification'),
+        });
+
+        expect(sourcedInjector.getCommands()[0].description).toBe('User data specification for a feature or task.');
+      } finally {
+        await rm(tempDir, { recursive: true, force: true });
+      }
     });
   });
 
@@ -168,6 +191,35 @@ describe('WorkflowInjector', () => {
       expect(section).toContain('## SDLC Workflows');
       expect(section).toContain('/spec');
       expect(section).toContain('/ship');
+    });
+  });
+
+  describe('buildCodexWorkflowSection', () => {
+    it('should return namespaced Codex workflow commands', () => {
+      const section = injector.buildCodexWorkflowSection();
+      expect(section).toContain('/aicgen-spec');
+      expect(section).toContain('/aicgen-plan');
+      expect(section).toContain('Legacy aicgen');
+    });
+  });
+
+  describe('generateCopilotPromptFiles', () => {
+    it('should return one prompt file for each SDLC command', () => {
+      const files = injector.generateCopilotPromptFiles();
+
+      expect(files).toHaveLength(6);
+      expect(files[0].path).toBe('.github/prompts/spec.prompt.md');
+      expect(files[5].path).toBe('.github/prompts/ship.prompt.md');
+    });
+  });
+
+  describe('generateCopilotChatModeFiles', () => {
+    it('should return an AICGEN review chat mode', () => {
+      const files = injector.generateCopilotChatModeFiles();
+
+      expect(files).toHaveLength(1);
+      expect(files[0].path).toBe('.github/chatmodes/aicgen-review.chatmode.md');
+      expect(files[0].content).toContain('AICGEN Review');
     });
   });
 });

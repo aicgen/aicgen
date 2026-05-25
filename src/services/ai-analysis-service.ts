@@ -1,8 +1,8 @@
 import { AnalysisContext } from './project-analyzer';
-import { AIAssistant, Language, ProjectType } from '../models/project';
+import { Language, ProjectType } from '../models/project';
+import { AIProviderLike } from '../models/ai-provider.js';
 import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
 import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants';
-import { AIProvider } from './ai-analysis/providers/index';
 import { ProviderFactory } from './ai-analysis/providers/index';
 
 export interface AnalysisResult {
@@ -22,8 +22,8 @@ export interface AnalysisResult {
 
 export class AIAnalysisService {
 
-    async analyzeProject(context: AnalysisContext, assistant: AIAssistant, apiKey: string): Promise<AnalysisResult> {
-        const provider = ProviderFactory.create(assistant, apiKey);
+    async analyzeProject(context: AnalysisContext, providerId: AIProviderLike, apiKey: string): Promise<AnalysisResult> {
+        const provider = ProviderFactory.create(providerId, apiKey);
         const prompt = this.buildPrompt(context);
 
         try {

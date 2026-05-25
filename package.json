@@ -7,8 +7,9 @@
     "cli",
     "code-generator",
     "claude",
-    "gemini",
+    "antigravity",
     "openai",
+    "codex",
     "config",
     "assistant"
   ],
@@ -22,12 +23,10 @@
     "aicgen": "dist/index.js"
   },
   "type": "module",
-  "engines": {
-    "bun": ">=1.0.0"
-  },
   "scripts": {
     "generate-version": "bun run scripts/generate-version.ts",
     "embed": "bun run generate-version && bun run scripts/embed-data.ts",
+    "check:embedded-data": "bun run scripts/check-embedded-data.ts",
     "prebuild": "bun run embed",
     "build": "bun build src/index.ts --outdir dist --target node",
     "build:binary": "bun run embed && bun run scripts/build-binary.ts current",

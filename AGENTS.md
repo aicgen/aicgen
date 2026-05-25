@@ -4,7 +4,7 @@
 
 **Language:** typescript
 **Type:** cli
-**Architecture:** event-driven
+**Instruction Level:** full
 
 ## Development Guidelines
 
@@ -16,11 +16,17 @@ This project follows structured coding guidelines across multiple categories:
   - async
   - interfaces-types
 
+### Architecture
+
+  - boundaries
+  - communication
+  - data
+
 ### Testing
 
   - unit-fundamentals
   - unit-mocking
-  - basics
+  - integration
 
 ### Security
 
@@ -31,6 +37,7 @@ This project follows structured coding guidelines across multiple categories:
 ### Performance
 
   - basics
+  - caching
   - async
 
 ### API Design
@@ -49,15 +56,10 @@ This project follows structured coding guidelines across multiple categories:
   - strategy
   - basics
 
-### Architecture
-
-  - principles
-  - messaging
-  - patterns
-
 ### DevOps
 
   - ci-cd
+  - practices
   - observability
 
 ### Best Practices
@@ -69,8 +71,8 @@ This project follows structured coding guidelines across multiple categories:
 ### Design Patterns
 
   - base-patterns
+  - concurrency
   - data-access
-  - domain-logic
 
 
 ## Commands
@@ -101,12 +103,24 @@ npm run build
 See tool-specific instruction files for detailed code style guidelines:
 - Claude Code: `CLAUDE.md`
 - GitHub Copilot: `.github/copilot-instructions.md`
-- Gemini: `.gemini/instructions.md`
 - Antigravity: `.agent/rules/instructions.md`
+- OpenAI Codex: `.codex/instructions.md`
 
-## Architecture
+## Agentic Profile
 
-This project follows **event-driven** architecture. See architecture guidelines in tool-specific files.
+**Profile level:** full
+
+Enabled surfaces:
+- Project memory: CLAUDE.md (passive, stable)
+- Slash commands: .claude/commands/*.md (guided, stable)
+- Project subagents: .claude/agents/*.md (agentic, stable)
+- Project skills: .claude/skills/*/SKILL.md (agentic, stable)
+- Lifecycle hooks: .claude/settings.json (side-effecting, stable)
+
+Limits and gated surfaces:
+- No additional gated capabilities for this profile.
+
+Side-effecting features such as hooks, MCP, plugin setup scripts, or executable tool configuration must stay local, deterministic, and explicitly reviewed before use.
 
 ## Testing
 
@@ -118,6 +132,19 @@ Follow testing guidelines in tool-specific instruction files.
 - Follow conventional commits if configured
 - Run tests before pushing
 - Keep PRs focused and reviewable
+
+## Workflows
+
+Use these slash commands for structured SDLC delivery:
+
+Flow: `/spec` → `/research` → `/plan` → `/build` → `/check` → `/ship`
+
+- `/spec` — Capture the full specification for a feature or task before any code is written.
+- `/research` — Analyze the active spec with internal codebase scanning and external web research.
+- `/plan` — Produce a phased, checkpoint-driven implementation plan based on the spec and research findings.
+- `/build` — Execute the next (or a specified) phase of the current implementation plan.
+- `/check` — Verify the current implementation against the active spec — tests, code review, and regression check.
+- `/ship` — Pre-flight wrap-up — verify everything is ready, then draft a PR description.
 
 ---
 

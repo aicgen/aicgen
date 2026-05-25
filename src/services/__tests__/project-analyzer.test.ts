@@ -2,13 +2,16 @@ import { ProjectAnalyzer } from '../project-analyzer';
 import * as path from 'path';
 
 // Mock modules with factory functions for Bun compatibility
-jest.mock('fast-glob', () => jest.fn());
+jest.mock('fast-glob', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
 jest.mock('../../utils/file', () => ({
   exists: jest.fn(),
   readFile: jest.fn()
 }));
 
-const glob = require('fast-glob') as jest.Mock;
+const glob = require('fast-glob').default as jest.Mock;
 const { exists, readFile } = require('../../utils/file');
 
 describe('ProjectAnalyzer', () => {
@@ -27,7 +30,7 @@ describe('ProjectAnalyzer', () => {
 
   describe('Language Detection', () => {
     it('should detect TypeScript project', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       // Mock glob to return minimal structure
@@ -42,7 +45,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect Dart project', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       // Mock glob to return minimal structure
@@ -57,7 +60,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect Swift project', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       // Mock glob to return minimal structure
@@ -182,7 +185,7 @@ describe('ProjectAnalyzer', () => {
 
   describe('Database Hints Detection', () => {
     it('should detect SQL databases from package.json', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       glob.mockResolvedValue(['package.json']);
@@ -213,7 +216,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect NoSQL databases from package.json', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       glob.mockResolvedValue(['package.json']);
@@ -244,7 +247,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect Prisma schema', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       // Return prisma directory in structure
@@ -263,7 +266,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect Python database dependencies', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       glob.mockResolvedValue(['requirements.txt']);
@@ -286,7 +289,7 @@ describe('ProjectAnalyzer', () => {
     });
 
     it('should detect Go database dependencies', async () => {
-      const glob = require('fast-glob');
+      const glob = require('fast-glob').default;
       const { exists, readFile } = require('../../utils/file');
 
       glob.mockResolvedValue(['go.mod']);

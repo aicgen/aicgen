@@ -4,6 +4,7 @@ export default {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
+    '^(\\.{1,2}/)+config(\\.js)?$': '<rootDir>/src/__mocks__/config.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {

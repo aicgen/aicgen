@@ -1,11 +1,16 @@
-import { writeFile, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { AIAssistant } from '../models/project';
 import { ProfileSelection } from '../models/profile';
 import { GuidelineLoader } from './guideline-loader';
 import { HookGenerator } from './hook-generator';
 import { SubAgentGenerator } from './subagent-generator';
 import { WorkflowInjector, GeneratedFile } from './workflow-injector.js';
+import { CodexPluginGenerator } from './codex-plugin-generator.js';
+import { writeFiles } from '../utils/file.js';
+import {
+  buildAgenticProfileSection,
+  hasEnabledCapability,
+} from './agentic-capabilities.js';
 
 export type { GeneratedFile };
 
@@ -14,18 +19,20 @@ export class AssistantFileWriter {
   private hookGenerator: HookGenerator;
   private subAgentGenerator: SubAgentGenerator;
   private workflowInjector: WorkflowInjector;
+  private pluginVersion: string;
 
-  static async create(workflowInjector?: WorkflowInjector): Promise<AssistantFileWriter> {
+  static async create(workflowInjector?: WorkflowInjector, pluginVersion?: string): Promise<AssistantFileWriter> {
     const guidelineLoader = await GuidelineLoader.create();
     const injector = workflowInjector ?? await WorkflowInjector.create();
-    return new AssistantFileWriter(guidelineLoader, injector);
+    return new AssistantFileWriter(guidelineLoader, injector, pluginVersion);
   }
 
-  private constructor(guidelineLoader: GuidelineLoader, workflowInjector: WorkflowInjector) {
+  private constructor(guidelineLoader: GuidelineLoader, workflowInjector: WorkflowInjector, pluginVersion?: string) {
     this.guidelineLoader = guidelineLoader;
     this.hookGenerator = new HookGenerator();
     this.subAgentGenerator = new SubAgentGenerator();
     this.workflowInjector = workflowInjector;
+    this.pluginVersion = pluginVersion || process.env.APP_VERSION || process.env.npm_package_version || '0.1.0';
   }
 
   async generateFiles(
@@ -45,19 +52,32 @@ export class AssistantFileWriter {
       case 'copilot':
         files.push(...await this.generateCopilotFiles(categoryTree, selection));
         break;
-      case 'gemini':
-        files.push(...await this.generateGeminiFiles(categoryTree, selection));
-        break;
       case 'antigravity':
         files.push(...await this.generateAntigravityFiles(categoryTree, selection));
         break;
       case 'codex':
-        files.push(...await this.generateCodexFiles(categoryTree, selection));
+        files.push(...await this.generateCodexFiles(categoryTree, selection, projectPath));
         break;
+      default:
+        throw new Error(`Unsupported assistant: ${assistant}`);
     }
 
-    const workflowFiles = this.workflowInjector.generateWorkflowFiles(assistant);
-    files.push(...workflowFiles);
+    if (hasEnabledCapability(assistant, selection.level, 'workflow-commands')) {
+      const workflowFiles = this.workflowInjector.generateWorkflowFiles(assistant);
+      files.push(...workflowFiles);
+    }
+
+    if (hasEnabledCapability(assistant, selection.level, 'prompt-files')) {
+      files.push(...this.workflowInjector.generateCopilotPromptFiles());
+    }
+
+    if (hasEnabledCapability(assistant, selection.level, 'chat-modes')) {
+      files.push(...this.workflowInjector.generateCopilotChatModeFiles());
+    }
+
+    if (hasEnabledCapability(assistant, selection.level, 'mcp-templates')) {
+      files.push(this.generateMcpTemplateFile(assistant, selection));
+    }
 
     files.push(this.generateUniversalAgentsFile(categoryTree, selection));
 
@@ -68,10 +88,7 @@ export class AssistantFileWriter {
   }
 
   async writeFiles(files: GeneratedFile[]): Promise<void> {
-    for (const file of files) {
-      await mkdir(dirname(file.path), { recursive: true });
-      await writeFile(file.path, file.content, 'utf-8');
-    }
+    await writeFiles(files.map(file => ({ path: file.path, content: file.content })));
   }
 
   private organizeByCategory(guidelineIds: string[]): Map<string, string[]> {
@@ -123,7 +140,19 @@ export class AssistantFileWriter {
       ? ''
       : ` and ${selection.architecture} architecture`;
 
-    const workflowsSection = this.workflowInjector.buildWorkflowSummary();
+    const workflowsSection = hasEnabledCapability('claude-code', selection.level, 'workflow-commands')
+      ? this.workflowInjector.buildWorkflowSummary()
+      : '';
+    const agenticProfileSection = buildAgenticProfileSection('claude-code', selection.level);
+    const verificationNotes = [
+      '- **Follow the guidelines** referenced above.',
+      hasEnabledCapability('claude-code', selection.level, 'subagents')
+        ? '- **Verification**: Use sub-agents in `.claude/agents/` to verify compliance.'
+        : '- **Verification**: Review changes against the referenced guideline files before completion.',
+      hasEnabledCapability('claude-code', selection.level, 'hooks')
+        ? '- **Constraints**: Hooks in `.claude/settings.json` provide deterministic guardrails; review them before extending.'
+        : '- **Constraints**: Hooks are not enabled for this profile level.'
+    ].join('\n');
 
     const mainContent = `# ${selection.projectName} - Development Guidelines
 
@@ -143,11 +172,9 @@ ${mainReferences.join('\n')}
 - Code style: See Code Style guidelines above
 - Architecture: See Architecture guidelines above
 
-${workflowsSection}## Important Notes
+${workflowsSection}${agenticProfileSection}## Important Notes
 
-- **Follow the guidelines** referenced above.
-- **Verification**: Use sub-agents in \`.claude/agents/\` to verify compliance.
-- **Constraints**: Hooks in \`.claude/settings.json\` enforce critical rules.
+${verificationNotes}
 
 ---
 *Generated by aicgen*
@@ -159,7 +186,7 @@ ${workflowsSection}## Important Notes
       type: 'main'
     });
 
-    const hooks = await this.hookGenerator.generateHooks(guidelineIds);
+    const hooks = await this.hookGenerator.generateHooks(guidelineIds, selection.level);
     const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, projectPath, selection.level);
 
     files.push({
@@ -168,12 +195,21 @@ ${workflowsSection}## Important Notes
       type: 'config'
     });
 
-    const subAgents = await this.subAgentGenerator.generateSubAgents(guidelineIds);
+    const subAgents = await this.subAgentGenerator.generateSubAgents(guidelineIds, selection.level);
     for (const agent of subAgents) {
       files.push({
         path: `.claude/agents/${agent.name}.md`,
         content: agent.content,
         type: 'agent'
+      });
+    }
+
+    const skills = await this.subAgentGenerator.generateSkills(guidelineIds, selection.level);
+    for (const skill of skills) {
+      files.push({
+        path: `.claude/skills/${skill.name}/SKILL.md`,
+        content: skill.content,
+        type: 'skill'
       });
     }
 
@@ -222,7 +258,17 @@ ${categoryContent}
       mainReferences.push(`- ${category}: @.github/instructions/${categoryFile}.instructions.md`);
     }
 
-    mainReferences.push(`- Workflows: @.github/instructions/workflows.instructions.md`);
+    if (hasEnabledCapability('copilot', selection.level, 'workflow-commands')) {
+      mainReferences.push(`- Workflows: @.github/instructions/workflows.instructions.md`);
+    }
+
+    if (hasEnabledCapability('copilot', selection.level, 'prompt-files')) {
+      mainReferences.push(`- Prompt files: @.github/prompts/*.prompt.md`);
+    }
+
+    if (hasEnabledCapability('copilot', selection.level, 'chat-modes')) {
+      mainReferences.push(`- Review chat mode: @.github/chatmodes/aicgen-review.chatmode.md`);
+    }
 
     const archDescription = selection.architecture === 'other'
       ? ''
@@ -244,6 +290,8 @@ See the instruction files above for detailed guidelines on:
 - Testing requirements
 - Security considerations
 
+${buildAgenticProfileSection('copilot', selection.level)}
+
 ---
 *Generated by aicgen*
 `;
@@ -251,52 +299,6 @@ See the instruction files above for detailed guidelines on:
     files.push({
       path: '.github/copilot-instructions.md',
       content: mainContent,
-      type: 'main'
-    });
-
-    return files;
-  }
-
-  private async generateGeminiFiles(
-    categoryTree: Map<string, string[]>,
-    selection: ProfileSelection
-  ): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
-
-    let allGuidelines = '';
-    for (const [category, ids] of categoryTree) {
-      const categoryContent = ids.map(id =>
-        this.guidelineLoader.loadGuideline(id)
-      ).join('\n\n');
-
-      allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
-    }
-
-    const archDescription = selection.architecture === 'other'
-      ? ''
-      : ` and ${selection.architecture} architecture`;
-
-    const content = `# Gemini Development Guide
-
-**Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
-**Objective:** Write clean, efficient, and maintainable code following the guidelines below.
-
-## Guiding Principles
-1. **Quality First**: Prioritize code quality and maintainability over speed.
-2. **Step-by-Step**: Think through problems systematically.
-3. **Verify**: Double-check your code against the guidelines.
-
-${allGuidelines}
-
-${this.workflowInjector.buildWorkflowSection()}
-
----
-*Generated by aicgen*
-`;
-
-    files.push({
-      path: '.gemini/instructions.md',
-      content,
       type: 'main'
     });
 
@@ -359,6 +361,8 @@ ${ruleFiles.join('\n')}
 2. **Follow Guidelines**: Strictly adhere to the rules linked above.
 3. **Think Step-by-Step**: Break down complex tasks into smaller, verifiable steps.
 
+${buildAgenticProfileSection('antigravity', selection.level)}
+
 ---
 *Generated by aicgen*
 `;
@@ -370,13 +374,15 @@ ${ruleFiles.join('\n')}
     });
 
     // Generate workflows based on instruction level
-    const workflows = this.getWorkflowsForLevel(selection.level);
-    for (const workflow of workflows) {
-      files.push({
-        path: `.agent/workflows/${workflow.name}.md`,
-        content: workflow.content,
-        type: 'config'
-      });
+    if (hasEnabledCapability('antigravity', selection.level, 'workflow-commands')) {
+      const workflows = this.getWorkflowsForLevel(selection.level);
+      for (const workflow of workflows) {
+        files.push({
+          path: `.agent/workflows/${workflow.name}.md`,
+          content: workflow.content,
+          type: 'config'
+        });
+      }
     }
 
     return files;
@@ -488,7 +494,8 @@ description: Analyze code for performance bottlenecks and optimization opportuni
 
   private async generateCodexFiles(
     categoryTree: Map<string, string[]>,
-    selection: ProfileSelection
+    selection: ProfileSelection,
+    projectPath: string
   ): Promise<GeneratedFile[]> {
     const files: GeneratedFile[] = [];
 
@@ -501,7 +508,11 @@ description: Analyze code for performance bottlenecks and optimization opportuni
       allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
     }
 
-    const content = `# Development Guide
+    const workflowSection = hasEnabledCapability('codex', selection.level, 'skills')
+      ? this.workflowInjector.buildCodexWorkflowSection()
+      : '';
+
+    const content = `# Codex Development Guide
 
 **Role:** You are an expert software engineer specialized in ${selection.language}.
 **Objective:** Assist the user in writing high-quality code.
@@ -511,7 +522,9 @@ description: Analyze code for performance bottlenecks and optimization opportuni
 
 ${allGuidelines}
 
-${this.workflowInjector.buildWorkflowSection()}
+${workflowSection}
+
+${buildAgenticProfileSection('codex', selection.level)}
 
 ---
 *Generated by aicgen*
@@ -523,7 +536,122 @@ ${this.workflowInjector.buildWorkflowSection()}
       type: 'main'
     });
 
+    if (hasEnabledCapability('codex', selection.level, 'plugins')) {
+      const pluginGenerator = new CodexPluginGenerator(
+        this.workflowInjector.getCommands(),
+        this.pluginVersion,
+        selection.level
+      );
+      files.push(...await pluginGenerator.generateFiles(projectPath));
+    }
+
+    if (hasEnabledCapability('codex', selection.level, 'hooks')) {
+      files.push(...this.generateCodexHookFiles(selection));
+    }
+
     return files;
+  }
+
+  private generateCodexHookFiles(selection: ProfileSelection): GeneratedFile[] {
+    const hooksJson = {
+      hooks: {
+        SessionStart: [
+          {
+            matcher: 'startup|resume',
+            hooks: [
+              {
+                type: 'command',
+                command: '/usr/bin/python3 "$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.codex/hooks/aicgen_session_start.py"',
+                timeout: 10,
+                statusMessage: 'Loading AICGEN profile limits'
+              }
+            ]
+          }
+        ]
+      },
+      aicgen: {
+        profileLevel: selection.level,
+        safety: [
+          'This hook only adds developer context at session start.',
+          'Review and trust Codex hooks with /hooks before they run.',
+          'Do not add network calls, secrets access, or destructive commands to generated hooks.'
+        ]
+      }
+    };
+
+    const script = `#!/usr/bin/env python3
+import json
+
+context = (
+    "AICGEN profile ${selection.level}: read AGENTS.md and .codex/instructions.md before editing. "
+    "Use project-local aicgen skills for SDLC work. Treat hooks, MCP, and plugin setup as advanced surfaces "
+    "that require explicit user review before expansion."
+)
+
+print(json.dumps({
+    "continue": True,
+    "hookSpecificOutput": {
+        "hookEventName": "SessionStart",
+        "additionalContext": context
+    }
+}))
+`;
+
+    return [
+      {
+        path: '.codex/hooks.json',
+        content: JSON.stringify(hooksJson, null, 2) + '\n',
+        type: 'config'
+      },
+      {
+        path: '.codex/hooks/aicgen_session_start.py',
+        content: script,
+        type: 'config'
+      }
+    ];
+  }
+
+  private generateMcpTemplateFile(
+    assistant: AIAssistant,
+    selection: ProfileSelection
+  ): GeneratedFile {
+    const assistantName = assistant === 'copilot'
+      ? 'GitHub Copilot'
+      : assistant === 'codex'
+        ? 'OpenAI Codex'
+        : assistant;
+
+    const content = `# AICGEN MCP Template - ${assistantName}
+
+**Profile level:** ${selection.level}
+
+This file is documentation only. AICGEN does not generate executable MCP server configuration by default.
+
+## Safe Use
+
+- Add MCP servers only when the project needs external tools or private context.
+- Keep commands local and deterministic where possible.
+- Never place secrets directly in generated config files.
+- Review each server command, environment variable, and permission before enabling it.
+
+## Suggested Server Review Checklist
+
+1. What data can the server read?
+2. What commands or network calls can it perform?
+3. Does it need credentials, and where are they stored?
+4. Can it modify project files or external systems?
+5. Is the server scoped to this workspace?
+
+## Placeholder
+
+Add tool-specific MCP config manually after review.
+`;
+
+    return {
+      path: `.aicgen/mcp/${assistant}.md`,
+      content,
+      type: 'config'
+    };
   }
 
   private generateUniversalAgentsFile(
@@ -554,7 +682,14 @@ This project follows **${selection.architecture}** architecture. See architectur
 
 `;
 
-    const workflowsSection = this.workflowInjector.buildWorkflowSummary();
+    const hasWorkflows = selection.assistant === 'codex'
+      ? hasEnabledCapability('codex', selection.level, 'skills')
+      : hasEnabledCapability(selection.assistant, selection.level, 'workflow-commands');
+    const workflowsSection = hasWorkflows
+      ? selection.assistant === 'codex'
+        ? this.workflowInjector.buildCodexWorkflowSummary()
+        : this.workflowInjector.buildWorkflowSummary()
+      : '';
 
     const content = `# AGENTS.md
 
@@ -562,6 +697,7 @@ This project follows **${selection.architecture}** architecture. See architectur
 
 **Language:** ${selection.language}
 **Type:** ${selection.projectType}
+**Instruction Level:** ${selection.level}
 ${archLine}
 ## Development Guidelines
 
@@ -597,10 +733,10 @@ npm run build
 See tool-specific instruction files for detailed code style guidelines:
 - Claude Code: \`CLAUDE.md\`
 - GitHub Copilot: \`.github/copilot-instructions.md\`
-- Gemini: \`.gemini/instructions.md\`
 - Antigravity: \`.agent/rules/instructions.md\`
+- OpenAI Codex: \`.codex/instructions.md\`
 
-${archSection}## Testing
+${archSection}${buildAgenticProfileSection(selection.assistant, selection.level)}## Testing
 
 Follow testing guidelines in tool-specific instruction files.
 

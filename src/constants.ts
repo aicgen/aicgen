@@ -10,7 +10,10 @@ export const LANGUAGES: { value: Language; name: string }[] = [
   { value: 'java', name: 'Java' },
   { value: 'csharp', name: 'C#' },
   { value: 'ruby', name: 'Ruby' },
-  { value: 'dart', name: 'Dart' }
+  { value: 'dart', name: 'Dart' },
+  { value: 'swift', name: 'Swift' },
+  { value: 'kotlin', name: 'Kotlin' },
+  { value: 'php', name: 'PHP' }
 ];
 
 export const PROJECT_TYPES: { value: ProjectType; name: string; description: string }[] = [
@@ -26,7 +29,6 @@ export const PROJECT_TYPES: { value: ProjectType; name: string; description: str
 export const ASSISTANTS: { value: AIAssistant; name: string; description: string }[] = [
   { value: 'claude-code', name: 'Claude Code', description: 'Anthropic\'s Claude for coding' },
   { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub\'s AI pair programmer' },
-  { value: 'gemini', name: 'Google Gemini', description: 'Google\'s AI model' },
   { value: 'antigravity', name: 'Google Antigravity', description: 'Google\'s agentic platform' },
   { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI\'s code model' }
 ];
@@ -41,6 +43,8 @@ export const ARCHITECTURES: { value: ArchitectureType; name: string; description
   { value: 'ddd', name: 'Domain-Driven Design', description: 'Bounded contexts, aggregates, domain events' },
   { value: 'serverless', name: 'Serverless', description: 'FaaS, event triggers, managed services' },
   { value: 'monorepo', name: 'Monorepo', description: 'Multiple projects in single repository with shared tooling' },
+  { value: 'bounded-contexts', name: 'Bounded Contexts', description: 'Domain-oriented system boundaries and context maps' },
+  { value: 'component-based', name: 'Component-Based', description: 'Composable UI or feature components with explicit contracts' },
   { value: 'other', name: 'Other / None', description: 'Scripts, APIs, frontends, or no specific architecture' }
 ];
 

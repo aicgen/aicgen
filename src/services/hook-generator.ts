@@ -1,3 +1,6 @@
+import { InstructionLevel } from '../models/profile.js';
+import { isProfileAtLeast } from './agentic-capabilities.js';
+
 export interface HookEntry {
   matcher?: string;
   hooks?: HookEntry[];
@@ -12,6 +15,9 @@ export type HookEventMap = Record<string, HookEntry[]>;
 export interface HookConfig {
   name: string;
   description: string;
+  tags: string[];
+  minLevel: InstructionLevel;
+  enabledByDefault: boolean;
   hooks: HookEventMap;
 }
 
@@ -19,6 +25,9 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
   formatting: {
     name: 'Auto-format on file write',
     description: 'Automatically format code files after writing',
+    tags: ['style', 'typescript', 'javascript', 'python'],
+    minLevel: 'full',
+    enabledByDefault: false,
     hooks: {
       PostToolUse: [
         {
@@ -45,6 +54,9 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
   security: {
     name: 'Block sensitive file access',
     description: 'Prevent reading or modifying sensitive files',
+    tags: ['security', 'secrets'],
+    minLevel: 'expert',
+    enabledByDefault: true,
     hooks: {
       PreToolUse: [
         {
@@ -80,6 +92,9 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
   testing: {
     name: 'Verify tests before completion',
     description: 'Ensure tests pass before task completion',
+    tags: ['testing', 'quality'],
+    minLevel: 'expert',
+    enabledByDefault: true,
     hooks: {
       Stop: [
         {
@@ -98,25 +113,24 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
 };
 
 export class HookGenerator {
-  async generateHooks(guidelineIds: string[]): Promise<HookEventMap> {
+  async generateHooks(
+    guidelineIds: string[],
+    level: InstructionLevel = 'standard'
+  ): Promise<HookEventMap> {
     const mergedHooks: HookEventMap = {};
 
-    const hasFormatting = guidelineIds.some(
-      (id) => id.includes('style') || id.includes('typescript') || id.includes('python')
-    );
-    const hasSecurity = guidelineIds.some((id) => id.includes('security'));
-    const hasTesting = guidelineIds.some((id) => id.includes('testing'));
+    for (const hook of Object.values(EMBEDDED_HOOKS)) {
+      if (!hook.enabledByDefault || !isProfileAtLeast(level, hook.minLevel)) {
+        continue;
+      }
 
-    if (hasFormatting) {
-      this.mergeHooks(mergedHooks, EMBEDDED_HOOKS.formatting.hooks);
-    }
+      const matchesGuidelines = hook.tags.some(tag =>
+        guidelineIds.some(id => id.includes(tag))
+      );
 
-    if (hasSecurity) {
-      this.mergeHooks(mergedHooks, EMBEDDED_HOOKS.security.hooks);
-    }
-
-    if (hasTesting) {
-      this.mergeHooks(mergedHooks, EMBEDDED_HOOKS.testing.hooks);
+      if (matchesGuidelines) {
+        this.mergeHooks(mergedHooks, hook.hooks);
+      }
     }
 
     return mergedHooks;
@@ -162,6 +176,14 @@ export class HookGenerator {
     const settings = {
       alwaysThinkingEnabled: true,
       hooks,
+      aicgen: {
+        profileLevel: level,
+        safety: [
+          'Generated hooks are limited to local deterministic checks.',
+          'Review hook commands before enabling additional side-effecting automation.',
+          'MCP and plugin setup scripts are not generated without explicit opt-in.'
+        ]
+      },
       permissions: {
         allow,
         deny: ['Read(.env*)', 'Read(secrets/**)', 'Bash(rm:*)', 'Bash(sudo:*)'],

@@ -21,7 +21,7 @@ describe('Configure Command Logic', () => {
     });
 
     it('should accept valid assistant values', () => {
-      const validAssistants = ['claude-code', 'copilot', 'gemini', 'antigravity', 'codex'];
+      const validAssistants = ['claude-code', 'copilot', 'antigravity', 'codex'];
 
       validAssistants.forEach(assistant => {
         const profile: Partial<ProfileSelection> = { assistant: assistant as any };
@@ -171,14 +171,15 @@ describe('Configure Command Logic', () => {
         { value: 'claude-code', name: 'Claude Code' },
         { value: 'antigravity', name: 'Antigravity' },
         { value: 'copilot', name: 'GitHub Copilot' },
-        { value: 'codex', name: 'OpenAI Codex' },
-        { value: 'gemini', name: 'Gemini' }
+        { value: 'codex', name: 'OpenAI Codex' }
       ];
 
-      expect(choices).toHaveLength(5);
+      expect(choices).toHaveLength(4);
       expect(choices.map(c => c.value)).toContain('claude-code');
       expect(choices.map(c => c.value)).toContain('copilot');
-      expect(choices.map(c => c.value)).toContain('gemini');
+      expect(choices.map(c => c.value)).toContain('antigravity');
+      expect(choices.map(c => c.value)).toContain('codex');
+      expect(choices.map(c => c.value)).not.toContain('gemini');
     });
 
     it('should fallback to prompt if assistant not set', () => {

@@ -9,10 +9,13 @@ import { AIAssistant, Language, ProjectType } from '../models/project';
 import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
 import { showBanner } from '../utils/banner';
 import { createSummaryBox } from '../utils/formatting';
-import { LANGUAGES, PROJECT_TYPES, ASSISTANTS, ARCHITECTURES, DATASOURCES } from '../constants';
+import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants';
 import { TimeoutError, InvalidCredentialsError, ValidationErrors } from '../services/shared/errors/index';
+import { getAssistantConfigPaths, getAssistantDefinition, listAssistantDefinitions } from '../services/assistant-registry.js';
+import { AIProviderId, getAIProviderDisplayName } from '../models/ai-provider.js';
 
 interface ConfigureOptions {
+  assistant?: string;
   analyze?: boolean;
   force?: boolean;
 }
@@ -51,12 +54,11 @@ export async function configureCommand(options: ConfigureOptions) {
       // select Provider for analysis
       const provider = await select({
           message: 'Select AI Provider for Analysis:',
-          choices: [
-              { value: 'claude-code', name: 'Claude (Anthropic)' },
-              { value: 'gemini', name: 'Gemini (Google)' },
-              { value: 'codex', name: 'OpenAI' }
-          ]
-      }) as AIAssistant;
+          choices: (['anthropic', 'google', 'openai'] as AIProviderId[]).map(value => ({
+              value,
+              name: getAIProviderDisplayName(value)
+          }))
+      }) as AIProviderId;
 
       // Don't set assistant here - will be asked separately
       
@@ -111,7 +113,7 @@ export async function configureCommand(options: ConfigureOptions) {
               { value: 'standard', name: 'Tier 2 - Standard', description: 'File structure + key files analysis' },
               { value: 'deep', name: 'Tier 3 - Deep', description: 'Full code analysis with dependencies' }
           ]
-      });
+      }) as 'basic' | 'standard' | 'deep';
 
       const tierLabels = {
           basic: 'Tier 1',
@@ -182,16 +184,23 @@ export async function configureCommand(options: ConfigureOptions) {
 
   // Ask for target coding assistant if not already set
   if (!finalSelection.assistant) {
-      finalSelection.assistant = await select({
+      if (options.assistant) {
+          try {
+              getAssistantDefinition(options.assistant as AIAssistant);
+          } catch {
+              throw new Error(`Unsupported assistant "${options.assistant}". Gemini CLI generation was removed; use "antigravity" for Google agentic coding profiles.`);
+          }
+          finalSelection.assistant = options.assistant as AIAssistant;
+      } else {
+          finalSelection.assistant = await select({
           message: 'Which coding assistant will use these guidelines?',
-          choices: [
-              { value: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude CLI tool' },
-              { value: 'antigravity', name: 'Antigravity', description: 'Anthropic Claude in editor' },
-              { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub AI assistant' },
-              { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI code model' },
-              { value: 'gemini', name: 'Gemini', description: 'Google AI assistant' }
-          ]
-      }) as AIAssistant;
+          choices: listAssistantDefinitions().map(assistant => ({
+              value: assistant.id,
+              name: assistant.displayName,
+              description: assistant.description
+          }))
+          }) as AIAssistant;
+      }
   }
 
   // Ensure all required fields are set
@@ -203,30 +212,13 @@ export async function configureCommand(options: ConfigureOptions) {
   // Check if config for THIS assistant already exists
   if (!options.force) {
     const { exists } = await import('../utils/file.js');
-    const { join } = await import('path');
+    const definition = getAssistantDefinition(finalSelection.assistant);
+    const configPaths = getAssistantConfigPaths(finalSelection.assistant, projectPath);
+    const assistantName = definition.displayName;
 
-    let configPath: string | null = null;
-    let assistantName = finalSelection.assistant;
+    const hasExistingConfig = (await Promise.all(configPaths.map(path => exists(path)))).some(Boolean);
 
-    // Map assistant to config path
-    if (finalSelection.assistant === 'claude-code') {
-      configPath = join(projectPath, '.claude');
-      assistantName = 'Claude Code';
-    } else if (finalSelection.assistant === 'antigravity') {
-      configPath = join(projectPath, '.agent');
-      assistantName = 'Antigravity';
-    } else if (finalSelection.assistant === 'copilot') {
-      configPath = join(projectPath, '.github', 'copilot-instructions.md');
-      assistantName = 'GitHub Copilot';
-    } else if (finalSelection.assistant === 'gemini') {
-      configPath = join(projectPath, '.gemini');
-      assistantName = 'Gemini';
-    } else if (finalSelection.assistant === 'codex') {
-      configPath = join(projectPath, '.codex');
-      assistantName = 'Codex';
-    }
-
-    if (configPath && await exists(configPath)) {
+    if (hasExistingConfig) {
       console.log(chalk.yellow(`\n⚠️  Existing ${assistantName} configuration detected`));
 
       const action = await select({
@@ -254,12 +246,20 @@ export async function configureCommand(options: ConfigureOptions) {
 
   // Generation
   spinner.start('Generating configuration...');
-  await generator.generate({
+  const result = await generator.generate({
       projectPath,
       selection: finalSelection as ProfileSelection,
       dryRun: false
   });
+  if (!result.success) {
+      spinner.fail('Configuration failed');
+      result.errors.forEach(err => console.error(chalk.red(`   - ${err}`)));
+      return;
+  }
   spinner.succeed('Configuration Generated!');
+  if (result.conflicts.length > 0) {
+      console.log(chalk.yellow(`\n⚠️  Refreshed ${result.conflicts.length} existing file(s).`));
+  }
 }
 
 async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSelection> {
@@ -280,7 +280,7 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       message: 'Select project type:',
       choices: PROJECT_TYPES.map(pt => ({
           value: pt.value,
-          name: pt.label,
+          name: pt.name,
           description: pt.description
       }))
   }) as ProjectType;
@@ -290,7 +290,7 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       message: 'Select architecture pattern:',
       choices: ARCHITECTURES.map(arch => ({
           value: arch.value,
-          name: arch.label,
+          name: arch.name,
           description: arch.description
       }))
   }) as ArchitectureType;
@@ -300,7 +300,7 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       message: 'Select datasource type:',
       choices: DATASOURCES.map(ds => ({
           value: ds.value,
-          name: ds.label,
+          name: ds.name,
           description: ds.description
       }))
   }) as DatasourceType;
@@ -319,13 +319,11 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
   // Target Coding Assistant
   const assistant = await select({
       message: 'Which coding assistant will use these guidelines?',
-      choices: [
-          { value: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude CLI tool' },
-          { value: 'antigravity', name: 'Antigravity', description: 'Anthropic Claude in editor' },
-          { value: 'copilot', name: 'GitHub Copilot', description: 'GitHub AI assistant' },
-          { value: 'codex', name: 'OpenAI Codex', description: 'OpenAI code model' },
-          { value: 'gemini', name: 'Gemini', description: 'Google AI assistant' }
-      ]
+      choices: listAssistantDefinitions().map(definition => ({
+          value: definition.id,
+          name: definition.displayName,
+          description: definition.description
+      }))
   }) as AIAssistant;
 
   return {
@@ -344,7 +342,7 @@ async function selectLanguage(): Promise<Language> {
       message: 'Select programming language:',
       choices: LANGUAGES.map(lang => ({
           value: lang.value,
-          name: lang.label
+          name: lang.name
       }))
   }) as Language;
 }

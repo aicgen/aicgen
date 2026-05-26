@@ -10,12 +10,12 @@ InstallDirRegKey HKCU "Software\aicgen" ""
 RequestExecutionLevel admin
 
 ; Version Information
-VIProductVersion "1.1.0.0"
+VIProductVersion "1.2.0.0"
 VIAddVersionKey "ProductName" "aicgen"
 VIAddVersionKey "CompanyName" "lpsandaruwan"
 VIAddVersionKey "LegalCopyright" "© 2025 lpsandaruwan"
 VIAddVersionKey "FileDescription" "AI Config Generator Installer"
-VIAddVersionKey "FileVersion" "1.1.0.0"
+VIAddVersionKey "FileVersion" "1.2.0.0"
 
 ; Icons (Uncomment if .ico files are present in packaging/windows)
 ; !define MUI_ICON "install.ico"
@@ -59,7 +59,7 @@ Section "aicgen (required)" SecCore
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayName" "aicgen"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "Publisher" "lpsandaruwan"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayVersion" "1.1.1"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\aicgen" "DisplayVersion" "1.2.0"
   
   ; Add to PATH
   EnVar::SetHKLM

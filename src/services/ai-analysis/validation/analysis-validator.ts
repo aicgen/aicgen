@@ -1,5 +1,6 @@
 import { AnalysisResult } from '../../ai-analysis-service';
 import { ValidationError, ValidationErrors } from '../../shared/errors/index';
+import { normalizeInstructionLevel } from '../../../models/profile';
 
 /**
  * Validator for AI analysis results
@@ -42,7 +43,7 @@ export class AnalysisValidator {
       'sql', 'nosql', 'none'
     ]);
 
-    this.validLevels = new Set<string>(['basic', 'standard', 'expert', 'full']);
+    this.validLevels = new Set<string>(['basic', 'standard', 'full']);
 
     this.validTestingMaturities = new Set<string>(['low', 'medium', 'high']);
   }
@@ -116,11 +117,23 @@ export class AnalysisValidator {
     // Validate level
     if (!data.level || typeof data.level !== 'string') {
       errors.push({ field: 'level', message: 'Instruction level is required and must be a string' });
-    } else if (!this.validLevels.has(data.level)) {
-      errors.push({
-        field: 'level',
-        message: `Invalid level: ${data.level}. Must be one of: ${Array.from(this.validLevels).join(', ')}`
-      });
+    } else {
+      let normalized = false;
+      try {
+        data.level = normalizeInstructionLevel(data.level);
+        normalized = true;
+      } catch {
+        errors.push({
+          field: 'level',
+          message: `Invalid level: ${data.level}. Must be one of: ${Array.from(this.validLevels).join(', ')}`
+        });
+      }
+      if (normalized && typeof data.level === 'string' && !this.validLevels.has(data.level)) {
+        errors.push({
+          field: 'level',
+          message: `Invalid level: ${data.level}. Must be one of: ${Array.from(this.validLevels).join(', ')}`
+        });
+      }
     }
 
     // Validate testingMaturity

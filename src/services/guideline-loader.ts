@@ -40,9 +40,22 @@ export class GuidelineLoader {
   }
 
   private constructor(data: GuidelineData) {
-    this.mappings = data.mappings;
+    this.mappings = this.normalizeMappings(data.mappings);
     this.guidelines = data.guidelines;
     this.version = data.version || 'unknown';
+  }
+
+  private normalizeMappings(mappings: Record<string, GuidelineMapping>): Record<string, GuidelineMapping> {
+    return Object.fromEntries(
+      Object.entries(mappings).map(([id, mapping]) => {
+        if (!mapping.levels?.includes('expert')) {
+          return [id, mapping];
+        }
+
+        const levels = new Set(mapping.levels.map(level => level === 'expert' ? 'full' : level));
+        return [id, { ...mapping, levels: [...levels] }];
+      })
+    );
   }
 
   getVersion(): string {
@@ -202,21 +215,18 @@ export class GuidelineLoader {
   }
 
   private estimateHooks(guidelineIds: string[], level: InstructionLevel): number {
-    if (!isProfileAtLeast(level, 'expert')) {
+    if (!isProfileAtLeast(level, 'full')) {
       return 0;
     }
 
     const hasSecurity = guidelineIds.some(id => id.includes('security'));
-    const hasTesting = guidelineIds.some(id => id.includes('testing'));
-
     let count = 0;
     if (hasSecurity) count += 3;
-    if (hasTesting) count += 1;
     return count;
   }
 
   private estimateSubAgents(guidelineIds: string[], level: InstructionLevel): number {
-    if (!isProfileAtLeast(level, 'expert')) {
+    if (!isProfileAtLeast(level, 'full')) {
       return 0;
     }
 

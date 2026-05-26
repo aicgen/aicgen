@@ -1,9 +1,9 @@
 Package: aicgen
-Version: 1.1.1
+Version: 1.2.0
 Section: devel
 Priority: optional
 Architecture: amd64
 Maintainer: lpsandaruwan
 Description: AI Config Generator
-  AI-assisted configuration generator for better coding.
-  Automatically analyzes your project and suggests optimal configurations.
+  AI coding profile generator for Claude Code, GitHub Copilot, Antigravity, and Codex.
+  Generates profile-aware instructions, workflows, skills, hooks, and local plugin files.

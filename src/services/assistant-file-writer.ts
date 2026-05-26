@@ -423,7 +423,7 @@ description: Add or update comprehensive documentation for code
     });
 
     // Standard level and above
-    if (level === 'standard' || level === 'expert' || level === 'full') {
+    if (level === 'standard' || level === 'full') {
       workflows.push({
         name: 'refactor-extract-module',
         content: `---
@@ -455,8 +455,8 @@ description: Generate integration tests for API endpoints and system components
       });
     }
 
-    // Expert and full levels
-    if (level === 'expert' || level === 'full') {
+    // Full profile workflows
+    if (level === 'full') {
       workflows.push({
         name: 'security-audit',
         content: `---

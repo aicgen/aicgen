@@ -26,7 +26,6 @@ const LANGUAGES: { value: Language; name: string }[] = [
 const LEVELS: { value: InstructionLevel; name: string }[] = [
   { value: 'basic', name: 'Basic' },
   { value: 'standard', name: 'Standard' },
-  { value: 'expert', name: 'Expert' },
   { value: 'full', name: 'Full' }
 ];
 
@@ -127,7 +126,7 @@ export async function addGuidelineCommand() {
 
     if (levels.length === 0) {
       console.log(chalk.yellow('\n⚠️  No levels selected, using all levels'));
-      levels.push('basic', 'standard', 'expert', 'full');
+      levels.push('basic', 'standard', 'full');
     }
 
     // 6. Applicability - Architectures

@@ -26,8 +26,8 @@ describe('agentic-capabilities', () => {
   it('progressively enables guided and agentic surfaces by profile level', () => {
     expect(hasEnabledCapability('antigravity', 'standard', 'workflow-commands')).toBe(true);
     expect(hasEnabledCapability('copilot', 'standard', 'prompt-files')).toBe(true);
-    expect(hasEnabledCapability('claude-code', 'expert', 'subagents')).toBe(true);
-    expect(hasEnabledCapability('codex', 'expert', 'hooks')).toBe(true);
+    expect(hasEnabledCapability('claude-code', 'full', 'subagents')).toBe(true);
+    expect(hasEnabledCapability('codex', 'full', 'hooks')).toBe(true);
     expect(hasEnabledCapability('codex', 'full', 'mcp-templates')).toBe(true);
   });
 

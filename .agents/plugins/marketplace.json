@@ -1,0 +1,20 @@
+{
+  "name": "aicgen-project",
+  "interface": {
+    "displayName": "aicgen Project Plugins"
+  },
+  "plugins": [
+    {
+      "name": "aicgen-sdlc",
+      "source": {
+        "source": "local",
+        "path": "./plugins/aicgen-sdlc"
+      },
+      "policy": {
+        "installation": "INSTALLED_BY_DEFAULT",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { select, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
 import { ConfigGenerator } from '../services/config-generator';
-import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { ProfileSelection, InstructionLevel, ArchitectureType, DatasourceType, normalizeInstructionLevel } from '../models/profile';
 import { AIAssistant, Language, ProjectType } from '../models/project';
 import { GuidelineLoader } from '../services/guideline-loader';
 import { showBanner, showInstructions } from '../utils/banner';
@@ -543,8 +543,9 @@ async function handleLevelStep(wizard: WizardStateManager, options: InitOptions)
   const state = wizard.getState();
 
   if (options.level) {
-    wizard.updateState({ level: options.level as InstructionLevel });
-    return options.level;
+    const level = normalizeInstructionLevel(options.level);
+    wizard.updateState({ level });
+    return level;
   }
 
   const levelsWithMetrics = await getLevelsWithMetrics(
@@ -659,7 +660,7 @@ async function handleSummaryStep(wizard: WizardStateManager): Promise<boolean | 
 
 async function getLevelsWithMetrics(language: Language, architecture: ArchitectureType, datasource?: DatasourceType): Promise<{ value: InstructionLevel; name: string; description: string }[]> {
   const loader = await GuidelineLoader.create();
-  const levels: InstructionLevel[] = ['basic', 'standard', 'expert', 'full'];
+  const levels: InstructionLevel[] = ['basic', 'standard', 'full'];
 
   return levels.map(level => {
     const guidelineIds = loader.getGuidelinesForProfile(language, level, architecture, datasource);
@@ -668,8 +669,7 @@ async function getLevelsWithMetrics(language: Language, architecture: Architectu
     const descriptions: Record<InstructionLevel, string> = {
       basic: 'Essential guidelines for quick projects',
       standard: 'Production-ready practices',
-      expert: 'Advanced patterns for scaling',
-      full: 'Everything - all guidelines'
+      full: 'Complete coverage with advanced agentic surfaces'
     };
 
     return {

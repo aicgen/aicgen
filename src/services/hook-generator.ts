@@ -55,7 +55,7 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
     name: 'Block sensitive file access',
     description: 'Prevent reading or modifying sensitive files',
     tags: ['security', 'secrets'],
-    minLevel: 'expert',
+    minLevel: 'full',
     enabledByDefault: true,
     hooks: {
       PreToolUse: [
@@ -83,27 +83,6 @@ const EMBEDDED_HOOKS: Record<string, HookConfig> = {
             {
               type: 'command',
               command: "echo 'Blocked: Cannot modify environment files' && exit 2"
-            }
-          ]
-        }
-      ]
-    }
-  },
-  testing: {
-    name: 'Verify tests before completion',
-    description: 'Ensure tests pass before task completion',
-    tags: ['testing', 'quality'],
-    minLevel: 'expert',
-    enabledByDefault: true,
-    hooks: {
-      Stop: [
-        {
-          hooks: [
-            {
-              type: 'prompt',
-              prompt:
-                'Before completing this task, verify that:\n1. All tests pass\n2. No new failing tests were introduced\n3. Test coverage meets requirements\n\nIs the task truly complete with passing tests?',
-              timeout: 15
             }
           ]
         }
@@ -148,7 +127,7 @@ export class HookGenerator {
   generateClaudeCodeSettings(
     hooks: HookEventMap,
     projectPath: string,
-    level: 'basic' | 'standard' | 'expert' | 'full' = 'standard'
+    level: InstructionLevel = 'standard'
   ): string {
     // Base permissions for all levels
     const baseAllow = [
@@ -167,9 +146,9 @@ export class HookGenerator {
       'Write(.claude/**)'
     ];
 
-    // Network permissions only for expert/full levels (least-privilege)
-    const allowInternet = level === 'expert' || level === 'full';
-    const allowWebSearch = level === 'expert' || level === 'full';
+    // Network permissions only for the full profile (least privilege).
+    const allowInternet = level === 'full';
+    const allowWebSearch = level === 'full';
 
     const allow = allowWebSearch ? [...baseAllow, 'WebSearch'] : baseAllow;
 
@@ -180,6 +159,7 @@ export class HookGenerator {
         profileLevel: level,
         safety: [
           'Generated hooks are limited to local deterministic checks.',
+          'Generated hooks do not run test suites; use /check for validation.',
           'Review hook commands before enabling additional side-effecting automation.',
           'MCP and plugin setup scripts are not generated without explicit opt-in.'
         ]

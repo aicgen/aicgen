@@ -39,7 +39,8 @@ function getCategoryFromPath(path: string): string {
 async function addCategories() {
   console.log('📝 Adding categories to guideline-mappings.yml...\n');
 
-  const mappingsPath = join(process.cwd(), 'data', 'guideline-mappings.yml');
+  const dataDir = process.env.AICGEN_DATA_DIR || join(process.cwd(), 'data');
+  const mappingsPath = join(dataDir, 'guideline-mappings.yml');
 
   const content = await readFile(mappingsPath, 'utf-8');
   const mappings = YAML.parse(content) as Record<string, GuidelineMapping>;

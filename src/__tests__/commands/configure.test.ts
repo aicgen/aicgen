@@ -39,7 +39,7 @@ describe('Configure Command Logic', () => {
     });
 
     it('should accept valid level values', () => {
-      const validLevels = ['basic', 'standard', 'expert', 'full'];
+      const validLevels = ['basic', 'standard', 'full'];
 
       validLevels.forEach(level => {
         const profile: Partial<ProfileSelection> = { level: level as any };
@@ -134,7 +134,7 @@ describe('Configure Command Logic', () => {
         language: 'typescript',
         architecture: 'microservices',
         datasource: 'sql',
-        level: 'expert',
+        level: 'full',
         projectType: 'api'
       };
 
@@ -188,7 +188,7 @@ describe('Configure Command Logic', () => {
         language: 'typescript',
         architecture: 'microservices',
         datasource: 'sql',
-        level: 'expert',
+        level: 'full',
         projectType: 'api',
         projectName: 'test'
       };
@@ -229,7 +229,7 @@ describe('Configure Command Logic', () => {
     it('should build profile from AI recommendations', () => {
       const recommendations = {
         language: 'python',
-        level: 'expert',
+        level: 'full',
         architecture: 'microservices',
         datasource: 'sql'
       };
@@ -242,7 +242,7 @@ describe('Configure Command Logic', () => {
       };
 
       expect(profile.language).toBe('python');
-      expect(profile.level).toBe('expert');
+      expect(profile.level).toBe('full');
       expect(profile.architecture).toBe('microservices');
       expect(profile.datasource).toBe('sql');
     });
@@ -254,7 +254,7 @@ describe('Configure Command Logic', () => {
       // Profile should not automatically use analysis provider as assistant
       const profile = {
         language: 'typescript',
-        level: 'expert'
+        level: 'full'
         // assistant should be asked separately
       };
 

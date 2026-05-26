@@ -1,3 +1,4 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/aicgen/aicgen-data
+	branch = main

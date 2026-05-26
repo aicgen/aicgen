@@ -1,6 +1,19 @@
 import { AIAssistant, Language, ProjectType } from './project';
 
-export type InstructionLevel = 'basic' | 'standard' | 'expert' | 'full';
+export const INSTRUCTION_LEVELS = ['basic', 'standard', 'full'] as const;
+export type InstructionLevel = typeof INSTRUCTION_LEVELS[number];
+
+export function normalizeInstructionLevel(level: string): InstructionLevel {
+  if (level === 'expert') {
+    return 'full';
+  }
+
+  if ((INSTRUCTION_LEVELS as readonly string[]).includes(level)) {
+    return level as InstructionLevel;
+  }
+
+  throw new Error(`Unsupported instruction level "${level}". Use one of: ${INSTRUCTION_LEVELS.join(', ')}`);
+}
 export type ArchitectureType =
   | 'layered'
   | 'modular-monolith'

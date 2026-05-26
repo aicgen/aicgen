@@ -27,7 +27,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -45,7 +44,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -62,7 +60,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -79,7 +76,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -96,7 +92,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -113,7 +108,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -130,7 +124,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -146,7 +139,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "typescript"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -164,7 +156,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -181,7 +172,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -198,7 +188,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "python"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -215,7 +204,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -233,7 +221,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -251,7 +238,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -269,7 +255,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -287,7 +272,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -305,7 +289,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -323,7 +306,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -340,7 +322,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -357,7 +338,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -374,7 +354,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -392,7 +371,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -410,7 +388,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -427,7 +404,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -445,7 +421,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -463,7 +438,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -481,7 +455,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -498,7 +471,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -516,7 +488,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -534,7 +505,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -553,7 +523,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -572,7 +541,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -590,7 +558,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -608,7 +575,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -625,7 +591,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -643,7 +608,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -660,7 +624,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "microservices"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -678,7 +641,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -696,7 +658,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -713,7 +674,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -728,7 +688,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "testing/unit-fundamentals.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -742,7 +701,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "testing/unit-mocking.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -756,7 +714,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "testing-integration": {
       "path": "testing/integration.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -772,7 +729,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -788,7 +744,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -803,7 +758,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "security/auth-jwt.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -819,7 +773,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "security/secrets.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -833,7 +786,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "security-headers": {
       "path": "security/headers.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -850,7 +802,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -865,7 +816,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "performance-caching": {
       "path": "performance/caching.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -880,7 +830,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "performance/async.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -896,7 +845,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -912,7 +860,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "database/schema.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "datasources": [
@@ -929,7 +876,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "database-indexing": {
       "path": "database/indexing.md",
       "levels": [
-        "expert",
         "full"
       ],
       "datasources": [
@@ -948,7 +894,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -964,7 +909,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "api/rest.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -979,7 +923,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "api/pagination.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -995,7 +938,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1009,7 +951,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "style/organization.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1024,7 +965,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "error-handling/strategy.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1040,7 +980,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1055,7 +994,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "architecture/solid/principles.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1076,7 +1014,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1094,7 +1031,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1112,7 +1048,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "ddd"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1129,7 +1064,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "event-driven"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1147,7 +1081,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1165,7 +1098,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1183,7 +1115,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1201,7 +1132,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1219,7 +1149,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1234,7 +1163,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "architecture/gui/patterns.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1250,7 +1178,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "architecture/feature-toggles/patterns.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1264,7 +1191,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "devops/ci-cd.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1279,7 +1205,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "devops-practices": {
       "path": "devops/practices.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1294,7 +1219,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "devops/observability.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1310,7 +1234,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "practices/planning.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1326,7 +1249,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "practices/documentation.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1342,7 +1264,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "practices/code-review.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1357,7 +1278,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "practices/refactoring.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1372,7 +1292,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1387,7 +1306,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "api/versioning.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1401,7 +1319,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "performance-caching-strategies": {
       "path": "performance/caching-strategies.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1416,7 +1333,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "database/design-patterns.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "datasources": [
@@ -1434,7 +1350,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "database/nosql.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "datasources": [
@@ -1453,7 +1368,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "patterns/base-patterns.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1468,7 +1382,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "patterns-concurrency": {
       "path": "patterns/concurrency.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1483,7 +1396,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "patterns/data-access.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1497,7 +1409,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "patterns-distribution": {
       "path": "patterns/distribution.md",
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1512,7 +1423,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "patterns/domain-logic.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1526,7 +1436,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "path": "patterns/gof.md",
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1545,7 +1454,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1563,7 +1471,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1582,7 +1489,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1599,7 +1505,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1615,7 +1520,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "kotlin"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1633,7 +1537,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       "levels": [
         "basic",
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1650,7 +1553,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
       ],
       "levels": [
         "standard",
-        "expert",
         "full"
       ],
       "tags": [
@@ -1666,7 +1568,6 @@ export const EMBEDDED_DATA: EmbeddedData = {
         "php"
       ],
       "levels": [
-        "expert",
         "full"
       ],
       "tags": [
@@ -1679,7 +1580,7 @@ export const EMBEDDED_DATA: EmbeddedData = {
   },
   "guidelines": {
     "agentic/migration-gemini-to-antigravity.md": "# Gemini CLI Target Migration\n\nAICGEN no longer generates Gemini CLI target files.\n\nUse Antigravity for Google-side agentic coding profiles:\n\n- Gemini CLI target output removed: `.gemini/instructions.md`\n- Antigravity target output kept: `.agent/rules/*.md`\n- Antigravity workflows enabled from `standard` profile and above: `.agent/workflows/*.md`\n\nExisting `.gemini` folders are not deleted by generation. Users can remove them manually or run the clear command if they want to clean all AI configuration files.\n",
-    "agentic/README.md": "# Agentic Capability Profiles\n\nThis directory documents how AICGEN maps reusable guideline content into modern AI coding tool surfaces.\n\nGemini CLI is no longer an active generated target. Use Antigravity for Google-side agentic coding profiles.\n\n## Profile Levels\n\n- `basic`: main repository instructions and stable rule files only.\n- `standard`: basic output plus reusable workflows, commands, and prompt files.\n- `expert`: standard output plus focused agents, skills, and safe lifecycle hooks.\n- `full`: expert output plus documentation templates for advanced integrations such as MCP.\n\n## Risk Levels\n\n- `passive`: instructions or rules only.\n- `guided`: reusable prompts, commands, or workflows that users invoke.\n- `agentic`: subagents, skills, or plugin-packaged behavior selected by the assistant.\n- `side-effecting`: hooks, MCP, setup scripts, or executable tool configuration.\n\nSide-effecting capabilities must stay local, deterministic, and explicitly reviewed before use.\n",
+    "agentic/README.md": "# Agentic Capability Profiles\n\nThis directory documents how AICGEN maps reusable guideline content into modern AI coding tool surfaces.\n\nGemini CLI is no longer an active generated target. Use Antigravity for Google-side agentic coding profiles.\n\n## Profile Levels\n\n- `basic`: main repository instructions and stable rule files only.\n- `standard`: basic output plus reusable workflows, commands, and prompt files.\n- `full`: standard output plus focused agents, skills, guardrail hooks, plugin packaging, and advanced integration templates such as MCP.\n\nValidation stays in the lifecycle commands: `/check` is responsible for running or asking for the relevant test suite. Generated hooks should never invoke full test suites automatically.\n\n## Risk Levels\n\n- `passive`: instructions or rules only.\n- `guided`: reusable prompts, commands, or workflows that users invoke.\n- `agentic`: subagents, skills, or plugin-packaged behavior selected by the assistant.\n- `side-effecting`: hooks, MCP, setup scripts, or executable tool configuration.\n\nSide-effecting capabilities must stay local, deterministic, and explicitly reviewed before use.\n",
     "api/basics.md": "# API Basics\n\n## HTTP Methods\n\nUse the right method for each operation:\n\n| Method | Purpose | Example |\n|--------|---------|---------|\n| GET | Read data | Get list of users |\n| POST | Create new resource | Create a new user |\n| PUT | Replace entire resource | Update all user fields |\n| PATCH | Update part of resource | Update user's email only |\n| DELETE | Remove resource | Delete a user |\n\n## GET - Reading Data\n\n```pseudocode\n// Get all items\nroute GET \"/api/users\":\n    users = getAllUsers()\n    return JSON(users)\n\n// Get single item by ID\nroute GET \"/api/users/:id\":\n    user = getUserById(params.id)\n    if user is null:\n        return status 404, JSON({ error: \"User not found\" })\n    return JSON(user)\n```\n\n## POST - Creating Data\n\n```pseudocode\nroute POST \"/api/users\":\n    name = request.body.name\n    email = request.body.email\n\n    // Validate input\n    if name is empty or email is empty:\n        return status 400, JSON({ error: \"Name and email required\" })\n\n    newUser = createUser({ name, email })\n\n    // Return 201 Created with new resource\n    return status 201, JSON(newUser)\n```\n\n## PUT - Replacing Data\n\n```pseudocode\nroute PUT \"/api/users/:id\":\n    id = params.id\n    name = request.body.name\n    email = request.body.email\n\n    user = getUserById(id)\n    if user is null:\n        return status 404, JSON({ error: \"User not found\" })\n\n    updated = replaceUser(id, { name, email })\n    return JSON(updated)\n```\n\n## PATCH - Updating Data\n\n```pseudocode\nroute PATCH \"/api/users/:id\":\n    id = params.id\n    updates = request.body  // Only fields to update\n\n    user = getUserById(id)\n    if user is null:\n        return status 404, JSON({ error: \"User not found\" })\n\n    updated = updateUser(id, updates)\n    return JSON(updated)\n```\n\n## DELETE - Removing Data\n\n```pseudocode\nroute DELETE \"/api/users/:id\":\n    id = params.id\n\n    user = getUserById(id)\n    if user is null:\n        return status 404, JSON({ error: \"User not found\" })\n\n    deleteUser(id)\n\n    // 204 No Content - successful deletion\n    return status 204\n```\n\n## HTTP Status Codes\n\n### Success Codes (2xx)\n\n```pseudocode\n// 200 OK - Request succeeded\nreturn status 200, JSON(data)\n\n// 201 Created - New resource created\nreturn status 201, JSON(newResource)\n\n// 204 No Content - Success with no response body\nreturn status 204\n```\n\n### Client Error Codes (4xx)\n\n```pseudocode\n// 400 Bad Request - Invalid input\nreturn status 400, JSON({ error: \"Invalid email format\" })\n\n// 401 Unauthorized - Not authenticated\nreturn status 401, JSON({ error: \"Login required\" })\n\n// 403 Forbidden - Authenticated but not allowed\nreturn status 403, JSON({ error: \"Admin access required\" })\n\n// 404 Not Found - Resource doesn't exist\nreturn status 404, JSON({ error: \"User not found\" })\n\n// 409 Conflict - Resource already exists\nreturn status 409, JSON({ error: \"Email already registered\" })\n```\n\n### Server Error Codes (5xx)\n\n```pseudocode\n// 500 Internal Server Error - Unexpected error\nreturn status 500, JSON({ error: \"Internal server error\" })\n\n// 503 Service Unavailable - Temporary issue\nreturn status 503, JSON({ error: \"Database unavailable\" })\n```\n\n## URL Structure\n\nUse clear, hierarchical URLs:\n\n```\n✅ Good\nGET  /api/users           # List all users\nGET  /api/users/123       # Get user 123\nPOST /api/users           # Create user\nGET  /api/users/123/posts # Get posts by user 123\n\n❌ Bad\nGET  /api/getUsers\nPOST /api/createUser\nGET  /api/user?id=123\n```\n\n## Request and Response Format\n\n### JSON Request Body\n\n```\n// Client sends\nPOST /api/users\nContent-Type: application/json\n\n{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}\n```\n\n### JSON Response\n\n```\n// Server responds\nHTTP/1.1 201 Created\nContent-Type: application/json\n\n{\n  \"id\": 123,\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\",\n  \"createdAt\": \"2024-01-15T10:30:00Z\"\n}\n```\n\n## Query Parameters\n\nUse query parameters for filtering, sorting, and pagination:\n\n```pseudocode\n// Filter by status\n// GET /api/orders?status=pending\nroute GET \"/api/orders\":\n    status = query.status\n    orders = getOrders({ status })\n    return JSON(orders)\n\n// Sort by field\n// GET /api/users?sort=name\n\n// Pagination\n// GET /api/users?page=2&limit=20\n```\n\n## Error Responses\n\nAlways return consistent error format:\n\n```pseudocode\n// ✅ Good: Structured error\nreturn status 400, JSON({\n    error: {\n        code: \"VALIDATION_ERROR\",\n        message: \"Invalid input\",\n        details: {\n            email: \"Email format is invalid\"\n        }\n    }\n})\n\n// ❌ Bad: Inconsistent\nreturn status 400, \"Bad request\"\nreturn status 400, JSON({ msg: \"Error\" })\n```\n\n## Best Practices\n\n1. **Use correct HTTP methods** - GET for reading, POST for creating, etc.\n2. **Use appropriate status codes** - 200 for success, 404 for not found, etc.\n3. **Return JSON** - Standard format for APIs\n4. **Validate input** - Check data before processing\n5. **Handle errors** - Return clear error messages\n\n```pseudocode\n// Complete example\nroute POST \"/api/products\":\n    name = request.body.name\n    price = request.body.price\n\n    // Validate\n    if name is empty or price is empty:\n        return status 400, JSON({\n            error: \"Name and price are required\"\n        })\n\n    if price < 0:\n        return status 400, JSON({\n            error: \"Price cannot be negative\"\n        })\n\n    // Check for duplicates\n    if productExists(name):\n        return status 409, JSON({\n            error: \"Product already exists\"\n        })\n\n    // Create\n    product = createProduct({ name, price })\n\n    // Return success\n    return status 201, JSON(product)\n```\n\n## Common Mistakes\n\n```pseudocode\n// ❌ Wrong method for operation\nroute GET \"/api/users/delete/:id\"  // Should be DELETE\n\n// ❌ Wrong status code\nroute POST \"/api/users\":\n    user = createUser(body)\n    return status 200, JSON(user)  // Should be 201\n\n// ❌ Not handling missing resources\nroute GET \"/api/users/:id\":\n    user = getUserById(params.id)\n    return JSON(user)  // What if user is null?\n\n// ✅ Correct\nroute DELETE \"/api/users/:id\"\n\nroute POST \"/api/users\":\n    user = createUser(body)\n    return status 201, JSON(user)\n\nroute GET \"/api/users/:id\":\n    user = getUserById(params.id)\n    if user is null:\n        return status 404, JSON({ error: \"User not found\" })\n    return JSON(user)\n```\n",
     "api/index.md": "# API Design Guidelines\n\nThis directory contains REST API design patterns.\n\n## Available Chunks\n\n- **rest.md** - Resource-oriented design, HTTP methods, status codes\n- **pagination.md** - Offset-based, cursor-based, HATEOAS links\n",
     "api/pagination.md": "# API Pagination\n\n## Always Paginate Collections\n\n```typescript\n// ✅ Paginated endpoint\napp.get('/api/v1/books', async (req, res) => {\n  const page = parseInt(req.query.page as string) || 1;\n  const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);\n\n  const { data, total } = await bookService.findAll({ page, limit });\n\n  res.json({\n    data,\n    pagination: {\n      page,\n      limit,\n      total,\n      totalPages: Math.ceil(total / limit),\n      hasNext: page * limit < total,\n      hasPrevious: page > 1\n    }\n  });\n});\n```\n\n## Offset-Based Pagination\n\n```typescript\n// Simple but has issues with large datasets\nGET /api/v1/books?page=1&limit=20\nGET /api/v1/books?page=2&limit=20\n\n// Implementation\nconst getBooks = async (page: number, limit: number) => {\n  const offset = (page - 1) * limit;\n\n  const [data, total] = await Promise.all([\n    db.query('SELECT * FROM books ORDER BY id LIMIT ? OFFSET ?', [limit, offset]),\n    db.query('SELECT COUNT(*) FROM books')\n  ]);\n\n  return { data, total };\n};\n```\n\n## Cursor-Based Pagination\n\n```typescript\n// Better for large datasets and real-time data\nGET /api/v1/books?cursor=eyJpZCI6MTIzfQ&limit=20\n\n// Response includes next cursor\n{\n  \"data\": [...],\n  \"pagination\": {\n    \"nextCursor\": \"eyJpZCI6MTQzfQ\",\n    \"hasMore\": true\n  }\n}\n\n// Implementation\nconst getBooks = async (cursor: string | null, limit: number) => {\n  let query = 'SELECT * FROM books';\n\n  if (cursor) {\n    const { id } = decodeCursor(cursor);\n    query += ` WHERE id > ${id}`;\n  }\n\n  query += ` ORDER BY id LIMIT ${limit + 1}`;\n  const data = await db.query(query);\n\n  const hasMore = data.length > limit;\n  const items = hasMore ? data.slice(0, limit) : data;\n\n  return {\n    data: items,\n    pagination: {\n      nextCursor: hasMore ? encodeCursor({ id: items[items.length - 1].id }) : null,\n      hasMore\n    }\n  };\n};\n```\n\n## Keyset Pagination\n\n```sql\n-- Most efficient for large tables\n-- First page\nSELECT * FROM products\nORDER BY created_at DESC, id DESC\nLIMIT 20;\n\n-- Next page (using last item's values)\nSELECT * FROM products\nWHERE (created_at, id) < ('2024-01-15 10:00:00', 12345)\nORDER BY created_at DESC, id DESC\nLIMIT 20;\n```\n\n## HATEOAS Links\n\n```typescript\n// Include navigation links\n{\n  \"data\": [...],\n  \"pagination\": {\n    \"page\": 2,\n    \"limit\": 20,\n    \"total\": 150\n  },\n  \"links\": {\n    \"self\": \"/api/v1/books?page=2&limit=20\",\n    \"first\": \"/api/v1/books?page=1&limit=20\",\n    \"prev\": \"/api/v1/books?page=1&limit=20\",\n    \"next\": \"/api/v1/books?page=3&limit=20\",\n    \"last\": \"/api/v1/books?page=8&limit=20\"\n  }\n}\n```\n\n## Pagination Best Practices\n\n```typescript\n// ✅ Set reasonable defaults and limits\nconst page = parseInt(req.query.page) || 1;\nconst limit = Math.min(parseInt(req.query.limit) || 20, 100);\n\n// ✅ Include total count (when practical)\nconst total = await db.count('books');\n\n// ✅ Use consistent response structure\n{\n  \"data\": [],\n  \"pagination\": { ... }\n}\n\n// ❌ Don't return unlimited results\n// ❌ Don't allow page < 1 or limit < 1\n```\n",
@@ -1794,7 +1695,7 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "practices/planning.md": "# Planning Best Practices\n\n## Plan Before Implementation\n\n**ALWAYS design and plan before writing code:**\n\n1. **Understand Requirements**\n   - Clarify the goal and scope\n   - Identify constraints and dependencies\n   - Ask questions about ambiguous requirements\n\n2. **Break Down Into Phases**\n   - Divide work into logical phases\n   - Define deliverables for each phase\n   - Prioritize phases by value and dependencies\n\n3. **Design First**\n   - Sketch architecture and data flow\n   - Identify components and interfaces\n   - Consider edge cases and error scenarios\n\n4. **Get User Approval**\n   - Present the plan to stakeholders\n   - Explain trade-offs and alternatives\n   - Wait for approval before implementation\n\n## Never Make Assumptions\n\n**CRITICAL: When in doubt, ASK:**\n\n```typescript\n// ❌ BAD: Assuming what user wants\nasync function processOrder(orderId: string) {\n  // Assuming we should send email, but maybe not?\n  await sendConfirmationEmail(orderId);\n  // Assuming payment is already captured?\n  await fulfillOrder(orderId);\n}\n\n// ✅ GOOD: Clarify requirements first\n// Q: Should we send confirmation email at this stage?\n// Q: Is payment already captured or should we capture it here?\n// Q: What happens if fulfillment fails?\n```\n\n**Ask about:**\n- Expected behavior in edge cases\n- Error handling strategy\n- Performance requirements\n- Security considerations\n- User experience preferences\n\n## Plan in Phases\n\n**Structure work into clear phases:**\n\n### Phase 1: Foundation\n- Set up project structure\n- Configure tooling and dependencies\n- Create basic types and interfaces\n\n### Phase 2: Core Implementation\n- Implement main business logic\n- Add error handling\n- Write unit tests\n\n### Phase 3: Integration\n- Connect components\n- Add integration tests\n- Handle edge cases\n\n### Phase 4: Polish\n- Performance optimization\n- Documentation\n- Final review\n\n**Checkpoint after each phase:**\n- Demo functionality\n- Get feedback\n- Adjust plan if needed\n\n## Planning Template\n\n```markdown\n## Goal\n[What are we building and why?]\n\n## Requirements\n- [ ] Requirement 1\n- [ ] Requirement 2\n- [ ] Requirement 3\n\n## Questions for Clarification\n1. [Question about requirement X]\n2. [Question about edge case Y]\n3. [Question about preferred approach for Z]\n\n## Proposed Approach\n[Describe the solution]\n\n## Phases\n1. **Phase 1**: [Description]\n   - Task 1\n   - Task 2\n\n2. **Phase 2**: [Description]\n   - Task 1\n   - Task 2\n\n## Risks & Mitigation\n- **Risk**: [Description]\n  **Mitigation**: [How to handle]\n\n## Alternatives Considered\n- **Option A**: [Pros/Cons]\n- **Option B**: [Pros/Cons]\n- **Chosen**: Option A because [reason]\n```\n\n## Communication Principles\n\n1. **Ask Early**: Don't wait until you're stuck\n2. **Be Specific**: \"Should error X retry or fail immediately?\"\n3. **Propose Options**: \"Would you prefer A or B?\"\n4. **Explain Trade-offs**: \"Fast but risky vs. Slow but safe\"\n5. **Document Decisions**: Record what was decided and why\n\n## Anti-Patterns\n\n❌ **Don't:**\n- Start coding without understanding requirements\n- Assume you know what the user wants\n- Skip the planning phase to \"save time\"\n- Make architectural decisions without discussion\n- Proceed with unclear requirements\n\n✅ **Do:**\n- Ask questions when requirements are vague\n- Create a plan and get it approved\n- Break work into reviewable phases\n- Document decisions and reasoning\n- Communicate early and often\n",
     "practices/refactoring.md": "# Refactoring Patterns\n\n## Common Code Smells\n\n### Long Method\nSplit into smaller, focused functions.\n\n```typescript\n// Before\nfunction processOrder(order: Order) {\n  // 100 lines of code...\n}\n\n// After\nfunction processOrder(order: Order) {\n  validateOrder(order);\n  calculateTotals(order);\n  applyDiscounts(order);\n  saveOrder(order);\n}\n```\n\n### Duplicate Code\nExtract common logic.\n\n```typescript\n// Before\nfunction getAdminUsers() {\n  return users.filter(u => u.role === 'admin' && u.active);\n}\nfunction getModeratorUsers() {\n  return users.filter(u => u.role === 'moderator' && u.active);\n}\n\n// After\nfunction getActiveUsersByRole(role: string) {\n  return users.filter(u => u.role === role && u.active);\n}\n```\n\n### Primitive Obsession\nUse value objects.\n\n```typescript\n// Before\nfunction sendEmail(email: string) { /* ... */ }\n\n// After\nclass Email {\n  constructor(private value: string) {\n    if (!this.isValid(value)) throw new Error('Invalid email');\n  }\n}\nfunction sendEmail(email: Email) { /* ... */ }\n```\n\n### Feature Envy\nMove method to class it uses most.\n\n```typescript\n// Before - Order is accessing customer too much\nclass Order {\n  getDiscount() {\n    return this.customer.isPremium() ?\n      this.customer.premiumDiscount :\n      this.customer.regularDiscount;\n  }\n}\n\n// After\nclass Customer {\n  getDiscount(): number {\n    return this.isPremium() ? this.premiumDiscount : this.regularDiscount;\n  }\n}\n```\n\n## Safe Refactoring Steps\n\n1. Ensure tests pass before refactoring\n2. Make one small change at a time\n3. Run tests after each change\n4. Commit frequently\n5. Refactor in separate commits from feature work\n\n## Best Practices\n\n- Refactor when adding features, not separately\n- Keep refactoring commits separate\n- Use IDE refactoring tools when available\n- Write tests before refactoring if missing\n",
     "practices/version-control.md": "# Version Control Patterns\n\n## Branching Strategies\n\n### GitHub Flow\nSimple: main + feature branches.\n\n```\nmain ─────●─────●─────●─────●─────\n           \\         /\nfeature     ●───●───●\n```\n\n### Git Flow\nFor scheduled releases: main, develop, feature, release, hotfix.\n\n```\nmain    ─────●─────────────●─────\n              \\           /\nrelease        ●─────────●\n                \\       /\ndevelop  ●───●───●───●───●───●───\n          \\     /\nfeature    ●───●\n```\n\n## Commit Messages\n\n```\nfeat: add user authentication\n\n- Implement JWT-based auth\n- Add login/logout endpoints\n- Include password hashing\n\nCloses #123\n```\n\n**Prefixes:**\n- `feat:` - New feature\n- `fix:` - Bug fix\n- `refactor:` - Code change that doesn't fix bug or add feature\n- `docs:` - Documentation only\n- `test:` - Adding tests\n- `chore:` - Maintenance tasks\n\n## Best Practices\n\n- Keep commits atomic and focused\n- Write descriptive commit messages\n- Pull/rebase before pushing\n- Never force push to shared branches\n- Use pull requests for code review\n- Delete merged branches\n- Tag releases with semantic versions\n",
-    "README.md": "# aicgen Guidelines Repository\n\nThis repository contains coding guidelines and best practices that power aicgen configurations.\n\n## Directory Structure\n\n```\ndata/\n├── guideline-mappings.yml    # Maps guideline IDs to files and filters\n├── api/                      # API design patterns\n├── architecture/             # Architecture patterns (clean, DDD, etc.)\n├── database/                 # Database guidelines\n├── devops/                   # CI/CD and deployment\n├── error-handling/           # Error handling strategies\n├── language/                 # Language-specific (typescript, python)\n├── patterns/                 # Design patterns\n├── performance/              # Performance optimization\n├── practices/                # Best practices\n├── security/                 # Security guidelines\n├── style/                    # Code style guidelines\n├── agentic/                  # Assistant capability matrix and profile limits\n├── templates/                # Reusable templates\n├── workflows/                # SDLC lifecycle command definitions\n└── testing/                  # Testing strategies\n```\n\n## Agentic Profiles\n\nThe `agentic/` directory describes how guideline content maps into assistant-specific surfaces for Claude Code, GitHub Copilot, Antigravity, and Codex.\n\nGemini CLI generation is removed from active targets. Use Antigravity for Google-side agentic coding profiles.\n\nProfile levels gate capability risk:\n\n- `basic`: stable instructions and rules.\n- `standard`: reusable workflows and prompt files.\n- `expert`: focused agents, skills, and safe lifecycle hooks.\n- `full`: advanced documentation templates such as MCP.\n\n## Contributing Guidelines\n\n### Step 1: Create Your Guideline File\n\nCreate a markdown file in the appropriate category folder:\n\n```bash\n# Example: Adding a new TypeScript guideline\ndata/language/typescript/my-guideline.md\n```\n\n**Guideline Format:**\n\n```markdown\n# Guideline Title\n\nBrief description of what this guideline covers.\n\n## Section 1\n\nClear, actionable instructions with code examples:\n\n\\`\\`\\`typescript\n// Good example\nfunction goodExample(): string {\n  return \"well-structured code\";\n}\n\n// Bad example - explain why\nfunction badExample() {  // Missing return type\n  return \"unclear code\";\n}\n\\`\\`\\`\n\n## Section 2\n\nMore sections as needed...\n```\n\n**Writing Tips:**\n- Be concise and actionable\n- Include both good and bad code examples\n- Use language-appropriate code blocks\n- Focus on the \"why\" not just the \"what\"\n\n### Step 2: Add to Mappings\n\nAdd your guideline to `guideline-mappings.yml`:\n\n```yaml\nmy-guideline-id:\n  path: language/typescript/my-guideline.md\n  category: Language\n  languages:\n    - typescript\n  levels:\n    - standard\n    - expert\n    - full\n  tags:\n    - typescript\n    - relevant-tag\n```\n\n### Mapping Fields\n\n| Field | Required | Description |\n|-------|----------|-------------|\n| `path` | Yes | Relative path to the guideline file |\n| `category` | Yes | Display category (Language, Architecture, Testing, etc.) |\n| `languages` | No | Which languages this applies to. Omit for all languages |\n| `levels` | No | Instruction levels: `basic`, `standard`, `expert`, `full`. Omit for all |\n| `architectures` | No | Architecture types. Omit for all |\n| `tags` | No | Search/organization tags |\n\n### Available Values\n\n**Languages:**\n- `typescript`, `javascript`, `python`, `go`, `rust`, `java`, `csharp`, `ruby`, `dart`, `swift`, `kotlin`, `php`\n\n**Levels:**\n- `basic` - Essential guidelines only\n- `standard` - Common best practices\n- `expert` - Advanced patterns\n- `full` - Comprehensive coverage\n\n**Architectures:**\n- `layered`, `clean-architecture`, `hexagonal`, `ddd`, `microservices`\n- `modular-monolith`, `event-driven`, `serverless`, `monorepo`\n- `bounded-contexts`, `component-based`\n\n**Categories:**\n- `Language`, `Architecture`, `Testing`, `Security`, `Performance`\n- `Database`, `API Design`, `Code Style`, `Error Handling`, `DevOps`\n- `Best Practices`, `Design Patterns`\n\n## Examples\n\n### Language-Specific Guideline\n\n```yaml\ntypescript-decorators:\n  path: language/typescript/decorators.md\n  category: Language\n  languages:\n    - typescript\n  levels:\n    - expert\n    - full\n  tags:\n    - typescript\n    - decorators\n    - metadata\n```\n\n### Universal Guideline (All Languages)\n\n```yaml\nsolid-principles:\n  path: architecture/solid/principles.md\n  category: Architecture\n  levels:\n    - standard\n    - expert\n    - full\n  tags:\n    - solid\n    - design-principles\n    - oop\n```\n\n### Architecture-Specific Guideline\n\n```yaml\nddd-aggregates:\n  path: architecture/ddd/aggregates.md\n  category: Architecture\n  architectures:\n    - ddd\n    - clean-architecture\n  levels:\n    - expert\n    - full\n  tags:\n    - ddd\n    - aggregates\n    - domain-model\n```\n\n## Testing Your Changes\n\nAfter adding a guideline:\n\n1. **Validate the data repo:**\n   ```bash\n   scripts/validate-data\n   ```\n\n2. **Rebuild aicgen:**\n   ```bash\n   AICGEN_DATA_DIR=/path/to/aicgen-data bun run embed\n   bun run build\n   ```\n\n3. **Check it's loaded:**\n   ```bash\n   bun run start stats\n   ```\n\n4. **Test generation:**\n   ```bash\n   bun run start init --force\n   ```\n\n## Guideline Quality Checklist\n\n- [ ] Clear, descriptive title\n- [ ] Actionable instructions\n- [ ] Code examples (good and bad)\n- [ ] Appropriate language/level targeting\n- [ ] Meaningful category and tags\n- [ ] No duplicate content with existing guidelines\n\n## License\n\nMIT License - See LICENSE file\n",
+    "README.md": "# aicgen Guidelines Repository\n\nThis repository contains coding guidelines and best practices that power aicgen configurations.\n\n## Release 1.2.0 Stats\n\n| Metric | Count |\n|--------|-------|\n| Guidelines | 99 |\n| SDLC workflows | 6 |\n| Categories | 12 |\n| Languages | 12 |\n| Architectures | 10 |\n| Datasources | 2 |\n| Profile levels | `basic`, `standard`, `full` |\n\n## Directory Structure\n\n```\naicgen-data/\n├── guideline-mappings.yml    # Maps guideline IDs to files and filters\n├── api/                      # API design patterns\n├── architecture/             # Architecture patterns (clean, DDD, etc.)\n├── database/                 # Database guidelines\n├── devops/                   # CI/CD and deployment\n├── error-handling/           # Error handling strategies\n├── language/                 # Language-specific (typescript, python)\n├── patterns/                 # Design patterns\n├── performance/              # Performance optimization\n├── practices/                # Best practices\n├── security/                 # Security guidelines\n├── style/                    # Code style guidelines\n├── agentic/                  # Assistant capability matrix and profile limits\n├── templates/                # Reusable templates\n├── workflows/                # SDLC lifecycle command definitions\n└── testing/                  # Testing strategies\n```\n\n## Agentic Profiles\n\nThe `agentic/` directory describes how guideline content maps into assistant-specific surfaces for Claude Code, GitHub Copilot, Antigravity, and Codex.\n\nGemini CLI generation is removed from active targets. Use Antigravity for Google-side agentic coding profiles.\n\nProfile levels gate capability risk:\n\n- `basic`: stable instructions and rules.\n- `standard`: reusable workflows, prompt files, and stable Codex SDLC skills.\n- `full`: focused agents, skills, safe lifecycle guardrail hooks, plugin packaging, and advanced documentation templates such as MCP.\n\nTest-suite execution is handled by the `/check` lifecycle command, not by generated hooks. Hook templates must not run full test suites automatically.\n\n## Contributing Guidelines\n\n### Step 1: Create Your Guideline File\n\nCreate a markdown file in the appropriate category folder:\n\n```bash\n# Example: Adding a new TypeScript guideline\naicgen-data/language/typescript/my-guideline.md\n```\n\n**Guideline Format:**\n\n```markdown\n# Guideline Title\n\nBrief description of what this guideline covers.\n\n## Section 1\n\nClear, actionable instructions with code examples:\n\n\\`\\`\\`typescript\n// Good example\nfunction goodExample(): string {\n  return \"well-structured code\";\n}\n\n// Bad example - explain why\nfunction badExample() {  // Missing return type\n  return \"unclear code\";\n}\n\\`\\`\\`\n\n## Section 2\n\nMore sections as needed...\n```\n\n**Writing Tips:**\n- Be concise and actionable\n- Include both good and bad code examples\n- Use language-appropriate code blocks\n- Focus on the \"why\" not just the \"what\"\n\n### Step 2: Add to Mappings\n\nAdd your guideline to `guideline-mappings.yml`:\n\n```yaml\nmy-guideline-id:\n  path: language/typescript/my-guideline.md\n  category: Language\n  languages:\n    - typescript\n  levels:\n    - standard\n    - full\n  tags:\n    - typescript\n    - relevant-tag\n```\n\n### Mapping Fields\n\n| Field | Required | Description |\n|-------|----------|-------------|\n| `path` | Yes | Relative path to the guideline file |\n| `category` | Yes | Display category (Language, Architecture, Testing, etc.) |\n| `languages` | No | Which languages this applies to. Omit for all languages |\n| `levels` | No | Instruction levels: `basic`, `standard`, `full`. Omit for all |\n| `architectures` | No | Architecture types. Omit for all |\n| `tags` | No | Search/organization tags |\n\n### Available Values\n\n**Languages:**\n- `typescript`, `javascript`, `python`, `go`, `rust`, `java`, `csharp`, `ruby`, `dart`, `swift`, `kotlin`, `php`\n\n**Levels:**\n- `basic` - Essential guidelines only\n- `standard` - Common best practices\n- `full` - Comprehensive coverage with advanced agentic surfaces\n\n**Architectures:**\n- `layered`, `clean-architecture`, `hexagonal`, `ddd`, `microservices`\n- `modular-monolith`, `event-driven`, `serverless`, `monorepo`\n- `bounded-contexts`, `component-based`\n\n**Categories:**\n- `Language`, `Architecture`, `Testing`, `Security`, `Performance`\n- `Database`, `API Design`, `Code Style`, `Error Handling`, `DevOps`\n- `Best Practices`, `Design Patterns`\n\n## Examples\n\n### Language-Specific Guideline\n\n```yaml\ntypescript-decorators:\n  path: language/typescript/decorators.md\n  category: Language\n  languages:\n    - typescript\n  levels:\n    - full\n  tags:\n    - typescript\n    - decorators\n    - metadata\n```\n\n### Universal Guideline (All Languages)\n\n```yaml\nsolid-principles:\n  path: architecture/solid/principles.md\n  category: Architecture\n  levels:\n    - standard\n    - full\n  tags:\n    - solid\n    - design-principles\n    - oop\n```\n\n### Architecture-Specific Guideline\n\n```yaml\nddd-aggregates:\n  path: architecture/ddd/aggregates.md\n  category: Architecture\n  architectures:\n    - ddd\n    - clean-architecture\n  levels:\n    - full\n  tags:\n    - ddd\n    - aggregates\n    - domain-model\n```\n\n## Testing Your Changes\n\nAfter adding a guideline:\n\n1. **Validate the data repo:**\n   ```bash\n   scripts/validate-data\n   ```\n\n2. **Rebuild aicgen:**\n   ```bash\n   AICGEN_DATA_DIR=/path/to/aicgen-data bun run embed\n   bun run build\n   ```\n\n3. **Check it's loaded:**\n   ```bash\n   bun run start stats\n   ```\n\n   Expected 1.2.0 level stats:\n\n   ```text\n   basic: 23\n   standard: 83\n   full: 99\n   ```\n\n4. **Test generation:**\n   ```bash\n   bun run start init --force\n   ```\n\n## Guideline Quality Checklist\n\n- [ ] Clear, descriptive title\n- [ ] Actionable instructions\n- [ ] Code examples (good and bad)\n- [ ] Appropriate language/level targeting\n- [ ] Meaningful category and tags\n- [ ] No duplicate content with existing guidelines\n\n## License\n\nMIT License - See LICENSE file\n",
     "security/auth-jwt.md": "# Authentication & JWT Security\n\n## Password Storage\n\n```typescript\nimport bcrypt from 'bcrypt';\n\nconst SALT_ROUNDS = 12; // Work factor\n\n// ✅ Hash password with bcrypt\nasync function hashPassword(password: string): Promise<string> {\n  return bcrypt.hash(password, SALT_ROUNDS);\n}\n\nasync function verifyPassword(password: string, hash: string): Promise<boolean> {\n  return bcrypt.compare(password, hash);\n}\n\n// ✅ Validate password strength\nfunction validatePassword(password: string): void {\n  if (password.length < 12) {\n    throw new Error('Password must be at least 12 characters');\n  }\n  if (password.length > 160) {\n    throw new Error('Password too long'); // Prevent DoS via bcrypt\n  }\n}\n```\n\n## JWT Best Practices\n\n```typescript\nimport jwt from 'jsonwebtoken';\n\nconst JWT_SECRET = process.env.JWT_SECRET!;\nconst ACCESS_TOKEN_EXPIRY = '15m';\nconst REFRESH_TOKEN_EXPIRY = '7d';\n\n// ✅ Generate tokens\nfunction generateTokens(userId: string) {\n  const accessToken = jwt.sign(\n    { sub: userId, type: 'access' },\n    JWT_SECRET,\n    { expiresIn: ACCESS_TOKEN_EXPIRY }\n  );\n\n  const refreshToken = jwt.sign(\n    { sub: userId, type: 'refresh' },\n    JWT_SECRET,\n    { expiresIn: REFRESH_TOKEN_EXPIRY }\n  );\n\n  return { accessToken, refreshToken };\n}\n\n// ✅ Verify and decode token\nfunction verifyToken(token: string) {\n  try {\n    return jwt.verify(token, JWT_SECRET);\n  } catch (error) {\n    if (error instanceof jwt.TokenExpiredError) {\n      throw new UnauthorizedError('Token expired');\n    }\n    throw new UnauthorizedError('Invalid token');\n  }\n}\n```\n\n## Login Protection\n\n```typescript\nimport rateLimit from 'express-rate-limit';\n\n// ✅ Rate limit login attempts\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000, // 15 minutes\n  max: 5, // 5 attempts\n  message: 'Too many login attempts, please try again later',\n});\n\napp.post('/login', loginLimiter, async (req, res) => {\n  const { email, password } = req.body;\n\n  const user = await userService.findByEmail(email);\n\n  // ✅ Generic error message (don't reveal if user exists)\n  if (!user || !await verifyPassword(password, user.passwordHash)) {\n    return res.status(401).json({ error: 'Invalid email or password' });\n  }\n\n  const tokens = generateTokens(user.id);\n\n  // Regenerate session to prevent fixation\n  req.session.regenerate(() => {\n    res.json({ ...tokens });\n  });\n});\n```\n\n## Session Security\n\n```typescript\napp.use(session({\n  secret: process.env.SESSION_SECRET!,\n  name: 'sessionId', // Don't use default 'connect.sid'\n\n  cookie: {\n    secure: true,        // HTTPS only\n    httpOnly: true,      // Prevent XSS access\n    sameSite: 'strict',  // CSRF protection\n    maxAge: 30 * 60 * 1000, // 30 minutes\n  },\n\n  resave: false,\n  saveUninitialized: false,\n  store: new RedisStore({ client: redisClient })\n}));\n\n// ✅ Session regeneration after login\napp.post('/login', async (req, res, next) => {\n  // ... authenticate user ...\n\n  req.session.regenerate((err) => {\n    req.session.userId = user.id;\n    res.json({ success: true });\n  });\n});\n```\n\n## Authorization Middleware\n\n```typescript\n// ✅ Require authentication\nconst requireAuth = async (req: Request, res: Response, next: NextFunction) => {\n  const token = req.headers.authorization?.replace('Bearer ', '');\n\n  if (!token) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n\n  try {\n    const payload = verifyToken(token);\n    req.user = await userService.findById(payload.sub);\n    next();\n  } catch (error) {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n};\n\n// ✅ Require specific role\nconst requireRole = (...roles: string[]) => {\n  return (req: Request, res: Response, next: NextFunction) => {\n    if (!roles.includes(req.user.role)) {\n      return res.status(403).json({ error: 'Forbidden' });\n    }\n    next();\n  };\n};\n```\n",
     "security/headers.md": "# Security Headers\n\n## Essential Headers with Helmet\n\n```typescript\nimport helmet from 'helmet';\n\n// ✅ Apply security headers with sensible defaults\napp.use(helmet());\n\n// ✅ Custom configuration\napp.use(helmet({\n  contentSecurityPolicy: {\n    directives: {\n      defaultSrc: [\"'self'\"],\n      scriptSrc: [\"'self'\", \"'unsafe-inline'\"],\n      styleSrc: [\"'self'\", \"'unsafe-inline'\"],\n      imgSrc: [\"'self'\", \"data:\", \"https:\"],\n    }\n  },\n  hsts: {\n    maxAge: 31536000,\n    includeSubDomains: true,\n    preload: true\n  }\n}));\n```\n\n## Manual Header Configuration\n\n```typescript\napp.use((req, res, next) => {\n  // Prevent MIME sniffing\n  res.setHeader('X-Content-Type-Options', 'nosniff');\n\n  // Prevent clickjacking\n  res.setHeader('X-Frame-Options', 'DENY');\n\n  // XSS protection\n  res.setHeader('X-XSS-Protection', '1; mode=block');\n\n  // Force HTTPS\n  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');\n\n  // Referrer policy\n  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');\n\n  // Permissions policy\n  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');\n\n  next();\n});\n```\n\n## Content Security Policy (CSP)\n\n```typescript\n// ✅ Strict CSP for maximum protection\nres.setHeader('Content-Security-Policy', [\n  \"default-src 'self'\",\n  \"script-src 'self'\",\n  \"style-src 'self' 'unsafe-inline'\",\n  \"img-src 'self' data: https:\",\n  \"font-src 'self'\",\n  \"connect-src 'self' https://api.example.com\",\n  \"frame-ancestors 'none'\",\n  \"form-action 'self'\"\n].join('; '));\n\n// For APIs that don't serve HTML\nres.setHeader('Content-Security-Policy', \"default-src 'none'\");\n```\n\n## CORS Configuration\n\n```typescript\nimport cors from 'cors';\n\n// ✅ Configure CORS properly\napp.use(cors({\n  origin: ['https://example.com', 'https://app.example.com'],\n  methods: ['GET', 'POST', 'PUT', 'DELETE'],\n  allowedHeaders: ['Content-Type', 'Authorization'],\n  credentials: true,\n  maxAge: 86400 // Cache preflight for 24 hours\n}));\n\n// ❌ Never use in production\napp.use(cors({ origin: '*' })); // Allows any origin\n```\n\n## HTTPS Enforcement\n\n```typescript\n// ✅ Redirect HTTP to HTTPS\napp.use((req, res, next) => {\n  if (!req.secure && req.get('x-forwarded-proto') !== 'https') {\n    return res.redirect(301, `https://${req.hostname}${req.url}`);\n  }\n  next();\n});\n\n// ✅ HSTS header (included in helmet)\nres.setHeader(\n  'Strict-Transport-Security',\n  'max-age=31536000; includeSubDomains; preload'\n);\n```\n\n## Cookie Security\n\n```typescript\n// ✅ Secure cookie settings\napp.use(session({\n  cookie: {\n    secure: true,        // Only send over HTTPS\n    httpOnly: true,      // Not accessible via JavaScript\n    sameSite: 'strict',  // CSRF protection\n    maxAge: 30 * 60 * 1000\n  }\n}));\n\n// ✅ Set secure cookies manually\nres.cookie('token', value, {\n  httpOnly: true,\n  secure: process.env.NODE_ENV === 'production',\n  sameSite: 'strict',\n  maxAge: 3600000\n});\n```\n\n## Header Checklist\n\n```\n✅ X-Content-Type-Options: nosniff\n✅ X-Frame-Options: DENY\n✅ X-XSS-Protection: 1; mode=block\n✅ Strict-Transport-Security: max-age=31536000\n✅ Content-Security-Policy: (appropriate policy)\n✅ Referrer-Policy: strict-origin-when-cross-origin\n✅ Permissions-Policy: restrict unused features\n✅ Secure, HttpOnly, SameSite cookies\n```\n",
     "security/index.md": "# Security Guidelines\n\nThis directory contains security best practices.\n\n## Available Chunks\n\n- **injection.md** - SQL injection, NoSQL injection, command injection prevention\n- **auth-jwt.md** - Password storage, JWT, session management, authorization\n- **secrets.md** - Environment variables, secret generation, CI/CD secrets\n- **headers.md** - Security headers, CORS, HTTPS, CSP\n",
@@ -1811,7 +1712,7 @@ export const EMBEDDED_DATA: EmbeddedData = {
     "testing/integration.md": "# Integration Testing\n\n## Testing Real Dependencies\n\n```typescript\ndescribe('UserRepository Integration', () => {\n  let db: Database;\n  let repository: UserRepository;\n\n  beforeAll(async () => {\n    db = await createTestDatabase();\n    repository = new UserRepository(db);\n  });\n\n  afterAll(async () => {\n    await db.close();\n  });\n\n  beforeEach(async () => {\n    await db.clear('users'); // Clean slate for each test\n  });\n\n  it('should persist and retrieve user', async () => {\n    const userData = { email: 'test@example.com', name: 'Test User' };\n\n    const created = await repository.create(userData);\n    const found = await repository.findById(created.id);\n\n    expect(found).toEqual(expect.objectContaining(userData));\n  });\n});\n```\n\n## API Integration Tests\n\n```typescript\ndescribe('POST /api/users', () => {\n  let app: Express;\n  let db: Database;\n\n  beforeAll(async () => {\n    db = await createTestDatabase();\n    app = createApp(db);\n  });\n\n  afterEach(async () => {\n    await db.clear('users');\n  });\n\n  it('should create user and return 201', async () => {\n    const response = await request(app)\n      .post('/api/users')\n      .send({ email: 'new@example.com', name: 'New User' })\n      .expect(201);\n\n    expect(response.body.data).toEqual(\n      expect.objectContaining({\n        email: 'new@example.com',\n        name: 'New User'\n      })\n    );\n\n    // Verify in database\n    const user = await db.findOne('users', { email: 'new@example.com' });\n    expect(user).toBeTruthy();\n  });\n\n  it('should return 400 for invalid email', async () => {\n    const response = await request(app)\n      .post('/api/users')\n      .send({ email: 'invalid', name: 'Test' })\n      .expect(400);\n\n    expect(response.body.error.code).toBe('VALIDATION_ERROR');\n  });\n});\n```\n\n## Database Transaction Testing\n\n```typescript\ndescribe('OrderService Integration', () => {\n  it('should rollback on payment failure', async () => {\n    const order = await orderService.createOrder({ items: [...] });\n\n    // Mock payment to fail\n    paymentGateway.charge.mockRejectedValue(new Error('Declined'));\n\n    await expect(\n      orderService.processOrder(order.id)\n    ).rejects.toThrow('Payment failed');\n\n    // Verify order status unchanged\n    const updatedOrder = await orderRepository.findById(order.id);\n    expect(updatedOrder.status).toBe('pending');\n\n    // Verify inventory not deducted\n    const inventory = await inventoryRepository.findByProductId(productId);\n    expect(inventory.quantity).toBe(originalQuantity);\n  });\n});\n```\n\n## Test Data Builders\n\n```typescript\nclass UserBuilder {\n  private data: Partial<User> = {\n    email: 'default@example.com',\n    name: 'Default User',\n    role: 'user'\n  };\n\n  withEmail(email: string) { this.data.email = email; return this; }\n  withRole(role: string) { this.data.role = role; return this; }\n  asAdmin() { this.data.role = 'admin'; return this; }\n\n  build(): User { return this.data as User; }\n\n  async save(db: Database): Promise<User> {\n    return db.insert('users', this.data);\n  }\n}\n\n// Usage\nconst admin = await new UserBuilder()\n  .withEmail('admin@example.com')\n  .asAdmin()\n  .save(db);\n```\n\n## Test Isolation\n\n```typescript\n// Use transactions that rollback\ndescribe('IntegrationTests', () => {\n  beforeEach(async () => {\n    await db.beginTransaction();\n  });\n\n  afterEach(async () => {\n    await db.rollbackTransaction();\n  });\n});\n\n// Or use test containers\nimport { PostgreSqlContainer } from '@testcontainers/postgresql';\n\nlet container: PostgreSqlContainer;\n\nbeforeAll(async () => {\n  container = await new PostgreSqlContainer().start();\n  db = await connect(container.getConnectionUri());\n});\n\nafterAll(async () => {\n  await container.stop();\n});\n```\n",
     "testing/unit-fundamentals.md": "# Unit Testing Fundamentals\n\n## Arrange-Act-Assert Pattern\n\n```typescript\ndescribe('UserService', () => {\n  it('should create user with hashed password', async () => {\n    // Arrange - Set up test data and dependencies\n    const userData = { email: 'test@example.com', password: 'secret123' };\n    const mockRepo = { save: jest.fn().mockResolvedValue({ id: '1', ...userData }) };\n    const service = new UserService(mockRepo);\n\n    // Act - Execute the behavior being tested\n    const result = await service.createUser(userData);\n\n    // Assert - Verify the outcomes\n    expect(result.id).toBe('1');\n    expect(mockRepo.save).toHaveBeenCalledWith(\n      expect.objectContaining({ email: 'test@example.com' })\n    );\n  });\n});\n```\n\n## Test Observable Behavior, Not Implementation\n\n```typescript\n// ❌ Bad: Testing implementation details\nit('should call validateEmail method', () => {\n  const spy = jest.spyOn(service, 'validateEmail');\n  service.createUser({ email: 'test@example.com' });\n  expect(spy).toHaveBeenCalled();\n});\n\n// ✅ Good: Testing observable behavior\nit('should reject invalid email', async () => {\n  await expect(\n    service.createUser({ email: 'invalid-email' })\n  ).rejects.toThrow('Invalid email format');\n});\n\nit('should accept valid email', async () => {\n  const result = await service.createUser({ email: 'valid@example.com' });\n  expect(result.email).toBe('valid@example.com');\n});\n```\n\n## One Assertion Per Test Concept\n\n```typescript\n// ❌ Bad: Multiple unrelated assertions\nit('should validate user input', () => {\n  expect(() => validate({ age: -1 })).toThrow();\n  expect(() => validate({ age: 200 })).toThrow();\n  expect(() => validate({ name: '' })).toThrow();\n});\n\n// ✅ Good: One test per scenario\nit('should reject negative age', () => {\n  expect(() => validate({ age: -1 })).toThrow('Age must be positive');\n});\n\nit('should reject age over 150', () => {\n  expect(() => validate({ age: 200 })).toThrow('Age must be under 150');\n});\n\nit('should reject empty name', () => {\n  expect(() => validate({ name: '' })).toThrow('Name is required');\n});\n```\n\n## Descriptive Test Names\n\n```typescript\n// ❌ Vague names\nit('should work correctly', () => {});\nit('handles edge case', () => {});\n\n// ✅ Descriptive names - describe the scenario and expected outcome\nit('should return empty array when no users match filter', () => {});\nit('should throw ValidationError when email is empty', () => {});\nit('should retry failed payment up to 3 times before giving up', () => {});\n```\n\n## Tests Should Be Independent\n\n```typescript\n// ❌ Bad: Tests depend on each other\nlet userId: string;\n\nit('should create user', async () => {\n  const user = await service.createUser(data);\n  userId = user.id; // Shared state!\n});\n\nit('should update user', async () => {\n  await service.updateUser(userId, newData); // Depends on previous test\n});\n\n// ✅ Good: Each test is self-contained\nit('should update user', async () => {\n  const user = await service.createUser(data);\n  const updated = await service.updateUser(user.id, newData);\n  expect(updated.name).toBe(newData.name);\n});\n```\n\n## Test Edge Cases\n\n```typescript\ndescribe('divide', () => {\n  it('should divide two positive numbers', () => {\n    expect(divide(10, 2)).toBe(5);\n  });\n\n  it('should throw when dividing by zero', () => {\n    expect(() => divide(10, 0)).toThrow('Division by zero');\n  });\n\n  it('should handle negative numbers', () => {\n    expect(divide(-10, 2)).toBe(-5);\n  });\n\n  it('should return zero when numerator is zero', () => {\n    expect(divide(0, 5)).toBe(0);\n  });\n});\n```\n",
     "testing/unit-mocking.md": "# Test Doubles and Mocking\n\n## Types of Test Doubles\n\n```typescript\n// STUB: Returns canned responses\nconst stubUserRepo = {\n  findById: () => ({ id: '1', name: 'Test User' })\n};\n\n// MOCK: Pre-programmed with expectations\nconst mockPaymentGateway = {\n  charge: jest.fn()\n    .mockResolvedValueOnce({ success: true, transactionId: 'tx1' })\n    .mockResolvedValueOnce({ success: false, error: 'Declined' })\n};\n\n// SPY: Records calls for verification\nconst spy = jest.spyOn(emailService, 'send');\n\n// FAKE: Working implementation (not for production)\nclass FakeDatabase implements Database {\n  private data = new Map<string, any>();\n\n  async save(id: string, entity: any) { this.data.set(id, entity); }\n  async find(id: string) { return this.data.get(id); }\n}\n```\n\n## When to Mock\n\n```typescript\n// ✅ Mock external services (APIs, databases)\nconst mockHttpClient = {\n  get: jest.fn().mockResolvedValue({ data: userData })\n};\n\n// ✅ Mock time-dependent operations\njest.useFakeTimers();\njest.setSystemTime(new Date('2024-01-15'));\n\n// ✅ Mock random/non-deterministic functions\njest.spyOn(Math, 'random').mockReturnValue(0.5);\n\n// ❌ Don't mock the code you're testing\n// ❌ Don't mock simple data structures\n```\n\n## Mock Verification\n\n```typescript\nit('should send welcome email after registration', async () => {\n  const mockEmail = { send: jest.fn().mockResolvedValue(true) };\n  const service = new UserService({ emailService: mockEmail });\n\n  await service.register({ email: 'new@example.com' });\n\n  expect(mockEmail.send).toHaveBeenCalledWith({\n    to: 'new@example.com',\n    template: 'welcome',\n    subject: 'Welcome!'\n  });\n  expect(mockEmail.send).toHaveBeenCalledTimes(1);\n});\n```\n\n## Partial Mocks\n\n```typescript\n// Mock only specific methods\nconst service = new OrderService();\n\njest.spyOn(service, 'validateOrder').mockReturnValue(true);\njest.spyOn(service, 'calculateTotal').mockReturnValue(100);\n// Other methods use real implementation\n\nconst result = await service.processOrder(orderData);\nexpect(result.total).toBe(100);\n```\n\n## Resetting Mocks\n\n```typescript\ndescribe('PaymentService', () => {\n  const mockGateway = { charge: jest.fn() };\n  const service = new PaymentService(mockGateway);\n\n  beforeEach(() => {\n    jest.clearAllMocks(); // Clear call history\n    // or jest.resetAllMocks() to also reset return values\n  });\n\n  it('should process payment', async () => {\n    mockGateway.charge.mockResolvedValue({ success: true });\n    await service.charge(100);\n    expect(mockGateway.charge).toHaveBeenCalledTimes(1);\n  });\n});\n```\n\n## Mock Modules\n\n```typescript\n// Mock entire module\njest.mock('./email-service', () => ({\n  EmailService: jest.fn().mockImplementation(() => ({\n    send: jest.fn().mockResolvedValue(true)\n  }))\n}));\n\n// Mock with partial implementation\njest.mock('./config', () => ({\n  ...jest.requireActual('./config'),\n  API_KEY: 'test-key'\n}));\n```\n",
-    "workflows/README.md": "# SDLC Workflows\n\naicgen injects a structured 6-command SDLC workflow into every generated assistant configuration. These commands guide the AI assistant through a repeatable, artifact-driven development lifecycle.\n\n## The Flow\n\n```\n/spec → /research → /plan → /build → /check → /ship\n```\n\nFor Codex, aicgen generates a project-local `aicgen-sdlc` plugin and exposes\nnamespaced commands to avoid conflicts with built-in Codex commands:\n\n```\n/aicgen-spec → /aicgen-research → /aicgen-plan → /aicgen-build → /aicgen-check → /aicgen-ship\n```\n\n| Step | Command | Output artifact |\n|------|---------|----------------|\n| 1 | [`/spec [name]`](sdlc/spec.md) | `docs/specs/{name}.md` |\n| 2 | [`/research`](sdlc/research.md) | Appends `## Research Findings` to spec |\n| 3 | [`/plan`](sdlc/plan.md) | `docs/plans/{name}.md` |\n| 4 | [`/build [phase?]`](sdlc/build.md) | Code changes |\n| 5 | [`/check`](sdlc/check.md) | Inline verification report |\n| 6 | [`/ship`](sdlc/ship.md) | PR description draft |\n\n## Commands\n\n- [/spec](sdlc/spec.md) — Capture feature requirements before writing any code\n- [/research](sdlc/research.md) — Codebase scan + web research + infrastructure preference\n- [/plan](sdlc/plan.md) — Phased, checkpoint-driven implementation plan\n- [/build](sdlc/build.md) — Execute plan phase by phase with review checkpoints\n- [/check](sdlc/check.md) — Verify implementation against spec and run tests\n- [/ship](sdlc/ship.md) — Pre-flight checks and PR description draft\n\n## Codex plugin commands\n\nWhen Codex is selected in `aicgen configure` or `aicgen init`, aicgen installs\nthe `aicgen-sdlc` plugin locally in the generated project. Use the namespaced\ncommands in Codex:\n\n- `/aicgen-spec` — aicgen `/spec`\n- `/aicgen-research` — aicgen `/research`\n- `/aicgen-plan` — aicgen `/plan`\n- `/aicgen-build` — aicgen `/build`\n- `/aicgen-check` — aicgen `/check`\n- `/aicgen-ship` — aicgen `/ship`\n\n## Output directory\n\nAll spec and plan artifacts are saved to the `docs/` directory in the user's project. This directory is created automatically if it does not exist.\n\n```\ndocs/\n├── specs/\n│   └── {feature-name}.md\n└── plans/\n    └── {feature-name}.md\n```\n\n## Guard rails\n\n| Command | Pre-condition |\n|---------|--------------|\n| `/research` | Active spec in `docs/specs/` — prompts `/spec` if missing |\n| `/plan` | Active spec with `## Research Findings` — warns if research was skipped |\n| `/build` | Active plan in `docs/plans/` — prompts `/plan` if missing |\n\n## Source\n\nCommand definitions are maintained in [`aicgen-data/workflows/sdlc.md`](https://github.com/aicgen/aicgen-data/blob/main/workflows/sdlc.md) and injected into every generated config at `aicgen init` time.\n",
+    "workflows/README.md": "# SDLC Workflows\n\naicgen injects a structured 6-command SDLC workflow into every generated assistant configuration. These commands guide the AI assistant through a repeatable, artifact-driven development lifecycle.\n\n## The Flow\n\n```\n/spec → /research → /plan → /build → /check → /ship\n```\n\nFor Codex, aicgen generates a project-local `aicgen-sdlc` plugin and exposes\nnamespaced commands to avoid conflicts with built-in Codex commands:\n\n```\n/aicgen-spec → /aicgen-research → /aicgen-plan → /aicgen-build → /aicgen-check → /aicgen-ship\n```\n\n| Step | Command | Output artifact |\n|------|---------|----------------|\n| 1 | [`/spec [name]`](sdlc/spec.md) | `docs/specs/{name}.md` |\n| 2 | [`/research`](sdlc/research.md) | Appends `## Research Findings` to spec |\n| 3 | [`/plan`](sdlc/plan.md) | `docs/plans/{name}.md` |\n| 4 | [`/build [phase?]`](sdlc/build.md) | Code changes |\n| 5 | [`/check`](sdlc/check.md) | Inline verification report |\n| 6 | [`/ship`](sdlc/ship.md) | PR description draft |\n\n## Commands\n\n- [/spec](sdlc/spec.md) — Capture feature requirements before writing any code\n- [/research](sdlc/research.md) — Codebase scan + web research + infrastructure preference\n- [/plan](sdlc/plan.md) — Phased, checkpoint-driven implementation plan\n- [/build](sdlc/build.md) — Execute plan phase by phase with review checkpoints\n- [/check](sdlc/check.md) — Verify implementation against spec and run tests\n- [/ship](sdlc/ship.md) — Pre-flight checks and PR description draft\n\n## Codex plugin commands\n\nWhen Codex is selected in `aicgen configure` or `aicgen init`, aicgen generates\na project-local `aicgen-sdlc` plugin plus `.agents/plugins/marketplace.json`.\nRestart Codex from the generated project root, or add the marketplace manually,\nso Codex can load the plugin. Use the namespaced commands in Codex:\n\n- `/aicgen-spec` — aicgen `/spec`\n- `/aicgen-research` — aicgen `/research`\n- `/aicgen-plan` — aicgen `/plan`\n- `/aicgen-build` — aicgen `/build`\n- `/aicgen-check` — aicgen `/check`\n- `/aicgen-ship` — aicgen `/ship`\n\n## Output directory\n\nAll spec and plan artifacts are saved to the `docs/` directory in the user's project. This directory is created automatically if it does not exist.\n\n```\ndocs/\n├── specs/\n│   └── {feature-name}.md\n└── plans/\n    └── {feature-name}.md\n```\n\n## Guard rails\n\n| Command | Pre-condition |\n|---------|--------------|\n| `/research` | Active spec in `docs/specs/` — prompts `/spec` if missing |\n| `/plan` | Active spec with `## Research Findings` — warns if research was skipped |\n| `/build` | Active plan in `docs/plans/` — prompts `/plan` if missing |\n\n## Source\n\nCommand definitions are maintained in [`aicgen-data/workflows/sdlc.md`](https://github.com/aicgen/aicgen-data/blob/main/workflows/sdlc.md) and injected into every generated config at `aicgen init` time.\n",
     "workflows/sdlc/build.md": "# /build [phase]\n\n**Purpose:** Execute the next (or a specified) phase of the current implementation plan, pausing between phases for review.\n\n## When to use\n\nAfter `/plan`. Run once per phase until all phases are complete. Can also be used to re-execute a specific phase by passing its number.\n\n## Arguments\n\n| Argument | Required | Description |\n|----------|----------|-------------|\n| `phase` | No | Phase number to execute. If omitted, executes the next incomplete phase. |\n\n## Pre-condition\n\nAn active plan must exist in `docs/plans/`. If none is found, the assistant will prompt you to run `/plan` first and stop.\n\n## Steps\n\n1. Read the active plan from `docs/plans/`\n2. Determine the next incomplete phase (or the specified phase)\n3. Announce which phase is being executed and what it covers\n4. Implement step by step, following existing codebase patterns and conventions\n5. Summarise what was changed and created\n6. Mark the phase complete in the plan file\n7. Run relevant tests and report results\n8. Ask: \"Phase {n} complete. Continue to phase {n+1}?\" before proceeding\n\n## Behaviour\n\n- The assistant pauses after each phase and waits for your go-ahead\n- If tests fail at the end of a phase, the assistant reports failures before asking to continue\n- The plan file is updated in place as phases are completed — it acts as a progress tracker\n\n## Next step\n\nAfter all phases are complete, run [`/check`](check.md) to verify the full implementation against the spec.\n",
     "workflows/sdlc/check.md": "# /check\n\n**Purpose:** Verify the current implementation against the active spec — tests, code review, and regression check.\n\n## When to use\n\nAfter `/build` phases are complete. Can also be run at any point during development to check progress. Safe to run repeatedly.\n\n## Steps\n\n1. Read the active spec from `docs/specs/` and plan from `docs/plans/`\n2. Run the full test suite and report results\n3. Review changed files against the spec's acceptance criteria — flag any gaps\n4. Check for regressions — unintended side effects in changed files\n5. Produce a structured report\n6. If all criteria are met and no regressions, prompt the user to run `/ship`\n\n## Output\n\nInline structured report:\n\n```\n✅ Acceptance criteria met\n   - [criterion 1]\n   - [criterion 2]\n\n❌ Acceptance criteria not met\n   - [criterion] — [details of gap]\n\n⚠️  Potential regressions\n   - [file/behaviour] — [details]\n\n📋 Suggested fixes\n   - [fix 1]\n   - [fix 2]\n```\n\n## Tips\n\n- Run `/check` early and often — not just at the end\n- Use it after each `/build` phase to catch issues while context is fresh\n- A clean `/check` report is the gate for running `/ship`\n\n## Next step\n\nIf all criteria are met and no regressions: run [`/ship`](ship.md).\n",
     "workflows/sdlc/plan.md": "# /plan\n\n**Purpose:** Produce a phased, checkpoint-driven implementation plan based on the spec and research findings.\n\n## When to use\n\nAfter `/research`. This step breaks the work into independently verifiable phases that `/build` will execute one at a time.\n\n## Pre-condition\n\nAn active spec with a `## Research Findings` section must exist in `docs/specs/`. If research was skipped, the assistant will warn you and ask for confirmation before proceeding.\n\n## Steps\n\n1. Read the active spec (including research findings) from `docs/specs/`\n2. Analyse the codebase — existing structure, patterns, conventions\n3. Break implementation into phases, each independently verifiable\n4. For each phase: list files to create or modify, key decisions, and verification steps\n5. Identify risks and propose mitigations\n6. Create `docs/plans/` if it does not exist\n7. Save the plan to `docs/plans/{spec-name}.md`\n8. Confirm saved and prompt the user to run `/build`\n\n## Output\n\nCreates `docs/plans/{spec-name}.md` with a phase-by-phase breakdown:\n\n```markdown\n# Plan: {name}\n\n## Overview\n{summary of approach}\n\n## Phase 1: {name}\n**Files:** {files to create or modify}\n**Steps:** {implementation steps}\n**Verify:** {how to confirm this phase is complete}\n\n## Phase 2: {name}\n...\n\n## Risks\n{risks and mitigations}\n```\n\n## Tips\n\n- Each phase should be completable in one focused work session\n- Verification steps should be concrete — runnable commands or observable outcomes\n- Order phases so each one builds on a stable foundation from the previous\n\n## Next step\n\nRun [`/build`](build.md) to execute the first phase of the plan.\n",

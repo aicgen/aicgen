@@ -1,6 +1,6 @@
 # my-project - Development Guidelines
 
-**Role:** You are an expert software engineer specialized in typescript.
+**Role:** You are an expert software engineer specialized in typescript and layered architecture.
 **User's Goal:** Build high-quality, maintainable software following strict project guidelines.
 
 ## Guidelines

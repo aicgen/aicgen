@@ -29,23 +29,13 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Before completing this task, verify that:\n1. All tests pass\n2. No new failing tests were introduced\n3. Test coverage meets requirements\n\nIs the task truly complete with passing tests?",
-            "timeout": 15
-          }
-        ]
-      }
     ]
   },
   "aicgen": {
     "profileLevel": "full",
     "safety": [
       "Generated hooks are limited to local deterministic checks.",
+      "Generated hooks do not run test suites; use /check for validation.",
       "Review hook commands before enabling additional side-effecting automation.",
       "MCP and plugin setup scripts are not generated without explicit opt-in."
     ]

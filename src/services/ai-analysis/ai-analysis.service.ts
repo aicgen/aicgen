@@ -180,7 +180,7 @@ Return ONLY valid JSON with these EXACT fields:
     "confidence": <number between 0.0-1.0>
   },
   "datasource": "<one of: ${DATASOURCES.map(d => d.value).join(', ')}>",
-  "level": "<one of: basic, standard, expert, full>",
+  "level": "<one of: basic, standard, full>",
   "testingMaturity": "<one of: low, medium, high>",
   "reasoning": "<brief 1-2 sentence explanation>"
 }
@@ -190,7 +190,7 @@ IMPORTANT:
 - Use databaseHints to determine datasource (sql if hasSql=true, nosql if hasNoSql=true, none if both false)
 - Use testingHints to determine testingMaturity (low: <5 tests, medium: 5-20 tests, high: >20 tests)
 - Use projectTypeHints to determine projectType
-- Choose level based on project complexity (basic: simple scripts, standard: typical apps, expert: complex systems, full: large enterprise)
+- Choose level based on project complexity (basic: simple scripts, standard: typical apps, full: large, complex, or highly agentic systems)
 - Set confidence high (>0.8) if hints are strong, medium (0.5-0.8) if unclear, low (<0.5) if guessing
 - Return ONLY the JSON object, no markdown, no explanations outside the JSON`;
   }

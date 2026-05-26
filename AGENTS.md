@@ -5,6 +5,7 @@
 **Language:** typescript
 **Type:** cli
 **Instruction Level:** full
+**Architecture:** layered
 
 ## Development Guidelines
 
@@ -106,16 +107,20 @@ See tool-specific instruction files for detailed code style guidelines:
 - Antigravity: `.agent/rules/instructions.md`
 - OpenAI Codex: `.codex/instructions.md`
 
+## Architecture
+
+This project follows **layered** architecture. See architecture guidelines in tool-specific files.
+
 ## Agentic Profile
 
 **Profile level:** full
 
 Enabled surfaces:
-- Project memory: CLAUDE.md (passive, stable)
-- Slash commands: .claude/commands/*.md (guided, stable)
-- Project subagents: .claude/agents/*.md (agentic, stable)
-- Project skills: .claude/skills/*/SKILL.md (agentic, stable)
-- Lifecycle hooks: .claude/settings.json (side-effecting, stable)
+- Universal agent instructions: AGENTS.md (passive, stable)
+- Codex skills: plugins/aicgen-sdlc/skills/*/SKILL.md (agentic, stable)
+- Project-local plugin: plugins/aicgen-sdlc/.codex-plugin/plugin.json (agentic, stable)
+- Lifecycle hooks: .codex/hooks.json (side-effecting, stable)
+- MCP templates: .aicgen/mcp/codex.md (side-effecting, stable)
 
 Limits and gated surfaces:
 - No additional gated capabilities for this profile.
@@ -135,16 +140,16 @@ Follow testing guidelines in tool-specific instruction files.
 
 ## Workflows
 
-Use these slash commands for structured SDLC delivery:
+Use the project-local `aicgen-sdlc` Codex plugin for structured SDLC delivery:
 
-Flow: `/spec` → `/research` → `/plan` → `/build` → `/check` → `/ship`
+Flow: `/aicgen-spec` → `/aicgen-research` → `/aicgen-plan` → `/aicgen-build` → `/aicgen-check` → `/aicgen-ship`
 
-- `/spec` — Capture the full specification for a feature or task before any code is written.
-- `/research` — Analyze the active spec with internal codebase scanning and external web research.
-- `/plan` — Produce a phased, checkpoint-driven implementation plan based on the spec and research findings.
-- `/build` — Execute the next (or a specified) phase of the current implementation plan.
-- `/check` — Verify the current implementation against the active spec — tests, code review, and regression check.
-- `/ship` — Pre-flight wrap-up — verify everything is ready, then draft a PR description.
+- `/aicgen-spec` — Capture the full specification for a feature or task before any code is written. (legacy aicgen `/spec`)
+- `/aicgen-research` — Analyze the active spec with internal codebase scanning and external web research. (legacy aicgen `/research`)
+- `/aicgen-plan` — Produce a phased, checkpoint-driven implementation plan based on the spec and research findings. (legacy aicgen `/plan`)
+- `/aicgen-build` — Execute the next (or a specified) phase of the current implementation plan. (legacy aicgen `/build`)
+- `/aicgen-check` — Verify the current implementation against the active spec — tests, code review, and regression check. (legacy aicgen `/check`)
+- `/aicgen-ship` — Pre-flight wrap-up — verify everything is ready, then draft a PR description. (legacy aicgen `/ship`)
 
 ---
 

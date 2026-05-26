@@ -1,7 +1,7 @@
 import { AnalysisContext } from './project-analyzer';
 import { Language, ProjectType } from '../models/project';
 import { AIProviderLike } from '../models/ai-provider.js';
-import { InstructionLevel, ArchitectureType, DatasourceType } from '../models/profile';
+import { InstructionLevel, ArchitectureType, DatasourceType, INSTRUCTION_LEVELS, normalizeInstructionLevel } from '../models/profile';
 import { LANGUAGES, PROJECT_TYPES, ARCHITECTURES, DATASOURCES } from '../constants';
 import { ProviderFactory } from './ai-analysis/providers/index';
 
@@ -40,7 +40,7 @@ export class AIAnalysisService {
             projectTypes: PROJECT_TYPES.map(p => p.value),
             architectures: ARCHITECTURES.map(a => a.value),
             datasources: DATASOURCES.map(d => d.value),
-            levels: ['basic', 'standard', 'expert', 'full']
+            levels: INSTRUCTION_LEVELS
         };
 
         return `
@@ -78,6 +78,8 @@ SCHEMA:
 
     private parseResponse(response: string): AnalysisResult {
         const jsonStr = response.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(jsonStr) as AnalysisResult;
+        const parsed = JSON.parse(jsonStr) as AnalysisResult;
+        parsed.level = normalizeInstructionLevel(parsed.level);
+        return parsed;
     }
 }

@@ -125,7 +125,7 @@ ${cmd.content}
   }
 
   private buildReviewSkills(): GeneratedFile[] {
-    if (!isProfileAtLeast(this.level, 'expert')) {
+    if (!isProfileAtLeast(this.level, 'full')) {
       return [];
     }
 

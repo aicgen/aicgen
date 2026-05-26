@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.codex/hooks/aicgen_session_start.py\"",
+            "timeout": 10,
+            "statusMessage": "Loading AICGEN profile limits"
+          }
+        ]
+      }
+    ]
+  },
+  "aicgen": {
+    "profileLevel": "full",
+    "safety": [
+      "This hook only adds developer context at session start.",
+      "Review and trust Codex hooks with /hooks before they run.",
+      "Do not add network calls, secrets access, or destructive commands to generated hooks."
+    ]
+  }
+}

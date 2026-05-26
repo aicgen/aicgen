@@ -260,6 +260,8 @@ export async function configureCommand(options: ConfigureOptions) {
   if (result.conflicts.length > 0) {
       console.log(chalk.yellow(`\n⚠️  Refreshed ${result.conflicts.length} existing file(s).`));
   }
+  console.log(chalk.cyan('\n🚀 Next steps:'));
+  printNextSteps(finalSelection.assistant);
 }
 
 async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSelection> {
@@ -311,8 +313,7 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       choices: [
           { value: 'basic', name: 'Basic', description: 'Essential guidelines only' },
           { value: 'standard', name: 'Standard', description: 'Common patterns and best practices' },
-          { value: 'expert', name: 'Expert', description: 'Advanced patterns and optimizations' },
-          { value: 'full', name: 'Full', description: 'Complete coverage including edge cases' }
+          { value: 'full', name: 'Full', description: 'Complete coverage with advanced agentic surfaces' }
       ]
   }) as InstructionLevel;
 
@@ -349,4 +350,12 @@ async function selectLanguage(): Promise<Language> {
 
 function maskKey(key: string): string {
     return key.substring(0, 4) + '...' + key.substring(key.length - 4);
+}
+
+function printNextSteps(assistant: AIAssistant) {
+    const definition = getAssistantDefinition(assistant);
+    definition.nextSteps.forEach((step, index) => {
+        console.log(chalk.gray(`   ${index + 1}. ${step}`));
+    });
+    console.log(chalk.gray('   \n   Also check AGENTS.md for universal instructions'));
 }

@@ -102,8 +102,9 @@ const ASSISTANT_DEFINITIONS: AssistantDefinition[] = [
     nextSteps: [
       'Review .codex/instructions.md',
       'Review AGENTS.md',
-      'Review plugins/aicgen-sdlc/ for SDLC commands',
-      'Open project in Codex and use /aicgen-spec',
+      'Review plugins/aicgen-sdlc/ and .agents/plugins/marketplace.json',
+      'Restart Codex from this repository root so the project marketplace is loaded',
+      'Use the aicgen-sdlc plugin skills with /aicgen-spec, /aicgen-plan, and /aicgen-check',
     ],
   },
 ];

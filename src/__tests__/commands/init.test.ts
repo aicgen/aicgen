@@ -132,7 +132,7 @@ describe('Init Command', () => {
     });
 
     it('should allow complexity level selection', () => {
-      const levels = ['basic', 'standard', 'expert', 'full'];
+      const levels = ['basic', 'standard', 'full'];
       const selectedLevel = 'standard';
 
       expect(levels).toContain(selectedLevel);
@@ -239,7 +239,7 @@ describe('Init Command', () => {
     it('should use AI recommendations when available', () => {
       const aiRecommendations = {
         language: 'typescript',
-        level: 'expert',
+        level: 'full',
         architecture: 'microservices',
         datasource: 'sql'
       };
@@ -261,7 +261,7 @@ describe('Init Command', () => {
       // AI recommendations should NOT include assistant field
       const aiRecommendations = {
         language: 'typescript',
-        level: 'expert',
+        level: 'full',
         architecture: 'microservices',
         datasource: 'sql',
         projectType: 'api'

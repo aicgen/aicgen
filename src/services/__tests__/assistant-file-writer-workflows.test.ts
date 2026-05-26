@@ -185,23 +185,23 @@ describe('AssistantFileWriter — workflow injection', () => {
       expect(files.filter(f => f.type === 'skill')).toHaveLength(0);
     });
 
-    it('should generate Codex hooks only for expert profiles and above', async () => {
+    it('should generate Codex hooks only for full profiles', async () => {
       const standardFiles = await writer.generateFiles(
         'codex',
         [],
         { ...MOCK_SELECTION, assistant: 'codex', level: 'standard' },
         '/tmp/test'
       );
-      const expertFiles = await writer.generateFiles(
+      const fullFiles = await writer.generateFiles(
         'codex',
         [],
-        { ...MOCK_SELECTION, assistant: 'codex', level: 'expert' },
+        { ...MOCK_SELECTION, assistant: 'codex', level: 'full' },
         '/tmp/test'
       );
 
       expect(standardFiles.some(f => f.path.endsWith('.codex/hooks.json'))).toBe(false);
-      expect(expertFiles.some(f => f.path.endsWith('.codex/hooks.json'))).toBe(true);
-      expect(expertFiles.some(f => f.path.endsWith('.codex/hooks/aicgen_session_start.py'))).toBe(true);
+      expect(fullFiles.some(f => f.path.endsWith('.codex/hooks.json'))).toBe(true);
+      expect(fullFiles.some(f => f.path.endsWith('.codex/hooks/aicgen_session_start.py'))).toBe(true);
     });
   });
 

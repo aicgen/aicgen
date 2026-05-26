@@ -304,7 +304,7 @@ export class SubAgentGenerator {
     guidelineIds: string[],
     level: InstructionLevel = 'standard'
   ): Promise<SubAgentTemplate[]> {
-    if (!isProfileAtLeast(level, 'expert')) {
+    if (!isProfileAtLeast(level, 'full')) {
       return [];
     }
 
@@ -339,7 +339,7 @@ export class SubAgentGenerator {
     guidelineIds: string[],
     level: InstructionLevel = 'standard'
   ): Promise<SkillTemplate[]> {
-    if (!isProfileAtLeast(level, 'expert')) {
+    if (!isProfileAtLeast(level, 'full')) {
       return [];
     }
 

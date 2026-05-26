@@ -7,23 +7,25 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0--beta-cyan" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.2.0-cyan" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-purple" alt="License" />
   <img src="https://img.shields.io/badge/bun-%3E%3D1.0.0-cyan" alt="Bun" />
   <img src="https://img.shields.io/github/actions/workflow/status/aicgen/aicgen/test.yml?branch=main&label=tests" alt="Tests" />
-  <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Coverage" />
+  <img src="https://img.shields.io/badge/tests-144-brightgreen" alt="Tests" />
 </p>
 
 ---
 
-**aicgen** makes your project AI-ready in seconds. Generate tailored instruction files for your AI coding assistant with an interactive CLI wizard.
+**aicgen** makes your project AI-ready in seconds. Generate tailored instruction files, workflows, skills, and guarded agentic surfaces for the coding tools your team actually uses.
 
 ## ✨ Features
 
 - **🎯 Multi-Assistant Support** - Claude Code, GitHub Copilot, Antigravity, Codex
 - **📚 99 Guidelines** - Organized into 12 categories (Language, Architecture, Testing, Security, etc.)
 - **🎨 Interactive CLI** - Professional wizard with smart defaults and back navigation
-- **⚡ Agentic Profiles** - Profile-gated instructions, workflows, skills, plugins, hooks, and MCP templates
+- **⚡ Agentic Profiles** - Three progressive levels: `basic`, `standard`, and `full`
+- **🔁 SDLC Workflows** - `/spec`, `/research`, `/plan`, `/build`, `/check`, and `/ship`
+- **🧩 Codex SDLC Plugin** - Project-local `aicgen-sdlc` plugin with namespaced `/aicgen-*` skills
 - **🏗️ Architecture Aware** - Supports Microservices, Modular Monoliths, Hexagonal, and more
 - **📦 Zero External Dependencies** - All guideline data is embedded in the binary
 
@@ -39,7 +41,7 @@ The CLI will:
 1.  Detect your project language and structure
 2.  Guide you through assistant, architecture, and detail level selection
 3.  Let you customize which guidelines to include
-4.  Generate the appropriate config files (`.claude/`, `.github/`, `.agent/`, etc.)
+4.  Generate the appropriate config files (`.claude/`, `.github/`, `.agent/`, `.codex/`, `AGENTS.md`, and local plugin files)
 
 ---
 
@@ -101,6 +103,18 @@ bun run start init
 
 aicgen uses a **modular guideline architecture** with **99 guidelines** organized into **12 categories**. Release builds embed content from the `data/` submodule, or from `AICGEN_DATA_DIR` when developing against a sibling `aicgen-data` checkout.
 
+**Release 1.2.0 stats:**
+
+| Metric | Count |
+|--------|-------|
+| Guidelines | 99 |
+| SDLC workflows | 6 |
+| Categories | 12 |
+| Languages | 12 |
+| Architectures | 10 |
+| Datasources | 2 |
+| Profile levels | `basic`, `standard`, `full` |
+
 ```bash
 # View guideline statistics
 aicgen stats
@@ -115,24 +129,35 @@ aicgen stats
 
 ## 📁 Generated Outputs
 
+Profile levels control how much AICGEN generates:
+
+| Level | Output |
+|-------|--------|
+| `basic` | Stable repo instructions and rules only |
+| `standard` | Instructions plus guided workflows, prompt files, and Codex SDLC skills |
+| `full` | Full agentic setup with skills, subagents, guardrail hooks, plugins, and MCP templates |
+
 ### For Claude Code
 ```text
 CLAUDE.md                      # Master instructions (project root)
 .claude/
-├── settings.json              # Hooks & permissions
+├── settings.json              # Guardrail hooks & permissions
 ├── guidelines/                # Modular guidelines
 │   ├── language.md
 │   ├── architecture.md
 │   └── ...
-└── agents/                    # Sub-agents
-    └── guideline-checker.md
+├── agents/                    # Sub-agents
+│   └── guideline-checker.md
+└── skills/                    # Full profile project skills
 ```
 
 ### For GitHub Copilot
 ```text
 .github/
 ├── copilot-instructions.md    # Master instructions
-└── instructions/              # Topic-specific files
+├── instructions/              # Topic-specific files
+├── prompts/                   # Standard+ reusable prompt files
+└── chatmodes/                 # Full profile VS Code chat modes
 ```
 
 ### For Antigravity
@@ -145,13 +170,17 @@ CLAUDE.md                      # Master instructions (project root)
 
 ### For Codex
 ```text
+AGENTS.md                      # First-class Codex instructions
 .codex/
 ├── instructions.md            # Codex development guide
-└── hooks.json                 # Expert/full safe lifecycle hook
+├── hooks.json                 # Full profile session reminder hook
+└── hooks/                     # Full profile hook scripts
 .agents/
 └── plugins/marketplace.json   # Project-local plugin install entry
 plugins/
 └── aicgen-sdlc/               # SDLC lifecycle plugin
+    ├── .codex-plugin/plugin.json
+    └── skills/aicgen-*/SKILL.md
 ```
 
 > Gemini CLI generation has been removed from active assistant targets. Use Antigravity for Google-side agentic coding profiles.
@@ -172,7 +201,7 @@ plugins/
 
 ### 🚧 Future Enhancements
 
-- [ ] Custom validation hooks
+- [ ] Custom organization policy packs
 - [ ] Guideline versioning and diffing
 - [ ] Project-specific guideline templates
 
@@ -180,30 +209,38 @@ plugins/
 
 ### Running Tests
 
-The project includes a comprehensive test suite with 135+ tests covering all core functionality:
+The project includes a comprehensive test suite with 144 tests covering all core functionality:
 
 ```bash
 # Check embedded instruction data is fresh
 bun run check:embedded-data
 
+# Validate the data submodule
+data/scripts/validate-data
+
+# Typecheck
+bun run typecheck
+
 # Run all tests
-bun test
+bun run test -- --runInBand
 
 # Run tests with coverage report
-bun test --coverage
+bun run test:coverage -- --runInBand
 
 # Run tests in watch mode
-bun test --watch
+bun run test:watch
 ```
 
 ### Test Coverage
 
-Current test coverage: **94%** (93.44% function coverage, 94.52% line coverage)
+Current release validation: embedded data freshness, data schema validation, typecheck, Jest tests, and Bun build.
 
 **Test Suite Includes:**
 - ✅ GuidelineLoader tests (filtering, level selection, architecture handling)
 - ✅ Tarball extraction tests (CONFIG-based prefix validation)
-- ✅ AssistantFileWriter tests (all active assistants - Claude Code, Copilot, Antigravity, Codex)
+- ✅ AssistantFileWriter tests (Claude Code, Copilot, Antigravity, Codex)
+- ✅ Agentic capability matrix and profile gating tests
+- ✅ Codex project-local plugin generation tests
 - ✅ File generation and path handling (cross-platform compatibility)
 - ✅ Content validation and metadata inclusion
 

@@ -74,7 +74,6 @@ function calculateStats(mappings: GuidelineMappings): Omit<VersionData, 'version
   const levels: Record<string, number> = {
     basic: 0,
     standard: 0,
-    expert: 0,
     full: 0
   };
   const datasources: Record<string, number> = {};
@@ -115,7 +114,7 @@ function calculateStats(mappings: GuidelineMappings): Omit<VersionData, 'version
   // Count by level
   for (const id of guidelineIds) {
     const mapping = mappings[id];
-    const mappingLevels = mapping.levels || ['basic', 'standard', 'expert', 'full'];
+    const mappingLevels = mapping.levels || ['basic', 'standard', 'full'];
 
     for (const level of mappingLevels) {
       if (level in levels) {
@@ -178,7 +177,7 @@ function main() {
   console.log(`   Categories: ${Object.keys(stats.categories).length}`);
   console.log(`   Languages: ${Object.keys(stats.languages).length}`);
   console.log(`   Architectures: ${Object.keys(stats.architectures).length}`);
-  console.log(`   Levels: basic(${stats.levels.basic}), standard(${stats.levels.standard}), expert(${stats.levels.expert}), full(${stats.levels.full})`);
+  console.log(`   Levels: basic(${stats.levels.basic}), standard(${stats.levels.standard}), full(${stats.levels.full})`);
   console.log(`   Datasources: ${Object.keys(stats.datasources).length}`);
 }
 

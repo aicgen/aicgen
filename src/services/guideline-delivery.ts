@@ -69,7 +69,7 @@ export function buildGuidelineUnits(
     const mapping = source.getMapping(id);
     if (!mapping) continue;
 
-    const raw = source.loadGuideline(id).trim();
+    const raw = source.loadGuideline(id).replace(/\r\n/g, '\n').trim();
     if (!raw) continue;
     // Language-agnostic guidelines may carry examples in other languages; keep only matching ones.
     const body = mapping.languages?.length ? raw : localizeGuideline(raw, language).trim();

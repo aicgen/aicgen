@@ -1,5 +1,8 @@
-import { spawnSync } from 'child_process';
+import { hasBash, runBash } from '../../test-utils/bash.js';
 import { FORMAT_ON_WRITE_COMMAND, HookEntry, HookGenerator } from '../hook-generator.js';
+
+// Hook commands are POSIX shell; skip where no bash is installed.
+const itWithBash = hasBash ? it : it.skip;
 
 const SECURITY_IDS = ['security/secrets', 'testing/basics', 'style/naming'];
 
@@ -44,11 +47,11 @@ describe('HookGenerator', () => {
       ]);
     });
 
-    it('block with exit code 2 and report on stderr', async () => {
+    itWithBash('block with exit code 2 and report on stderr', async () => {
       const hooks = await new HookGenerator().generateHooks(SECURITY_IDS, 'full');
 
       for (const handler of handlers(hooks.PreToolUse)) {
-        const result = spawnSync(handler.command!, { shell: true, encoding: 'utf-8' });
+        const result = runBash(handler.command!);
         expect(result.status).toBe(2);
         expect(result.stderr).toContain('Blocked:');
         expect(result.stdout).toBe('');
@@ -57,10 +60,9 @@ describe('HookGenerator', () => {
   });
 
   describe('format-on-write command', () => {
-    const run = (stdin: string) =>
-      spawnSync(FORMAT_ON_WRITE_COMMAND, { shell: true, input: stdin, encoding: 'utf-8' });
+    const run = (stdin: string) => runBash(FORMAT_ON_WRITE_COMMAND, stdin);
 
-    it('reads the file path from stdin JSON and never fails the tool call', () => {
+    itWithBash('reads the file path from stdin JSON and never fails the tool call', () => {
       expect(run(JSON.stringify({ tool_input: { file_path: 'README.md' } })).status).toBe(0);
       expect(run(JSON.stringify({ tool_input: {} })).status).toBe(0);
       expect(run('not json').status).toBe(0);

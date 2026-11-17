@@ -20,9 +20,9 @@ describe('assistant-registry', () => {
   it('should return absolute config paths for an assistant', () => {
     const paths = getAssistantConfigPaths('codex', '/tmp/project');
 
-    expect(paths).toContain('/tmp/project/.codex');
-    expect(paths).toContain('/tmp/project/plugins/aicgen-sdlc');
-    expect(paths).toContain('/tmp/project/.agents/plugins/marketplace.json');
+    expect(paths).toContain(join('/tmp/project', '.codex'));
+    expect(paths).toContain(join('/tmp/project', 'plugins/aicgen-sdlc'));
+    expect(paths).toContain(join('/tmp/project', '.agents/plugins/marketplace.json'));
   });
 
   it('should detect Codex from its project-local plugin artifacts', async () => {

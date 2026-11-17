@@ -1,7 +1,7 @@
 import { select, checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
-import { readFile, writeFile, appendFile, mkdir } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import ora from 'ora';
 import { AIAssistant, Language, ProjectType } from '../models/project';
@@ -12,6 +12,8 @@ import { ProfileSelection, ArchitectureType, InstructionLevel } from '../models/
 import { ConfigGenerator } from '../services/config-generator';
 import { CONFIG } from '../config.js';
 import { detectAssistant } from '../services/assistant-registry.js';
+import { buildGuidelineUnits, renderGuidelineFiles } from '../services/guideline-delivery.js';
+import { writeFiles } from '../utils/file.js';
 
 interface CheckboxChoice {
   name: string;
@@ -185,7 +187,7 @@ export async function quickAddCommand() {
 
       try {
         if (addMode === 'append') {
-          await appendGuidelines(projectPath, assistant, validIds, loader);
+          await appendGuidelines(projectPath, assistant, validIds, loader, existingConfig.language);
         } else {
           await regenerateConfig(projectPath, existingConfig, validIds, loader);
         }
@@ -234,25 +236,27 @@ async function loadExistingConfig(projectPath: string, assistant: AIAssistant): 
   // 2. Parsed from instruction files if possible
   try {
     let content = '';
-    let filePath = '';
+    let filePath = join(projectPath, 'AGENTS.md');
 
-    switch (assistant) {
-      case 'claude-code': {
-        // Check root first, then .claude/ for backward compatibility
-        const rootPath = join(projectPath, 'CLAUDE.md');
-        const legacyPath = join(projectPath, '.claude', 'CLAUDE.md');
-        filePath = existsSync(rootPath) ? rootPath : legacyPath;
-        break;
+    // AGENTS.md carries Language, Type, Level and Architecture for every assistant.
+    // Fall back to the tool's own main file for configurations created before 2.0.
+    if (!existsSync(filePath)) {
+      switch (assistant) {
+        case 'claude-code': {
+          const rootPath = join(projectPath, 'CLAUDE.md');
+          filePath = existsSync(rootPath) ? rootPath : join(projectPath, '.claude', 'CLAUDE.md');
+          break;
+        }
+        case 'copilot':
+          filePath = join(projectPath, '.github', 'copilot-instructions.md');
+          break;
+        case 'antigravity':
+          filePath = join(projectPath, '.agents', 'rules', 'aicgen-instructions.md');
+          break;
+        case 'codex':
+          filePath = join(projectPath, '.codex', 'instructions.md');
+          break;
       }
-      case 'copilot':
-        filePath = join(projectPath, '.github', 'copilot-instructions.md');
-        break;
-      case 'antigravity':
-        filePath = join(projectPath, '.agent', 'rules', 'instructions.md');
-        break;
-      case 'codex':
-        filePath = join(projectPath, '.codex', 'instructions.md');
-        break;
     }
 
     if (filePath && existsSync(filePath)) {
@@ -293,209 +297,22 @@ async function loadExistingConfig(projectPath: string, assistant: AIAssistant): 
   return config;
 }
 
+/**
+ * Add guidelines using the same per-guideline delivery as `aicgen init`: path-scoped
+ * rules or on-demand skills. Each guideline is its own file, so this is idempotent and
+ * never edits (or bloats) the always-on instruction files.
+ */
 async function appendGuidelines(
   projectPath: string,
   assistant: AIAssistant,
   guidelineIds: string[],
-  loader: GuidelineLoader
+  loader: GuidelineLoader,
+  language: string
 ): Promise<void> {
-  const guidelines = guidelineIds.map(id => loader.loadGuideline(id)).filter(Boolean);
+  const units = buildGuidelineUnits(guidelineIds, loader, language);
+  const files = renderGuidelineFiles(assistant, units);
 
-  switch (assistant) {
-    case 'claude-code':
-      await appendToClaudeCode(projectPath, guidelines);
-      break;
-    case 'copilot':
-      await appendToCopilot(projectPath, guidelines);
-      break;
-    case 'antigravity':
-      await appendToAntigravity(projectPath, guidelines);
-      break;
-    case 'codex':
-      await appendToCodex(projectPath, guidelines);
-      break;
-  }
-}
-
-async function appendToClaudeCode(projectPath: string, guidelines: string[]): Promise<void> {
-  // Check root first, then .claude/ for backward compatibility
-  const rootPath = join(projectPath, 'CLAUDE.md');
-  const legacyPath = join(projectPath, '.claude', 'CLAUDE.md');
-  const instructionsPath = existsSync(rootPath) ? rootPath : legacyPath;
-
-  if (!existsSync(instructionsPath)) {
-    throw new Error('CLAUDE.md not found');
-  }
-
-  // Create guidelines directory
-  const guidelinesDir = join(projectPath, '.claude', 'guidelines');
-  await mkdir(guidelinesDir, { recursive: true });
-
-  // Create or append to additional.md file
-  const additionalFile = join(guidelinesDir, 'additional.md');
-  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
-
-  if (existsSync(additionalFile)) {
-    // Append to existing file
-    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
-  } else {
-    // Create new file
-    await writeFile(additionalFile, additionalContent, 'utf-8');
-  }
-
-  // Update CLAUDE.md with reference if not already present
-  const content = await readFile(instructionsPath, 'utf-8');
-
-  if (content.includes('@.claude/guidelines/additional.md')) {
-    // Reference already exists, file is updated, we're done
-    return;
-  }
-
-  // Add reference to guidelines section
-  const guidelinesMatch = content.match(/(## Guidelines[\s\S]*?)(?=\n## |$)/);
-  if (guidelinesMatch) {
-    const guidelinesSection = guidelinesMatch[1];
-    const newGuidelinesSection = guidelinesSection.trimEnd() + '\n- **Additional**: @.claude/guidelines/additional.md';
-    const newContent = content.replace(guidelinesSection, newGuidelinesSection);
-    await writeFile(instructionsPath, newContent, 'utf-8');
-  } else {
-    // Fallback: append to end of file
-    const newContent = content.trimEnd() + '\n\n- **Additional**: @.claude/guidelines/additional.md\n';
-    await writeFile(instructionsPath, newContent, 'utf-8');
-  }
-}
-
-async function appendToCopilot(projectPath: string, guidelines: string[]): Promise<void> {
-  const instructionsPath = join(projectPath, '.github', 'copilot-instructions.md');
-
-  if (!existsSync(instructionsPath)) {
-    throw new Error('copilot-instructions.md not found');
-  }
-
-  // Create instructions directory
-  const instructionsDir = join(projectPath, '.github', 'instructions');
-  await mkdir(instructionsDir, { recursive: true });
-
-  // Create additional instructions file with frontmatter
-  const additionalFile = join(instructionsDir, 'additional.instructions.md');
-  const additionalContent = `---
-applyTo: "**/*"
-description: "Additional guidelines"
----
-
-# Additional Guidelines
-
-${guidelines.join('\n\n---\n\n')}`;
-
-  if (existsSync(additionalFile)) {
-    // Append to existing file (skip frontmatter)
-    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
-  } else {
-    // Create new file
-    await writeFile(additionalFile, additionalContent, 'utf-8');
-  }
-
-  // Update copilot-instructions.md with reference if not already present
-  const content = await readFile(instructionsPath, 'utf-8');
-
-  if (content.includes('@.github/instructions/additional.instructions.md')) {
-    // Reference already exists
-    return;
-  }
-
-  // Add reference to guidelines section
-  const guidelinesMatch = content.match(/(## Guidelines[\s\S]*?)(?=\n## |$)/);
-  if (guidelinesMatch) {
-    const guidelinesSection = guidelinesMatch[1];
-    const newGuidelinesSection = guidelinesSection.trimEnd() + '\n- Additional: @.github/instructions/additional.instructions.md';
-    const newContent = content.replace(guidelinesSection, newGuidelinesSection);
-    await writeFile(instructionsPath, newContent, 'utf-8');
-  } else {
-    // Fallback: append to end
-    const newContent = content.trimEnd() + '\n\n- Additional: @.github/instructions/additional.instructions.md\n';
-    await writeFile(instructionsPath, newContent, 'utf-8');
-  }
-}
-
-async function appendToAntigravity(
-  projectPath: string,
-  guidelines: string[]
-): Promise<void> {
-  // Create rules directory
-  const rulesDir = join(projectPath, '.agent', 'rules');
-  await mkdir(rulesDir, { recursive: true });
-
-  // Create additional rules file
-  const additionalRulesPath = join(rulesDir, 'additional.md');
-  const additionalContent = `# Additional Rules\n\n${guidelines.join('\n\n---\n\n')}\n\n---\n*Generated by aicgen*\n`;
-
-  if (existsSync(additionalRulesPath)) {
-    // Append to existing file
-    await appendFile(additionalRulesPath, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
-  } else {
-    // Create new file
-    await writeFile(additionalRulesPath, additionalContent, 'utf-8');
-  }
-
-  // Update instructions.md with reference if not already present
-  const instructionsPath = join(rulesDir, 'instructions.md');
-  if (existsSync(instructionsPath)) {
-    const content = await readFile(instructionsPath, 'utf-8');
-
-    if (content.includes('@.agent/rules/additional.md')) {
-      // Reference already exists
-      return;
-    }
-
-    // Add reference to rule index section
-    const ruleIndexMatch = content.match(/(## Rule Index[\s\S]*?)(?=\n## |$)/);
-    if (ruleIndexMatch) {
-      const ruleIndexSection = ruleIndexMatch[1];
-      const newRuleIndexSection = ruleIndexSection.trimEnd() + '\n- **Additional**: @.agent/rules/additional.md';
-      const newContent = content.replace(ruleIndexSection, newRuleIndexSection);
-      await writeFile(instructionsPath, newContent, 'utf-8');
-    } else {
-      // Fallback: append to end
-      const newContent = content.trimEnd() + '\n\n- **Additional**: @.agent/rules/additional.md\n';
-      await writeFile(instructionsPath, newContent, 'utf-8');
-    }
-  }
-}
-
-async function appendToCodex(projectPath: string, guidelines: string[]): Promise<void> {
-  const instructionsPath = join(projectPath, '.codex', 'instructions.md');
-
-  if (!existsSync(instructionsPath)) {
-    throw new Error('instructions.md not found');
-  }
-
-  // Create codex directory
-  const codexDir = join(projectPath, '.codex');
-  await mkdir(codexDir, { recursive: true });
-
-  // Create additional guidelines file
-  const additionalFile = join(codexDir, 'additional-guidelines.md');
-  const additionalContent = `# Additional Guidelines\n\n${guidelines.join('\n\n---\n\n')}`;
-
-  if (existsSync(additionalFile)) {
-    // Append to existing file
-    await appendFile(additionalFile, `\n\n---\n\n${guidelines.join('\n\n---\n\n')}`, 'utf-8');
-  } else {
-    // Create new file
-    await writeFile(additionalFile, additionalContent, 'utf-8');
-  }
-
-  // Update instructions.md with import reference if not already present
-  const content = await readFile(instructionsPath, 'utf-8');
-
-  if (content.includes('additional-guidelines.md')) {
-    // Reference already exists
-    return;
-  }
-
-  // Add reference before the closing section
-  const newContent = content.trimEnd() + `\n\n## Additional Guidelines\n\nSee: additional-guidelines.md\n`;
-  await writeFile(instructionsPath, newContent, 'utf-8');
+  await writeFiles(files.map(file => ({ path: join(projectPath, file.path), content: file.content })));
 }
 
 async function regenerateConfig(
@@ -525,3 +342,4 @@ async function regenerateConfig(
 
   await fileWriter.writeFiles(files);
 }
+

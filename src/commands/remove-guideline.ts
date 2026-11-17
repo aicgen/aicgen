@@ -53,7 +53,7 @@ export async function removeGuidelineCommand() {
       return;
     }
 
-    let toRemove: string[] = [];
+    let toRemove: string[];
 
     if (action === 'all') {
       const confirmAll = await confirm({

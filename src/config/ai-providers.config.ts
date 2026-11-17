@@ -1,31 +1,38 @@
 /**
  * AI Provider Configuration
  *
- * Centralized configuration for all AI provider models and settings.
+ * Centralized configuration for the models aicgen uses for project analysis
+ * and the sub-agents it generates.
  *
- * To override: Set environment variables or update ~/.aicgen/config.yml
+ * Priority: environment variable > ~/.aicgen/config.yml > default.
+ * An explicit value of `0` is respected (it is not treated as "unset").
+ *
  * Example env vars:
- *   AICGEN_GEMINI_MODEL=gemini-2.5-pro
- *   AICGEN_CLAUDE_MODEL=claude-3-opus-20240229
- *   AICGEN_OPENAI_MODEL=gpt-4-turbo
+ *   AICGEN_GEMINI_MODEL=gemini-3.8-flash
+ *   AICGEN_CLAUDE_MODEL=claude-opus-5-5
+ *   AICGEN_OPENAI_MODEL=gpt-6-astra
  *
  * Example ~/.aicgen/config.yml:
  * ```yaml
  * ai:
  *   gemini:
- *     model: gemini-2.5-pro
+ *     model: gemini-3.8-flash
  *     timeout: 60000
  *   claude:
- *     model: claude-3-opus-20240229
- *     temperature: 0.5
+ *     model: claude-opus-5-5
+ *     temperature: 0.5      # optional; omitted from requests unless set
  *   subAgents:
  *     guidelineChecker:
- *       model: claude-opus-4-5
- *       temperature: 0.2
+ *       model: opus         # alias (opus | sonnet | haiku | fable) or full ID
  * ```
+ *
+ * Model identifiers change often. Defaults below were last checked on
+ * 2026-11-17; override them rather than waiting for a release if a model is
+ * retired. Prefer aliases for generated sub-agents so they track the latest
+ * model of that tier.
  */
 
-import { userConfig } from '../config.js';
+import { userConfig as loadedUserConfig, UserConfig } from '../config.js';
 
 export interface ProviderConfig {
   /** Model identifier used by the provider's API */
@@ -36,28 +43,27 @@ export interface ProviderConfig {
   maxRetries: number;
   /** Maximum tokens for completion */
   maxTokens?: number;
-  /** Temperature for response generation (0-1) */
+  /**
+   * Sampling temperature. Left undefined by default and omitted from requests,
+   * because some current models only accept their default temperature.
+   */
   temperature?: number;
   /** Additional provider-specific options */
   options?: Record<string, unknown>;
 }
 
+export interface SubAgentModelConfig {
+  /** Claude Code model alias (opus, sonnet, haiku, fable), full model ID, or "inherit" */
+  model: string;
+}
+
 export interface SubAgentConfig {
   /** Model for guideline checking tasks */
-  guidelineChecker: {
-    model: string;
-    temperature?: number;
-  };
+  guidelineChecker: SubAgentModelConfig;
   /** Model for architecture review tasks */
-  architectureReviewer: {
-    model: string;
-    temperature?: number;
-  };
+  architectureReviewer: SubAgentModelConfig;
   /** Model for security audit tasks */
-  securityAuditor: {
-    model: string;
-    temperature?: number;
-  };
+  securityAuditor: SubAgentModelConfig;
 }
 
 export interface AIProvidersConfig {
@@ -67,38 +73,54 @@ export interface AIProvidersConfig {
   subAgents: SubAgentConfig;
 }
 
-/**
- * Default configuration for AI providers
- *
- * Models are updated for 2026 API versions:
- * - Gemini: Using latest 2.0 series (stable and fast)
- * - Claude: Using latest Sonnet 3.5 for analysis
- * - OpenAI: Using GPT-4o (latest stable model)
- */
+export const DEFAULT_MODELS = {
+  gemini: 'gemini-3.8-flash',
+  claude: 'claude-sonnet-5-5',
+  openai: 'gpt-6-astra',
+  subAgents: {
+    guidelineChecker: 'opus',
+    architectureReviewer: 'sonnet',
+    securityAuditor: 'opus',
+  },
+} as const;
+
+type Env = Record<string, string | undefined>;
+
+function envInt(env: Env, name: string): number | undefined {
+  const value = parseInt(env[name] ?? '', 10);
+  return Number.isNaN(value) ? undefined : value;
+}
+
+function envFloat(env: Env, name: string): number | undefined {
+  const value = parseFloat(env[name] ?? '');
+  return Number.isNaN(value) ? undefined : value;
+}
+
+/** First value that is not undefined/null/empty-string. Unlike `||`, keeps 0. */
+function pick<T>(...values: Array<T | undefined | null | ''>): T | undefined {
+  for (const value of values) {
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Build configuration with priority: ENV > User Config > Defaults
  */
-function buildProviderConfig(): AIProvidersConfig {
+export function buildProviderConfig(
+  env: Env = process.env,
+  user: UserConfig = loadedUserConfig ?? {}
+): AIProvidersConfig {
+  const ai = user.ai ?? {};
+
   return {
     gemini: {
-      // Updated to use Gemini 2.0 Flash (supported in v1beta API)
-      // See: https://ai.google.dev/gemini-api/docs/models
-      model:
-        process.env.AICGEN_GEMINI_MODEL ||
-        userConfig.ai?.gemini?.model ||
-        'gemini-2.0-flash-exp',
-      timeout:
-        parseInt(process.env.AICGEN_GEMINI_TIMEOUT || '') ||
-        userConfig.ai?.gemini?.timeout ||
-        30000,
-      maxRetries:
-        parseInt(process.env.AICGEN_GEMINI_MAX_RETRIES || '') ||
-        userConfig.ai?.gemini?.maxRetries ||
-        3,
-      maxTokens:
-        parseInt(process.env.AICGEN_GEMINI_MAX_TOKENS || '') ||
-        userConfig.ai?.gemini?.maxTokens ||
-        8192,
+      model: pick(env.AICGEN_GEMINI_MODEL, ai.gemini?.model) ?? DEFAULT_MODELS.gemini,
+      timeout: pick(envInt(env, 'AICGEN_GEMINI_TIMEOUT'), ai.gemini?.timeout) ?? 30000,
+      maxRetries: pick(envInt(env, 'AICGEN_GEMINI_MAX_RETRIES'), ai.gemini?.maxRetries) ?? 3,
+      maxTokens: pick(envInt(env, 'AICGEN_GEMINI_MAX_TOKENS'), ai.gemini?.maxTokens) ?? 8192,
       options: {
         // Force JSON response format
         generationConfig: {
@@ -108,53 +130,19 @@ function buildProviderConfig(): AIProvidersConfig {
     },
 
     claude: {
-      // Claude 3.5 Sonnet - best balance of speed and quality
-      // See: https://docs.anthropic.com/en/docs/about-claude/models
-      model:
-        process.env.AICGEN_CLAUDE_MODEL ||
-        userConfig.ai?.claude?.model ||
-        'claude-3-5-sonnet-20241022',
-      timeout:
-        parseInt(process.env.AICGEN_CLAUDE_TIMEOUT || '') ||
-        userConfig.ai?.claude?.timeout ||
-        30000,
-      maxRetries:
-        parseInt(process.env.AICGEN_CLAUDE_MAX_RETRIES || '') ||
-        userConfig.ai?.claude?.maxRetries ||
-        3,
-      maxTokens:
-        parseInt(process.env.AICGEN_CLAUDE_MAX_TOKENS || '') ||
-        userConfig.ai?.claude?.maxTokens ||
-        8096,
-      temperature:
-        parseFloat(process.env.AICGEN_CLAUDE_TEMPERATURE || '') ||
-        userConfig.ai?.claude?.temperature ||
-        0.7,
+      model: pick(env.AICGEN_CLAUDE_MODEL, ai.claude?.model) ?? DEFAULT_MODELS.claude,
+      timeout: pick(envInt(env, 'AICGEN_CLAUDE_TIMEOUT'), ai.claude?.timeout) ?? 30000,
+      maxRetries: pick(envInt(env, 'AICGEN_CLAUDE_MAX_RETRIES'), ai.claude?.maxRetries) ?? 3,
+      maxTokens: pick(envInt(env, 'AICGEN_CLAUDE_MAX_TOKENS'), ai.claude?.maxTokens) ?? 8192,
+      temperature: pick(envFloat(env, 'AICGEN_CLAUDE_TEMPERATURE'), ai.claude?.temperature),
     },
 
     openai: {
-      // GPT-4o - latest optimized model
-      // See: https://platform.openai.com/docs/models
-      model:
-        process.env.AICGEN_OPENAI_MODEL ||
-        userConfig.ai?.openai?.model ||
-        'gpt-4o',
-      timeout:
-        parseInt(process.env.AICGEN_OPENAI_TIMEOUT || '') ||
-        userConfig.ai?.openai?.timeout ||
-        30000,
-      maxRetries:
-        parseInt(process.env.AICGEN_OPENAI_MAX_RETRIES || '') ||
-        userConfig.ai?.openai?.maxRetries ||
-        3,
-      maxTokens:
-        parseInt(process.env.AICGEN_OPENAI_MAX_TOKENS || '') ||
-        userConfig.ai?.openai?.maxTokens ||
-        4096,
-      temperature:
-        parseFloat(process.env.AICGEN_OPENAI_TEMPERATURE || '') ||
-        userConfig.ai?.openai?.temperature ||
-        0.7,
+      model: pick(env.AICGEN_OPENAI_MODEL, ai.openai?.model) ?? DEFAULT_MODELS.openai,
+      timeout: pick(envInt(env, 'AICGEN_OPENAI_TIMEOUT'), ai.openai?.timeout) ?? 30000,
+      maxRetries: pick(envInt(env, 'AICGEN_OPENAI_MAX_RETRIES'), ai.openai?.maxRetries) ?? 3,
+      maxTokens: pick(envInt(env, 'AICGEN_OPENAI_MAX_TOKENS'), ai.openai?.maxTokens) ?? 4096,
+      temperature: pick(envFloat(env, 'AICGEN_OPENAI_TEMPERATURE'), ai.openai?.temperature),
       options: {
         // Force JSON response format
         response_format: { type: 'json_object' },
@@ -163,37 +151,19 @@ function buildProviderConfig(): AIProvidersConfig {
 
     subAgents: {
       guidelineChecker: {
-        // Use Claude Opus for thorough guideline checking
         model:
-          process.env.AICGEN_SUBAGENT_GUIDELINE_MODEL ||
-          userConfig.ai?.subAgents?.guidelineChecker?.model ||
-          'claude-opus-4-5',
-        temperature:
-          parseFloat(process.env.AICGEN_SUBAGENT_GUIDELINE_TEMP || '') ||
-          userConfig.ai?.subAgents?.guidelineChecker?.temperature ||
-          0.3,
+          pick(env.AICGEN_SUBAGENT_GUIDELINE_MODEL, ai.subAgents?.guidelineChecker?.model) ??
+          DEFAULT_MODELS.subAgents.guidelineChecker,
       },
       architectureReviewer: {
-        // Use Claude Sonnet for architecture review (faster, still high quality)
         model:
-          process.env.AICGEN_SUBAGENT_ARCHITECTURE_MODEL ||
-          userConfig.ai?.subAgents?.architectureReviewer?.model ||
-          'claude-sonnet-4-5',
-        temperature:
-          parseFloat(process.env.AICGEN_SUBAGENT_ARCHITECTURE_TEMP || '') ||
-          userConfig.ai?.subAgents?.architectureReviewer?.temperature ||
-          0.5,
+          pick(env.AICGEN_SUBAGENT_ARCHITECTURE_MODEL, ai.subAgents?.architectureReviewer?.model) ??
+          DEFAULT_MODELS.subAgents.architectureReviewer,
       },
       securityAuditor: {
-        // Use Claude Opus for security auditing (most thorough)
         model:
-          process.env.AICGEN_SUBAGENT_SECURITY_MODEL ||
-          userConfig.ai?.subAgents?.securityAuditor?.model ||
-          'claude-opus-4-5',
-        temperature:
-          parseFloat(process.env.AICGEN_SUBAGENT_SECURITY_TEMP || '') ||
-          userConfig.ai?.subAgents?.securityAuditor?.temperature ||
-          0.3,
+          pick(env.AICGEN_SUBAGENT_SECURITY_MODEL, ai.subAgents?.securityAuditor?.model) ??
+          DEFAULT_MODELS.subAgents.securityAuditor,
       },
     },
   };

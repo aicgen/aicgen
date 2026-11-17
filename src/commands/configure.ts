@@ -100,7 +100,7 @@ export async function configureCommand(options: ConfigureOptions) {
           try {
               await credService.saveKey(provider, apiKey);
               console.log(chalk.gray('✓ API key saved for future use'));
-          } catch (error) {
+          } catch {
               console.log(chalk.yellow('⚠ Failed to save API key'));
           }
       }

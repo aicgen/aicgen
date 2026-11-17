@@ -11,7 +11,7 @@ export interface AssistantClearTarget {
   path: string;
   name: string;
   isFile?: boolean;
-  cleanup?: 'codex-marketplace-entry';
+  cleanup?: 'codex-marketplace-entry' | 'aicgen-children';
 }
 
 export interface AssistantDefinition {
@@ -54,6 +54,9 @@ const ASSISTANT_DEFINITIONS: AssistantDefinition[] = [
     clearTargets: [
       { path: '.github/copilot-instructions.md', name: 'GitHub Copilot', isFile: true },
       { path: '.github/instructions', name: 'GitHub Copilot instruction files' },
+      { path: '.github/skills', name: 'GitHub Copilot aicgen skills', cleanup: 'aicgen-children' },
+      { path: '.github/agents', name: 'GitHub Copilot aicgen custom agents', cleanup: 'aicgen-children' },
+      { path: '.github/hooks', name: 'GitHub Copilot aicgen hooks', cleanup: 'aicgen-children' },
     ],
     rendererId: 'copilot',
     supportsWorkflowFiles: true,
@@ -68,16 +71,23 @@ const ASSISTANT_DEFINITIONS: AssistantDefinition[] = [
     id: 'antigravity',
     displayName: 'Antigravity',
     description: 'Google agentic coding platform',
-    configPaths: ['.agent'],
+    // `.agents/` is the current workspace folder; `.agent/` is the legacy form that
+    // Antigravity still reads. Only `.agents/rules` is used for detection because
+    // `.agents/` is shared with Codex (`.agents/plugins`, `.agents/skills`).
+    configPaths: ['.agents/rules', '.agent'],
     clearTargets: [
-      { path: '.agent', name: 'Google Antigravity' },
+      { path: '.agents/rules', name: 'Google Antigravity rules', cleanup: 'aicgen-children' },
+      { path: '.agents/skills', name: 'Google Antigravity aicgen skills', cleanup: 'aicgen-children' },
+      { path: '.agents/workflows', name: 'Google Antigravity workflows' },
+      { path: '.agent', name: 'Google Antigravity (legacy .agent folder)' },
     ],
     rendererId: 'antigravity',
     supportsWorkflowFiles: true,
     supportsAppend: true,
     nextSteps: [
-      'Review .agent/rules/instructions.md',
-      'Review .agent/workflows/ for profile-enabled workflows',
+      'Review .agents/rules/aicgen-instructions.md and AGENTS.md',
+      'Review .agents/rules/ (glob and model-decision rules)',
+      'Review .agents/skills/aicgen-* (workflow skills)',
       'Open project in Antigravity',
     ],
   },
@@ -88,6 +98,7 @@ const ASSISTANT_DEFINITIONS: AssistantDefinition[] = [
     configPaths: CODEX_PLUGIN_CONFIG_PATHS,
     clearTargets: [
       { path: '.codex', name: 'Codex' },
+      { path: '.agents/skills', name: 'Codex aicgen guideline skills', cleanup: 'aicgen-children' },
       { path: CODEX_SDLC_PLUGIN_ROOT, name: 'Codex aicgen SDLC plugin' },
       {
         path: CODEX_MARKETPLACE_PATH,
@@ -100,8 +111,7 @@ const ASSISTANT_DEFINITIONS: AssistantDefinition[] = [
     supportsWorkflowFiles: false,
     supportsAppend: true,
     nextSteps: [
-      'Review .codex/instructions.md',
-      'Review AGENTS.md',
+      'Review AGENTS.md and the guideline skills in .agents/skills/',
       'Review plugins/aicgen-sdlc/ and .agents/plugins/marketplace.json',
       'Restart Codex from this repository root so the project marketplace is loaded',
       'Use the aicgen-sdlc plugin skills with /aicgen-spec, /aicgen-plan, and /aicgen-check',

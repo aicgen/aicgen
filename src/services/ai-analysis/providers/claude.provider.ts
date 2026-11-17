@@ -36,7 +36,7 @@ export class ClaudeProvider extends BaseAIProvider {
       const message = await this.client.messages.create({
         model: this.modelConfig.model,
         max_tokens: this.modelConfig.maxTokens || 8096,
-        temperature: this.modelConfig.temperature,
+        ...(this.modelConfig.temperature !== undefined && { temperature: this.modelConfig.temperature }),
         messages: [{ role: 'user', content: prompt }],
       });
 
@@ -50,7 +50,7 @@ export class ClaudeProvider extends BaseAIProvider {
         if (error.message.includes('timeout') || error.message.includes('timed out')) {
           throw new TimeoutError('Claude', this.modelConfig.timeout);
         }
-        throw new Error(`Claude API error: ${error.message}`);
+        throw new Error(`Claude API error: ${error.message}`, { cause: error });
       }
       throw error;
     }

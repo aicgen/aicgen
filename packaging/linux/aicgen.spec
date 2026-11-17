@@ -1,5 +1,5 @@
 Name:       aicgen
-Version:    1.2.0
+Version:    2.0.0
 Release:    1%{?dist}
 Summary:    AI Config Generator
 License:    MIT
@@ -19,6 +19,11 @@ chmod 755 %{buildroot}/usr/bin/aicgen
 /usr/bin/aicgen
 
 %changelog
+* Tue Nov 17 2026 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 2.0.0
+- Context-budgeted output: path-scoped rules and on-demand skills instead of inlined guidelines
+- Full Rust guideline set and Cargo project analysis
+- Current Claude Code, Copilot, Antigravity and Codex layouts; migration from 1.x output
+
 * Tue May 26 2026 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.2.0
 - Add agentic profile outputs for Claude Code, Copilot, Antigravity, and Codex
 - Embed data from the local data submodule

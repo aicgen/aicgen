@@ -11,6 +11,7 @@ import YAML from 'yaml';
 interface GuidelineMapping {
   path: string;
   category?: string;
+  description?: string;
   languages?: string[];
   levels?: string[];
   architectures?: string[];
@@ -103,6 +104,7 @@ export async function buildEmbeddedDataOutput(dataDir: string): Promise<{ output
 export interface GuidelineMapping {
   path: string;
   category?: string;
+  description?: string;
   languages?: string[];
   levels?: string[];
   architectures?: string[];

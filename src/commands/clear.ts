@@ -1,6 +1,6 @@
 import { confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
-import { rm } from 'fs/promises';
+import { readdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { getAllClearTargets } from '../services/assistant-registry.js';
@@ -54,6 +54,18 @@ export async function clearCommand(options: { force?: boolean } = {}) {
       }
 
       const fullPath = join(projectPath, config.path);
+      if (config.cleanup === 'aicgen-children') {
+        // Shared folder: remove only what aicgen generated, never the user's own files.
+        const entries = await readdir(fullPath);
+        const owned = entries.filter(entry => entry.startsWith('aicgen-'));
+        for (const entry of owned) {
+          await rm(join(fullPath, entry), { recursive: true, force: true });
+        }
+        console.log(chalk.green(`✓ Removed ${config.name} (${owned.length} item(s))`));
+        deletedCount++;
+        continue;
+      }
+
       await rm(fullPath, { recursive: true, force: true });
       console.log(chalk.green(`✓ Removed ${config.name}`));
       deletedCount++;

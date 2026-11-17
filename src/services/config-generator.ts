@@ -1,3 +1,5 @@
+import { summarizeFindings } from './context-budget.js';
+import { findLegacyOutputs, removeLegacyOutputs } from './legacy-migration.js';
 import { join } from 'path';
 import { exists, readJSON } from '../utils/file';
 import { GuidelineLoader } from './guideline-loader';
@@ -19,6 +21,14 @@ export interface GenerationResult {
   filesGenerated: string[];
   conflicts: string[];
   errors: string[];
+  /** Context budget summary for the generated instruction files. */
+  budget?: {
+    alwaysOnTokens: number;
+    onDemandFiles: number;
+    warnings: string[];
+  };
+  /** aicgen 1.x outputs that were (or, in a dry run, would be) replaced by the 2.0 layout. */
+  migrated?: string[];
 }
 
 export class ConfigGenerator {
@@ -68,17 +78,34 @@ export class ConfigGenerator {
         options.projectPath
       );
 
+      const findings = this.fileWriter.analyzeBudget(options.selection.assistant, options.selection, files);
+      const summary = summarizeFindings(findings);
+      const budget = {
+        alwaysOnTokens: summary.alwaysOnTokens,
+        onDemandFiles: findings.filter(f => f.kind === 'scoped-rule' || f.kind === 'skill').length,
+        warnings: [...summary.errors, ...summary.warnings].map(f => `${f.path.replace(options.projectPath, '').replace(/^[/\\]/, '')}: ${f.message}`),
+      };
+
+      if (summary.errors.length > 0) {
+        throw new Error(`Generated files exceed assistant limits:\n${budget.warnings.join('\n')}`);
+      }
+
+      const migrated = await findLegacyOutputs(options.projectPath, options.selection.assistant);
+
       if (options.dryRun) {
         conflicts.push(...await this.findConflicts(files.map(file => file.path)));
         return {
           success: true,
           filesGenerated: files.map(f => f.path),
           conflicts,
-          errors: []
+          errors: [],
+          budget,
+          migrated
         };
       }
 
       conflicts.push(...await this.findConflicts(files.map(file => file.path)));
+      await removeLegacyOutputs(migrated);
       await this.fileWriter.writeFiles(files);
       files.forEach(f => filesGenerated.push(f.path));
 
@@ -86,7 +113,9 @@ export class ConfigGenerator {
         success: true,
         filesGenerated,
         conflicts,
-        errors: []
+        errors: [],
+        budget,
+        migrated
       };
     } catch (error) {
       errors.push((error as Error).message);
@@ -121,6 +150,10 @@ export class ConfigGenerator {
   private async detectLanguage(projectPath: string): Promise<Language> {
     if (await exists(join(projectPath, 'tsconfig.json'))) {
       return 'typescript';
+    }
+    // Cargo.toml wins over a bare package.json (napi-rs / wasm-pack style repos)
+    if (await exists(join(projectPath, 'Cargo.toml'))) {
+      return 'rust';
     }
     if (await exists(join(projectPath, 'package.json'))) {
       return 'javascript';

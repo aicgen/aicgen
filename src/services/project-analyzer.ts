@@ -3,6 +3,15 @@ import { join } from 'path';
 import { readFile, exists } from '../utils/file';
 import { Language } from '../models/project';
 import { createHash } from 'crypto';
+import {
+  CargoManifestInfo,
+  mergeCargoManifests,
+  parseCargoManifest,
+  RUST_FRAMEWORKS,
+  RUST_NOSQL_CRATES,
+  RUST_SQL_CRATES,
+  RUST_TEST_TOOLS,
+} from './cargo-manifest.js';
 
 export interface ProjectMetadata {
   structure: string[];
@@ -40,6 +49,7 @@ export interface AnalysisContext {
 
 export class ProjectAnalyzer {
   private projectPath: string;
+  private cargo: CargoManifestInfo | null = null;
 
   constructor(projectPath: string) {
     this.projectPath = projectPath;
@@ -54,18 +64,19 @@ export class ProjectAnalyzer {
   private async performStaticAnalysis(): Promise<ProjectMetadata> {
     const files = await glob(['**/*'], {
       cwd: this.projectPath,
-      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**'],
+      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/target/**'],
       onlyFiles: true,
       deep: 4
     });
 
     const structure = await glob(['**/*'], {
         cwd: this.projectPath,
-        ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**'],
+        ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/target/**'],
         onlyDirectories: true,
         deep: 3
     });
 
+    this.cargo = await this.loadCargoManifests(files);
     const language = await this.detectLanguage();
     const { frameworks, buildTools, packageManager } = await this.detectDependencies();
     const repoType = await this.detectRepoType(structure);
@@ -91,6 +102,24 @@ export class ProjectAnalyzer {
     };
   }
 
+  private async loadCargoManifests(files: string[]): Promise<CargoManifestInfo | null> {
+    const manifestPaths = files.filter(f => /(^|\/)Cargo\.toml$/.test(f) && !f.includes('target/'));
+    if (!manifestPaths.includes('Cargo.toml') && !(await exists(join(this.projectPath, 'Cargo.toml')))) {
+      return null;
+    }
+
+    const parsed: CargoManifestInfo[] = [];
+    const paths = ['Cargo.toml', ...manifestPaths.filter(f => f !== 'Cargo.toml')];
+    for (const manifestPath of paths) {
+      try {
+        parsed.push(parseCargoManifest(await readFile(join(this.projectPath, manifestPath))));
+      } catch {
+        // Unreadable manifests are ignored
+      }
+    }
+    return parsed.length > 0 ? mergeCargoManifests(parsed) : null;
+  }
+
   private async detectRepoType(structure: string[]): Promise<'monorepo' | 'polyrepo' | 'unknown'> {
     if (await exists(join(this.projectPath, 'nx.json')) || await exists(join(this.projectPath, 'turbo.json'))) return 'monorepo';
     if (structure.some(d => d.startsWith('packages/') || d.startsWith('apps/'))) return 'monorepo';
@@ -111,9 +140,11 @@ export class ProjectAnalyzer {
 
   private async detectLanguage(): Promise<Language> {
     if (await exists(join(this.projectPath, 'tsconfig.json'))) return 'typescript';
+    // Cargo.toml wins over a bare package.json: root-level crates with a
+    // package.json are Rust projects with JS tooling (napi-rs, wasm-pack, ...).
+    if (await exists(join(this.projectPath, 'Cargo.toml'))) return 'rust';
     if (await exists(join(this.projectPath, 'package.json'))) return 'javascript';
     if (await exists(join(this.projectPath, 'go.mod'))) return 'go';
-    if (await exists(join(this.projectPath, 'Cargo.toml'))) return 'rust';
     if (await exists(join(this.projectPath, 'build.gradle.kts')) ||
         await exists(join(this.projectPath, 'settings.gradle.kts')) ||
         await exists(join(this.projectPath, 'src/main/kotlin'))) return 'kotlin';
@@ -161,6 +192,19 @@ export class ProjectAnalyzer {
       else packageManager = 'npm';
     }
 
+    if (this.cargo) {
+      for (const dep of this.cargo.dependencies) {
+        if (RUST_FRAMEWORKS[dep]) frameworks.push(RUST_FRAMEWORKS[dep]);
+      }
+      buildTools.push('Cargo');
+      if (await exists(join(this.projectPath, 'deny.toml'))) buildTools.push('cargo-deny');
+      if (await exists(join(this.projectPath, '.config/nextest.toml'))) buildTools.push('cargo-nextest');
+      if (await exists(join(this.projectPath, 'rust-toolchain.toml')) || await exists(join(this.projectPath, 'rust-toolchain'))) {
+        buildTools.push('rust-toolchain');
+      }
+      if (packageManager === 'unknown') packageManager = 'cargo';
+    }
+
     if (await exists(join(this.projectPath, 'composer.json'))) {
       packageManager = 'composer';
     }
@@ -178,7 +222,7 @@ export class ProjectAnalyzer {
     
     // 1. Config Files (High Signal)
     const configFiles = [
-        'package.json', 'tsconfig.json', 'go.mod', 'cargo.toml', 'pyproject.toml', 
+        'package.json', 'tsconfig.json', 'go.mod', 'Cargo.toml', 'rust-toolchain.toml', 'pyproject.toml', 
         'nx.json', 'turbo.json', 'next.config.js', 'vite.config.ts'
     ];
     for (const file of configFiles) {
@@ -199,7 +243,7 @@ export class ProjectAnalyzer {
 
     // 3. High-Signal Source Files (Heuristic: Import Density)
     const sourceFiles = metadata.files.filter(f => 
-        (f.startsWith('src/') || f.startsWith('lib/') || f.startsWith('cmd/') || f.startsWith('internal/')) &&
+        (f.startsWith('src/') || f.startsWith('lib/') || f.startsWith('cmd/') || f.startsWith('internal/') || /^crates\/[^/]+\/src\//.test(f)) &&
         !f.endsWith('.d.ts') && !f.endsWith('.test.ts') && !f.endsWith('.spec.ts')
     );
 
@@ -237,7 +281,7 @@ export class ProjectAnalyzer {
             content = content.substring(0, maxLength) + '\n... (truncated)';
         }
         return { path: relativePath, content };
-    } catch (e) {
+    } catch {
         return { path: relativePath, content: '(Error reading file)' };
     }
   }
@@ -251,6 +295,11 @@ export class ProjectAnalyzer {
     if (await exists(join(this.projectPath, 'lerna.json'))) hints.push('lerna-monorepo');
     if (structure.some(d => d.startsWith('packages/') || d.startsWith('apps/'))) {
       hints.push('workspace-structure');
+    }
+
+    // Cargo workspace with several crates
+    if (this.cargo?.isWorkspace && structure.some(d => /^crates\/[^/]+$/.test(d))) {
+      hints.push('cargo-workspace');
     }
 
     // Microservices indicators
@@ -371,6 +420,15 @@ export class ProjectAnalyzer {
       }
     }
 
+    // Check Cargo dependencies
+    if (this.cargo) {
+      const deps = this.cargo.dependencies;
+      const sql = RUST_SQL_CRATES.filter(crate => deps.has(crate));
+      const nosql = RUST_NOSQL_CRATES.filter(crate => deps.has(crate));
+      if (sql.length) { detected.push(...sql.map(crate => `SQL (${crate})`)); hasSql = true; }
+      if (nosql.length) { detected.push(...nosql.map(crate => `NoSQL (${crate})`)); hasNoSql = true; }
+    }
+
     return { hasSql, hasNoSql, detected };
   }
 
@@ -390,6 +448,20 @@ export class ProjectAnalyzer {
     if (testFiles.some(f => f.includes('.test.'))) frameworks.push('Test-style tests');
     if (testFiles.some(f => f.includes('_test.go'))) frameworks.push('Go testing');
     if (testFiles.some(f => f.includes('_test.py'))) frameworks.push('Python unittest');
+
+    if (this.cargo) {
+      // Rust: integration tests live in tests/ (any depth of crate); unit tests are inline
+      const rustTests = files.filter(f => /(^|\/)tests\/.+\.rs$/.test(f) && !/(^|\/)tests\/common\//.test(f));
+      frameworks.push('cargo test');
+      for (const dep of [...this.cargo.dependencies, ...this.cargo.devDependencies]) {
+        if (RUST_TEST_TOOLS[dep] && !frameworks.includes(RUST_TEST_TOOLS[dep])) frameworks.push(RUST_TEST_TOOLS[dep]);
+      }
+      return {
+        frameworks,
+        hasTests: hasTests || rustTests.length > 0,
+        testFileCount: testFileCount + rustTests.length,
+      };
+    }
 
     return { frameworks, hasTests, testFileCount };
   }
@@ -416,6 +488,17 @@ export class ProjectAnalyzer {
     // Library indicators
     if (files.some(f => f === 'index.ts' || f === 'src/index.ts')) hints.push('library-entry');
     if (files.some(f => f.match(/^(lib|dist)\//))) hints.push('library-build');
+
+    // Rust indicators
+    if (this.cargo) {
+      const hasMain = files.some(f => /(^|\/)src\/main\.rs$/.test(f)) || this.cargo.hasBinTarget;
+      const hasLib = files.some(f => /(^|\/)src\/lib\.rs$/.test(f)) || this.cargo.hasLibTarget;
+      if (hasLib && !hasMain) hints.push('library-entry', 'rust-library');
+      if (hasMain && this.cargo.dependencies.has('clap')) hints.push('cli-structure', 'rust-cli');
+      if (hasMain && frameworks.some(f => /Axum|Actix|Rocket|Warp|Poem|tonic/.test(f))) hints.push('web-framework', 'api-handlers');
+      if (this.cargo.dependencies.has('tauri')) hints.push('desktop-app');
+      if (this.cargo.edition) hints.push(`rust-edition-${this.cargo.edition}`);
+    }
 
     // Mobile indicators
     if (files.some(f => f.match(/\.(ios|android)\./))) hints.push('mobile-platform');

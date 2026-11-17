@@ -37,8 +37,10 @@ export class OpenAIProvider extends BaseAIProvider {
         model: this.modelConfig.model,
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
-        max_tokens: this.modelConfig.maxTokens,
-        temperature: this.modelConfig.temperature,
+        // Current OpenAI models take max_completion_tokens (max_tokens is rejected
+        // by reasoning models). Temperature is sent only when explicitly configured.
+        max_completion_tokens: this.modelConfig.maxTokens,
+        ...(this.modelConfig.temperature !== undefined && { temperature: this.modelConfig.temperature }),
       });
 
       return completion.choices[0].message.content || '';
@@ -47,7 +49,7 @@ export class OpenAIProvider extends BaseAIProvider {
         if (error.message.includes('timeout') || error.message.includes('timed out')) {
           throw new TimeoutError('OpenAI', this.modelConfig.timeout);
         }
-        throw new Error(`OpenAI API error: ${error.message}`);
+        throw new Error(`OpenAI API error: ${error.message}`, { cause: error });
       }
       throw error;
     }

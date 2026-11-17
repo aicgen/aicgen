@@ -30,7 +30,7 @@ export class AIAnalysisService {
             const response = await provider.analyze(context, prompt);
             return this.parseResponse(response);
         } catch (error) {
-            throw new Error(`AI Analysis failed: ${(error as Error).message}`);
+            throw new Error(`AI Analysis failed: ${(error as Error).message}`, { cause: error });
         }
     }
 

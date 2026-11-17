@@ -133,7 +133,7 @@ export async function initCommand(options: InitOptions) {
                 try {
                     await credService.saveKey(provider, apiKey);
                     console.log(chalk.gray('✓ API key saved for future use'));
-                } catch (error) {
+                } catch {
                     console.log(chalk.yellow('⚠ Failed to save API key'));
                 }
             }
@@ -359,6 +359,19 @@ export async function initCommand(options: InitOptions) {
       const relativePath = file.replace(projectPath, '').replace(/^[/\\]/, '');
       console.log(chalk.gray(`   ${relativePath}`));
     });
+
+    if (result.migrated && result.migrated.length > 0) {
+      const verb = options.dryRun ? 'would be replaced' : 'replaced';
+      console.log(chalk.yellow(`\n♻️  ${result.migrated.length} aicgen 1.x file(s) ${verb} by the 2.0 layout:`));
+      result.migrated.forEach(file => console.log(chalk.gray(`   ${file.replace(projectPath, '').replace(/^[/\\]/, '')}`)));
+    }
+
+    if (result.budget) {
+      console.log(chalk.cyan('\n🧠 Context budget:'));
+      console.log(chalk.gray(`   Always-on instructions: ~${result.budget.alwaysOnTokens} tokens`));
+      console.log(chalk.gray(`   ${result.budget.onDemandFiles} guideline file(s) load only when relevant (path-scoped rules and skills)`));
+      result.budget.warnings.forEach(warning => console.log(chalk.yellow(`   ⚠ ${warning}`)));
+    }
 
     if (!options.dryRun) {
       console.log(chalk.cyan('\n🚀 Next steps:'));

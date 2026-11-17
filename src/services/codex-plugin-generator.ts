@@ -34,6 +34,13 @@ export class CodexPluginGenerator {
   async generateFiles(projectPath: string): Promise<GeneratedFile[]> {
     return [
       {
+        // Portable Agent Plugins manifest (current entry point). Skills are discovered from skills/.
+        path: `${CODEX_SDLC_PLUGIN_ROOT}/plugin.json`,
+        content: this.buildPortableManifest(),
+        type: 'plugin',
+      },
+      {
+        // Codex compatibility manifest: still supported, supplies the OpenAI interface settings.
         path: `${CODEX_SDLC_PLUGIN_ROOT}/.codex-plugin/plugin.json`,
         content: this.buildPluginManifest(),
         type: 'plugin',
@@ -50,6 +57,20 @@ export class CodexPluginGenerator {
         type: 'plugin',
       },
     ];
+  }
+
+  private buildPortableManifest(): string {
+    return JSON.stringify({
+      $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
+      name: CODEX_SDLC_PLUGIN_NAME,
+      version: this.version,
+      description: 'Project-local plugin for aicgen SDLC lifecycle commands.',
+      author: { name: 'aicgen', url: 'https://github.com/aicgen' },
+      homepage: 'https://github.com/aicgen/aicgen',
+      repository: 'https://github.com/aicgen/aicgen',
+      license: 'MIT',
+      keywords: ['aicgen', 'sdlc', 'workflow', 'skills'],
+    }, null, 2) + '\n';
   }
 
   private buildPluginManifest(): string {
@@ -134,7 +155,7 @@ ${cmd.content}
         name: 'aicgen-guideline-review',
         description: 'Use this to review changes against generated AICGEN guidelines and AGENTS.md.',
         body: [
-          'Review changed files against AGENTS.md, .codex/instructions.md, and any generated tool-specific guideline files.',
+          'Review changed files against AGENTS.md and the generated guideline skills in .agents/skills.',
           'Report correctness, maintainability, testing, and consistency issues before style-only feedback.',
           'Use file paths and actionable remediation steps.',
         ],
@@ -214,7 +235,7 @@ ${skill.body.map(item => `- ${item}`).join('\n')}
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return {};
       }
-      throw new Error(`Existing Codex marketplace JSON is invalid at ${path}: ${(error as Error).message}`);
+      throw new Error(`Existing Codex marketplace JSON is invalid at ${path}: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -249,7 +270,7 @@ export async function removeCodexMarketplaceEntry(projectPath: string): Promise<
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return 'missing';
     }
-    throw new Error(`Cannot update Codex marketplace at ${marketplacePath}: ${(error as Error).message}`);
+    throw new Error(`Cannot update Codex marketplace at ${marketplacePath}: ${(error as Error).message}`, { cause: error });
   }
 
   const plugins = Array.isArray(parsed.plugins) ? parsed.plugins : [];

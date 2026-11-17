@@ -111,30 +111,24 @@ describe('WorkflowInjector', () => {
   });
 
   describe('generateWorkflowFiles - copilot', () => {
-    it('should return 1 file for copilot', () => {
+    it('should return one skill per command instead of prompt files or an always-on instruction file', () => {
       const files = injector.generateWorkflowFiles('copilot');
-      expect(files).toHaveLength(1);
+      expect(files.map(f => f.path)).toEqual([
+        '.github/skills/aicgen-spec/SKILL.md',
+        '.github/skills/aicgen-research/SKILL.md',
+        '.github/skills/aicgen-plan/SKILL.md',
+        '.github/skills/aicgen-build/SKILL.md',
+        '.github/skills/aicgen-check/SKILL.md',
+        '.github/skills/aicgen-ship/SKILL.md',
+      ]);
     });
 
-    it('should place file at .github/instructions/workflows.instructions.md', () => {
-      const files = injector.generateWorkflowFiles('copilot');
-      expect(files[0].path).toBe('.github/instructions/workflows.instructions.md');
-    });
-
-    it('should include all 6 commands in the single file', () => {
-      const files = injector.generateWorkflowFiles('copilot');
-      const content = files[0].content;
-      expect(content).toContain('/spec');
-      expect(content).toContain('/research');
-      expect(content).toContain('/plan');
-      expect(content).toContain('/build');
-      expect(content).toContain('/check');
-      expect(content).toContain('/ship');
-    });
-
-    it('should include applyTo frontmatter', () => {
-      const files = injector.generateWorkflowFiles('copilot');
-      expect(files[0].content).toContain('applyTo:');
+    it('should write valid, user-invoked skill frontmatter whose name matches the folder', () => {
+      for (const file of injector.generateWorkflowFiles('copilot')) {
+        const folder = file.path.split('/')[2];
+        expect(file.content).toMatch(new RegExp(`^---\\nname: ${folder}\\ndescription: ".+"\\ndisable-model-invocation: true\\n---\\n`));
+        expect(file.type).toBe('workflow');
+      }
     });
   });
 
@@ -178,10 +172,10 @@ describe('WorkflowInjector', () => {
       expect(files).toHaveLength(6);
     });
 
-    it('should place files at .agent/workflows/{name}.md', () => {
+    it('should place workflow skills at .agents/skills/aicgen-{name}/SKILL.md', () => {
       const files = injector.generateWorkflowFiles('antigravity');
-      expect(files[0].path).toBe('.agent/workflows/spec.md');
-      expect(files[5].path).toBe('.agent/workflows/ship.md');
+      expect(files[0].path).toBe('.agents/skills/aicgen-spec/SKILL.md');
+      expect(files[5].path).toBe('.agents/skills/aicgen-ship/SKILL.md');
     });
   });
 
@@ -203,22 +197,13 @@ describe('WorkflowInjector', () => {
     });
   });
 
-  describe('generateCopilotPromptFiles', () => {
-    it('should return one prompt file for each SDLC command', () => {
-      const files = injector.generateCopilotPromptFiles();
-
-      expect(files).toHaveLength(6);
-      expect(files[0].path).toBe('.github/prompts/spec.prompt.md');
-      expect(files[5].path).toBe('.github/prompts/ship.prompt.md');
-    });
-  });
-
-  describe('generateCopilotChatModeFiles', () => {
-    it('should return an AICGEN review chat mode', () => {
-      const files = injector.generateCopilotChatModeFiles();
+  describe('generateCopilotAgentFiles', () => {
+    it('should return an AICGEN review custom agent with the required profile fields', () => {
+      const files = injector.generateCopilotAgentFiles();
 
       expect(files).toHaveLength(1);
-      expect(files[0].path).toBe('.github/chatmodes/aicgen-review.chatmode.md');
+      expect(files[0].path).toBe('.github/agents/aicgen-review.agent.md');
+      expect(files[0].content).toMatch(/^---\nname: aicgen-review\ndescription: ".+"\ntools: \["read", "search"\]\n---\n/);
       expect(files[0].content).toContain('AICGEN Review');
     });
   });

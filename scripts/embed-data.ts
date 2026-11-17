@@ -24,6 +24,14 @@ interface EmbeddedData {
   guidelines: Record<string, string>;
 }
 
+/**
+ * Reads a text file with LF line endings. Windows checkouts convert files to CRLF (git autocrlf),
+ * which would otherwise change the generated output and make it differ per operating system.
+ */
+async function readText(path: string): Promise<string> {
+  return (await readFile(path, 'utf-8')).replace(/\r\n/g, '\n');
+}
+
 export function getDataDir(): string {
   return process.env.AICGEN_DATA_DIR || join(process.cwd(), 'data');
 }
@@ -67,7 +75,7 @@ async function readGuidelinesRecursively(dir: string, basePath: string = ''): Pr
       const subGuidelines = await readGuidelinesRecursively(fullPath, relativePath);
       Object.assign(guidelines, subGuidelines);
     } else if (entry.name.endsWith('.md')) {
-      const content = await readFile(fullPath, 'utf-8');
+      const content = await readText(fullPath);
       guidelines[relativePath] = content;
     }
   }
@@ -80,7 +88,7 @@ export async function buildEmbeddedDataOutput(dataDir: string): Promise<{ output
   const mappingsPath = join(dataDir, 'guideline-mappings.yml');
 
   // Read mappings
-  const mappingsContent = await readFile(mappingsPath, 'utf-8');
+  const mappingsContent = await readText(mappingsPath);
   const mappings = YAML.parse(mappingsContent) as Record<string, GuidelineMapping>;
 
   // Read all guidelines from data directory
@@ -92,7 +100,7 @@ export async function buildEmbeddedDataOutput(dataDir: string): Promise<{ output
 
   // Read SDLC workflow content
   const sdlcPath = join(dataDir, 'workflows/sdlc.md');
-  const sdlcContent = await readFile(sdlcPath, 'utf-8');
+  const sdlcContent = await readText(sdlcPath);
 
   const data: EmbeddedData = { mappings, guidelines };
 

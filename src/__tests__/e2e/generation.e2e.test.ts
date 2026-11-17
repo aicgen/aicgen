@@ -7,7 +7,7 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { tmpdir } from 'os';
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
 import YAML from 'yaml';
 import { ConfigGenerator } from '../../services/config-generator.js';
 import { GuidelineLoader } from '../../services/guideline-loader.js';
@@ -365,7 +365,6 @@ describe('end-to-end generation', () => {
 
     const leftovers = (await listFiles(root)).filter(file => /(^|\/)aicgen-/.test(file) || file.startsWith('.codex/') || file === 'AGENTS.md');
     expect(leftovers.filter(file => !file.startsWith('plugins/'))).toEqual([]);
-    expect(relative(root, join(root, 'src/main.rs'))).toBe('src/main.rs');
     expect((await stat(join(root, 'src/main.rs'))).isFile()).toBe(true);
   });
 });

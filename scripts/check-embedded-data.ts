@@ -6,7 +6,8 @@ import { buildEmbeddedDataOutput, getDataDir } from './embed-data.ts';
 async function main() {
   const dataDir = getDataDir();
   const embeddedPath = join(process.cwd(), 'src', 'embedded-data.ts');
-  const current = await readFile(embeddedPath, 'utf-8');
+  // A Windows checkout may convert this file to CRLF; compare line-ending-insensitively.
+  const current = (await readFile(embeddedPath, 'utf-8')).replace(/\r\n/g, '\n');
   const { output, mappingCount, guidelineCount } = await buildEmbeddedDataOutput(dataDir);
 
   if (current !== output) {

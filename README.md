@@ -59,7 +59,7 @@ npm install -g @aicgen/aicgen
 npx @aicgen/aicgen init
 ```
 
-### From Homebrew (macOS)
+### From Homebrew (macOS and Linux)
 
 ```bash
 # Add the tap

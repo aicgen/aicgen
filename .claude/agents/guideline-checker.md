@@ -1,7 +1,8 @@
 ---
-model: "claude-opus-4-5"
-temperature: 0.3
-description: "Verifies code changes comply with project guidelines"
+name: guideline-checker
+description: "Verifies code changes comply with project guidelines. Use after code changes or before commits."
+tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 # Guideline Compliance Checker

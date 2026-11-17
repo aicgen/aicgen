@@ -1,6 +1,7 @@
 import { getSubAgentConfig } from '../config/ai-providers.config.js';
 import { InstructionLevel } from '../models/profile.js';
 import { isProfileAtLeast } from './agentic-capabilities.js';
+import { stripFrontmatter } from '../utils/frontmatter.js';
 
 export interface SubAgentTemplate {
   name: string;
@@ -12,18 +13,66 @@ export interface SkillTemplate {
   content: string;
 }
 
+const TYPESCRIPT_STANDARDS = `### TypeScript/JavaScript Standards
+- TypeScript strict mode compliance
+- No \`any\` types (use \`unknown\` with type guards)
+- Proper interface/type definitions
+- Async/await patterns used correctly`;
+
+const RUST_STANDARDS = `### Rust Standards
+- No \`unwrap()\`/\`expect()\`/indexing on runtime input outside tests; errors are typed (\`thiserror\` in libraries, \`anyhow\` with context in binaries)
+- Parameters borrow (\`&str\`, \`&[T]\`, \`&Path\`) unless the value is stored; no \`clone()\` added only to satisfy the borrow checker
+- \`unsafe\` is minimal, wrapped in a safe API, and every block has a \`// SAFETY:\` comment
+- Async code never blocks the runtime, holds no \`std\` lock across \`.await\`, and external calls have timeouts
+- \`cargo fmt --check\` and \`cargo clippy --all-targets -- -D warnings\` pass; exceptions use \`#[expect(lint, reason = "...")]\`
+- Public enums/structs that may grow are \`#[non_exhaustive]\`; public items are documented`;
+
+function languageStandards(language?: string): string {
+  switch (language) {
+    case 'rust':
+      return RUST_STANDARDS;
+    case 'typescript':
+    case 'javascript':
+    case undefined:
+      return TYPESCRIPT_STANDARDS;
+    default:
+      return `### ${language} Standards
+- Follow the language guidelines referenced in the project instructions
+- Idiomatic error handling and resource cleanup
+- No unused code, unchecked casts, or ignored errors`;
+  }
+}
+
+function languageSecurityChecks(language?: string): string {
+  if (language !== 'rust') {
+    return '';
+  }
+
+  return `### Rust-Specific
+- Every \`unsafe\` block and \`unsafe fn\`: is the invariant documented, minimal and upheld by a safe wrapper?
+- Panics reachable from untrusted input (\`unwrap\`, indexing, slicing on UTF-8 boundaries, integer overflow in release builds, \`RefCell\` double borrows) are denial-of-service risks
+- Dependencies: new crates reviewed (maintenance, licence, build scripts, proc-macros); \`cargo deny check\` / \`cargo audit\` clean; \`Cargo.lock\` committed
+- FFI boundaries: ownership, null checks, \`CString\`/\`CStr\` use, no unwinding across \`extern "C"\`
+- Secrets are not logged or included in \`Debug\` output (use \`secrecy\`)
+
+`;
+}
+
 /**
  * Generate sub-agent templates with configured models
  * Models can be customized via environment variables or ~/.aicgen/config.yml
  */
-function getEmbeddedAgents(): Record<string, string> {
+function getEmbeddedAgents(language?: string): Record<string, string> {
   const config = getSubAgentConfig();
+  const standards = languageStandards(language);
+  const securityExtras = languageSecurityChecks(language);
 
   return {
     'guideline-checker': `---
-model: "${config.guidelineChecker.model}"
-temperature: ${config.guidelineChecker.temperature}
-description: "Verifies code changes comply with project guidelines"
+name: guideline-checker
+description: "Verifies code changes comply with project guidelines. Use after code changes or before commits."
+tools: Read, Grep, Glob, Bash
+model: ${config.guidelineChecker.model}
 ---
 
 # Guideline Compliance Checker
@@ -40,11 +89,7 @@ When code changes are made, automatically verify:
 - No redundant or commented-out code
 - Proper indentation and formatting
 
-### TypeScript/JavaScript Standards
-- TypeScript strict mode compliance
-- No \`any\` types (use \`unknown\` with type guards)
-- Proper interface/type definitions
-- Async/await patterns used correctly
+${standards}
 
 ### Best Practices
 - Functions under 50 lines
@@ -97,8 +142,9 @@ Overall: 3 issues require attention
 `,
 
     'architecture-reviewer': `---
-model: "${config.architectureReviewer.model}"
-temperature: ${config.architectureReviewer.temperature}
+name: architecture-reviewer
+tools: Read, Grep, Glob, Bash
+model: ${config.architectureReviewer.model}
 description: "Reviews architectural decisions and patterns"
 ---
 
@@ -188,8 +234,9 @@ Recommendation: Address critical dependency violation before merging
 `,
 
     'security-auditor': `---
-model: "${config.securityAuditor.model}"
-temperature: ${config.securityAuditor.temperature}
+name: security-auditor
+tools: Read, Grep, Glob, Bash
+model: ${config.securityAuditor.model}
 description: "Identifies security vulnerabilities and risks"
 ---
 
@@ -228,7 +275,7 @@ You are a security-focused code review agent that identifies vulnerabilities, se
 - Race conditions
 - Buffer overflows (in applicable languages)
 
-## Review Process
+${securityExtras}## Review Process
 
 1. Scan for obvious security issues
 2. Check data flow from user input to storage/output
@@ -302,14 +349,15 @@ Risk Level: [Low/Medium/High/Critical]
 export class SubAgentGenerator {
   async generateSubAgents(
     guidelineIds: string[],
-    level: InstructionLevel = 'standard'
+    level: InstructionLevel = 'standard',
+    language?: string
   ): Promise<SubAgentTemplate[]> {
     if (!isProfileAtLeast(level, 'full')) {
       return [];
     }
 
     const agents: SubAgentTemplate[] = [];
-    const EMBEDDED_AGENTS = getEmbeddedAgents();
+    const EMBEDDED_AGENTS = getEmbeddedAgents(language);
 
     agents.push({
       name: 'guideline-checker',
@@ -337,13 +385,14 @@ export class SubAgentGenerator {
 
   async generateSkills(
     guidelineIds: string[],
-    level: InstructionLevel = 'standard'
+    level: InstructionLevel = 'standard',
+    language?: string
   ): Promise<SkillTemplate[]> {
     if (!isProfileAtLeast(level, 'full')) {
       return [];
     }
 
-    const agents = await this.generateSubAgents(guidelineIds, level);
+    const agents = await this.generateSubAgents(guidelineIds, level, language);
     return agents.map(agent => ({
       name: this.skillName(agent.name),
       content: this.buildSkill(agent),
@@ -377,7 +426,7 @@ Review the current task, inspect the relevant code, and report only actionable f
 
 ## Review Prompt
 
-${agent.content}
+${stripFrontmatter(agent.content)}
 `;
   }
 

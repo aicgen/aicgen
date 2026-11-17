@@ -110,23 +110,33 @@ describe('AssistantFileWriter — workflow injection', () => {
   });
 
   describe('copilot', () => {
-    it('should include workflow instructions and prompt files in generated output', async () => {
+    it('should include one workflow skill per SDLC command', async () => {
       const files = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot' }, '/tmp/test');
       const workflowFiles = files.filter(f => f.type === 'workflow');
-      expect(workflowFiles).toHaveLength(7);
+      expect(workflowFiles).toHaveLength(6);
+      expect(workflowFiles.every(f => f.path.includes('.github/skills/aicgen-'))).toBe(true);
     });
 
-    it('should generate workflow file at .github/instructions/workflows.instructions.md', async () => {
+    it('should not emit deprecated prompt files or an always-on workflows instruction file', async () => {
       const files = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot' }, '/tmp/test');
-      const workflowFile = files.find(f => f.type === 'workflow');
-      expect(workflowFile?.path).toContain('workflows.instructions.md');
+
+      expect(files.some(f => f.path.includes('.github/prompts/'))).toBe(false);
+      expect(files.some(f => f.path.endsWith('workflows.instructions.md'))).toBe(false);
     });
 
-    it('should generate reusable prompt files for each SDLC command', async () => {
+    it('should name skill-based commands with the aicgen- prefix in copilot-instructions.md and AGENTS.md', async () => {
       const files = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot' }, '/tmp/test');
+      const agentsMd = files.find(f => f.path.endsWith('AGENTS.md'))!;
 
-      expect(files.some(f => f.path.endsWith('.github/prompts/spec.prompt.md'))).toBe(true);
-      expect(files.some(f => f.path.endsWith('.github/prompts/ship.prompt.md'))).toBe(true);
+      expect(agentsMd.content).toContain('/aicgen-spec');
+    });
+
+    it('should add the guard hook only at the full level', async () => {
+      const standard = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot', level: 'standard' }, '/tmp/test');
+      const full = await writer.generateFiles('copilot', [], { ...MOCK_SELECTION, assistant: 'copilot', level: 'full' }, '/tmp/test');
+
+      expect(standard.some(f => f.path.endsWith('.github/hooks/aicgen-guard.json'))).toBe(false);
+      expect(full.some(f => f.path.endsWith('.github/hooks/aicgen-guard.json'))).toBe(true);
     });
   });
 
@@ -150,24 +160,31 @@ describe('AssistantFileWriter — workflow injection', () => {
       expect(marketplace.plugins[0].policy.installation).toBe('INSTALLED_BY_DEFAULT');
     });
 
-    it('should list namespaced workflow commands in Codex instructions and AGENTS.md', async () => {
+    it('should list namespaced workflow commands in AGENTS.md and not emit the undocumented .codex/instructions.md', async () => {
       const files = await writer.generateFiles('codex', [], { ...MOCK_SELECTION, assistant: 'codex' }, '/tmp/test');
-      const codexFile = files.find(f => f.path.endsWith('.codex/instructions.md'));
       const agentsMd = files.find(f => f.path.endsWith('AGENTS.md'));
 
-      expect(codexFile?.content).toContain('/aicgen-spec');
-      expect(codexFile?.content).toContain('/aicgen-plan');
+      expect(files.some(f => f.path.endsWith('.codex/instructions.md'))).toBe(false);
       expect(agentsMd?.content).toContain('/aicgen-spec');
+      expect(agentsMd?.content).toContain('/aicgen-plan');
       expect(agentsMd?.content).toContain('aicgen-sdlc');
+    });
+
+    it('should emit the portable plugin.json beside the Codex compatibility manifest', async () => {
+      const files = await writer.generateFiles('codex', [], { ...MOCK_SELECTION, assistant: 'codex' }, '/tmp/test');
+      const portable = files.find(f => f.path.endsWith('plugins/aicgen-sdlc/plugin.json'));
+
+      expect(JSON.parse(portable!.content).name).toBe('aicgen-sdlc');
+      expect(files.some(f => f.path.endsWith('plugins/aicgen-sdlc/.codex-plugin/plugin.json'))).toBe(true);
     });
   });
 
   describe('antigravity', () => {
-    it('should include 6 workflow files at .agent/workflows/', async () => {
+    it('should include 6 workflow skills at .agents/skills/aicgen-*', async () => {
       const files = await writer.generateFiles('antigravity', [], { ...MOCK_SELECTION, assistant: 'antigravity' }, '/tmp/test');
-      const workflowFiles = files.filter(f => f.type === 'workflow');
+      const workflowFiles = files.filter(f => f.type === 'workflow' && f.path.includes('/aicgen-') && !/generate|add-|refactor|audit/.test(f.path));
       expect(workflowFiles).toHaveLength(6);
-      expect(workflowFiles[0].path).toContain('.agent/workflows/spec.md');
+      expect(workflowFiles[0].path).toContain('.agents/skills/aicgen-spec/SKILL.md');
     });
   });
 

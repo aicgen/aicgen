@@ -1,6 +1,7 @@
 ---
-model: "claude-opus-4-5"
-temperature: 0.3
+name: security-auditor
+tools: Read, Grep, Glob, Bash
+model: opus
 description: "Identifies security vulnerabilities and risks"
 ---
 

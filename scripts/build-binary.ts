@@ -17,7 +17,8 @@ const buildConfigs: Record<string, string[]> = {
   current: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen'],
   windows: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen.exe', '--target=bun-windows-x64'],
   linux: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-linux', '--target=bun-linux-x64'],
-  macos: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-macos', '--target=bun-darwin-arm64']
+  macos: ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-macos', '--target=bun-darwin-arm64'],
+  'macos-x64': ['build', 'src/index.ts', '--compile', '--outfile', 'dist/aicgen-macos-x64', '--target=bun-darwin-x64']
 };
 
 const args = buildConfigs[platform];

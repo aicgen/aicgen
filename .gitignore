@@ -45,3 +45,6 @@ coverage/
 .aicgen/
 
 nul
+
+# Visual Studio
+.vs/

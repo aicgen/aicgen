@@ -1,6 +1,7 @@
 ---
-model: "claude-sonnet-4-5"
-temperature: 0.5
+name: architecture-reviewer
+tools: Read, Grep, Glob, Bash
+model: sonnet
 description: "Reviews architectural decisions and patterns"
 ---
 

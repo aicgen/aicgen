@@ -101,8 +101,8 @@ export class CredentialService {
   async flushAll(): Promise<void> {
     try {
       await fs.unlink(this.credentialsFile);
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
       }
     }
@@ -161,8 +161,8 @@ export class CredentialService {
   private async ensureConfigDir(): Promise<void> {
     try {
       await fs.mkdir(this.configDir, { recursive: true, mode: 0o700 });
-    } catch (error: any) {
-      if (error.code !== 'EEXIST') {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
         throw error;
       }
     }
@@ -172,8 +172,8 @@ export class CredentialService {
     try {
       const data = await fs.readFile(this.credentialsFile, 'utf-8');
       return JSON.parse(data);
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return {};
       }
       throw error;

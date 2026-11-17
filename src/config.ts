@@ -55,17 +55,16 @@ interface UserConfig {
       temperature?: number;
     };
     subAgents?: {
+      // Sub-agents have no temperature setting: it is not a valid Claude Code
+      // subagent frontmatter field. Legacy `temperature` keys are ignored.
       guidelineChecker?: {
         model?: string;
-        temperature?: number;
       };
       architectureReviewer?: {
         model?: string;
-        temperature?: number;
       };
       securityAuditor?: {
         model?: string;
-        temperature?: number;
       };
     };
   };

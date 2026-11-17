@@ -12,3 +12,5 @@ export const CONFIG = {
 
 export const GITHUB_REPO_URL = `${CONFIG.GITHUB_API_BASE}/repos/${CONFIG.GITHUB_REPO_OWNER}/${CONFIG.GITHUB_REPO_NAME}`;
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases/latest`;
+
+export const userConfig = {};

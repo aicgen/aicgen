@@ -88,8 +88,10 @@ export class GuidelineLoader {
         continue;
       }
 
-      // Architecture filter - SKIP for "full" level (include all architectures)
-      if (level !== 'full' && mapping.architectures && !mapping.architectures.includes(architecture)) {
+      // Architecture filter: only guidelines for the chosen architecture (plus generic ones).
+      // "full" with an unspecified ("other") architecture keeps every architecture.
+      const includeAllArchitectures = level === 'full' && architecture === 'other';
+      if (!includeAllArchitectures && mapping.architectures && !mapping.architectures.includes(architecture)) {
         continue;
       }
 

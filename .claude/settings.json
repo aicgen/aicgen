@@ -3,29 +3,37 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read(.env*)",
+        "matcher": "Read",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Blocked: Sensitive file access not allowed' && exit 2"
+            "if": "Read(.env*)",
+            "command": "echo 'Blocked: Sensitive file access not allowed' >&2; exit 2"
+          },
+          {
+            "type": "command",
+            "if": "Read(secrets/**)",
+            "command": "echo 'Blocked: Secrets directory is protected' >&2; exit 2"
           }
         ]
       },
       {
-        "matcher": "Read(secrets/**)",
+        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Blocked: Secrets directory is protected' && exit 2"
+            "if": "Write(.env*)",
+            "command": "echo 'Blocked: Cannot modify environment files' >&2; exit 2"
           }
         ]
       },
       {
-        "matcher": "Write(.env*)",
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Blocked: Cannot modify environment files' && exit 2"
+            "if": "Edit(.env*)",
+            "command": "echo 'Blocked: Cannot modify environment files' >&2; exit 2"
           }
         ]
       }
@@ -42,12 +50,12 @@
   },
   "permissions": {
     "allow": [
-      "Bash(npm run:*)",
-      "Bash(yarn:*)",
-      "Bash(pnpm:*)",
-      "Bash(bun:*)",
-      "Bash(git:*)",
-      "Bash(npx:*)",
+      "Bash(npm run *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)",
+      "Bash(bun *)",
+      "Bash(git *)",
+      "Bash(npx *)",
       "Read(src/**)",
       "Read(package.json)",
       "Read(tsconfig.json)",
@@ -60,17 +68,13 @@
     "deny": [
       "Read(.env*)",
       "Read(secrets/**)",
-      "Bash(rm:*)",
-      "Bash(sudo:*)"
+      "Bash(rm *)",
+      "Bash(sudo *)"
     ],
     "ask": [
       "Write(package.json)",
       "Write(.gitignore)",
       "Write(.env.example)"
     ]
-  },
-  "sandbox": {
-    "allowInternetAccess": true,
-    "workingDirectory": "/Users/lpsandaruwan/Softiva/aicgen/aicgen"
   }
 }

@@ -20,7 +20,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -53,7 +53,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
 
       - name: Build Windows Binary
         run: |
@@ -91,7 +91,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
 
       - name: Build Linux Binary
         run: |
@@ -140,25 +140,38 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Build macOS Binary
+      # Bun cross-compiles, so one job builds every Homebrew target:
+      # macOS arm64 and Intel, and Linux x64 (Linuxbrew).
+      - name: Build Homebrew Binaries
         run: |
           bun install --frozen-lockfile
           bun run build:binary:macos
+          bun run build:binary:macos-x64
+          bun run build:binary:linux
 
-      - name: Create Tarball
+      - name: Create Tarballs
         run: |
-          mkdir -p dist/homebrew
-          cp dist/aicgen-macos dist/homebrew/aicgen
-          chmod +x dist/homebrew/aicgen
-          tar -czf dist/aicgen-macos.tar.gz -C dist/homebrew aicgen
+          package() {
+            # $1 = built binary, $2 = tarball name
+            rm -rf dist/homebrew && mkdir -p dist/homebrew
+            cp "$1" dist/homebrew/aicgen
+            chmod +x dist/homebrew/aicgen
+            tar -czf "dist/$2" -C dist/homebrew aicgen
+          }
+          package dist/aicgen-macos aicgen-macos-arm64.tar.gz
+          package dist/aicgen-macos-x64 aicgen-macos-x64.tar.gz
+          package dist/aicgen-linux aicgen-linux-x64.tar.gz
+          # Legacy asset name used by 1.x formulas (arm64).
+          cp dist/aicgen-macos-arm64.tar.gz dist/aicgen-macos.tar.gz
 
       - name: Calculate SHA256
         id: sha256
         run: |
-          SHA256=$(shasum -a 256 dist/aicgen-macos.tar.gz | awk '{print $1}')
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "macos_arm64=$(shasum -a 256 dist/aicgen-macos-arm64.tar.gz | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "macos_x64=$(shasum -a 256 dist/aicgen-macos-x64.tar.gz | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "linux_x64=$(shasum -a 256 dist/aicgen-linux-x64.tar.gz | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Get Version
         id: version
@@ -166,10 +179,14 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Upload Tarball to Release
+      - name: Upload Tarballs to Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/aicgen-macos.tar.gz
+          files: |
+            dist/aicgen-macos-arm64.tar.gz
+            dist/aicgen-macos-x64.tar.gz
+            dist/aicgen-linux-x64.tar.gz
+            dist/aicgen-macos.tar.gz
 
       - name: Update Homebrew Tap
         env:
@@ -178,37 +195,54 @@ jobs:
           # Name: GH_PAT
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERSION: ${{ steps.version.outputs.version }}
-          SHA256: ${{ steps.sha256.outputs.sha256 }}
+          SHA_MACOS_ARM64: ${{ steps.sha256.outputs.macos_arm64 }}
+          SHA_MACOS_X64: ${{ steps.sha256.outputs.macos_x64 }}
+          SHA_LINUX_X64: ${{ steps.sha256.outputs.linux_x64 }}
         run: |
           # Clone the tap repository using the PAT
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/aicgen/homebrew-aicgen.git tap
           cd tap
 
-          # Create Formula directory if it doesn't exist
           mkdir -p Formula
 
-          # Generate the formula
+          # A formula (not a cask): aicgen is a command-line tool, and formulae
+          # also serve Linuxbrew. Placeholders are replaced below.
           cat > Formula/aicgen.rb << 'EOF'
           class Aicgen < Formula
             desc "Configuration generator for AI coding assistants"
             homepage "https://github.com/aicgen/aicgen"
-            url "https://github.com/aicgen/aicgen/releases/download/v${VERSION}/aicgen-macos.tar.gz"
-            sha256 "${SHA256}"
-            version "${VERSION}"
+            version "@VERSION@"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/aicgen/aicgen/releases/download/v@VERSION@/aicgen-macos-arm64.tar.gz"
+                sha256 "@SHA_MACOS_ARM64@"
+              end
+              on_intel do
+                url "https://github.com/aicgen/aicgen/releases/download/v@VERSION@/aicgen-macos-x64.tar.gz"
+                sha256 "@SHA_MACOS_X64@"
+              end
+            end
+
+            on_linux do
+              on_intel do
+                url "https://github.com/aicgen/aicgen/releases/download/v@VERSION@/aicgen-linux-x64.tar.gz"
+                sha256 "@SHA_LINUX_X64@"
+              end
+            end
 
             def install
               bin.install "aicgen"
             end
 
             test do
-              system "#{bin}/aicgen", "--version"
+              assert_match version.to_s, shell_output("#{bin}/aicgen --version")
             end
           end
           EOF
 
-          # Replace placeholders with actual values
-          sed -i '' "s/\${VERSION}/$VERSION/g" Formula/aicgen.rb
-          sed -i '' "s/\${SHA256}/$SHA256/g" Formula/aicgen.rb
+          sed -i '' "s/@VERSION@/$VERSION/g; s/@SHA_MACOS_ARM64@/$SHA_MACOS_ARM64/g; s/@SHA_MACOS_X64@/$SHA_MACOS_X64/g; s/@SHA_LINUX_X64@/$SHA_LINUX_X64/g" Formula/aicgen.rb
 
           # Commit and push
           git config user.name "GitHub Actions"
@@ -226,11 +260,11 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           registry-url: "https://registry.npmjs.org"
 
       - name: Update npm
@@ -262,14 +296,14 @@ jobs:
           prerelease: false
           generate_release_notes: true
           body: |
-            ## Highlights in 1.2.0
+            ## Highlights in 2.0.0
 
-            - Capability-driven profiles for Claude Code, GitHub Copilot, Antigravity, and Codex.
-            - Gemini CLI target generation removed; Antigravity is now the Google-side agentic target.
-            - Profile levels are now `basic`, `standard`, and `full`.
-            - Codex gets a project-local `aicgen-sdlc` plugin with namespaced lifecycle skills.
-            - Generated hooks no longer run full test suites; use `/check` or `/aicgen-check`.
-            - Release builds embed the latest docs from the `data/` submodule.
+            - Context-budgeted output: always-on files hold only commands and a guideline index; guidelines load as path-scoped rules or on-demand skills.
+            - Full Rust support: nine guidelines for the 2024 edition, Cargo project analysis, cargo permissions and reviewers.
+            - Valid, current output for Claude Code (hooks, rules, skills), GitHub Copilot (custom agents, skills, guard hook), Antigravity (`.agents/` rules and skills) and Codex (`AGENTS.md`, skills, portable plugin).
+            - Re-running `aicgen init` migrates 1.x output and never touches your own files.
+            - New security guidelines for supply chain and AI-assisted development; tooling guidelines for TypeScript, Python, Go, Java, C#, Ruby, Kotlin and PHP.
+            - Requires Node.js 22 or newer when installed from npm.
 
             ## Installation
 

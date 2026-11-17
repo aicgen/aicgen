@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -25,6 +25,9 @@ jobs:
 
       - name: Validate data package
         run: data/scripts/validate-data
+
+      - name: Compile-check Rust guideline snippets
+        run: data/scripts/check-rust-snippets --require
 
       - name: Check embedded data freshness
         run: bun run check:embedded-data
@@ -65,7 +68,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -90,7 +93,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 

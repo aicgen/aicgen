@@ -3,6 +3,11 @@ import { AIAssistant } from '../models/project';
 import { ProfileSelection } from '../models/profile';
 import { GuidelineLoader } from './guideline-loader';
 import { HookGenerator } from './hook-generator';
+import { commandsSection, quickReferenceLines } from './language-profile.js';
+import { buildGuidelineIndex, buildGuidelineUnits, GuidelineUnit, renderGuidelineFiles } from './guideline-delivery.js';
+import { analyzeBudgets, BudgetFinding } from './context-budget.js';
+import { readFrontmatterDescription, stripFrontmatter } from '../utils/frontmatter.js';
+import { buildCopilotGuardHook } from './copilot-hooks.js';
 import { SubAgentGenerator } from './subagent-generator';
 import { WorkflowInjector, GeneratedFile } from './workflow-injector.js';
 import { CodexPluginGenerator } from './codex-plugin-generator.js';
@@ -13,6 +18,13 @@ import {
 } from './agentic-capabilities.js';
 
 export type { GeneratedFile };
+
+/** Convert a `---\ndescription: ...\n---\nbody` workflow into a user-invoked skill. */
+function workflowAsSkill(name: string, workflow: string): string {
+  const description = readFrontmatterDescription(workflow) || `Run the ${name} workflow`;
+  const body = stripFrontmatter(workflow).trim();
+  return `---\nname: aicgen-${name}\ndescription: ${JSON.stringify(description.slice(0, 300))}\ndisable-model-invocation: true\n---\n\n# ${name}\n\n${body}\n`;
+}
 
 export class AssistantFileWriter {
   private guidelineLoader: GuidelineLoader;
@@ -43,20 +55,20 @@ export class AssistantFileWriter {
   ): Promise<GeneratedFile[]> {
     const files: GeneratedFile[] = [];
 
-    const categoryTree = this.organizeByCategory(guidelineIds);
+    const units = buildGuidelineUnits(guidelineIds, this.guidelineLoader, selection.language);
 
     switch (assistant) {
       case 'claude-code':
-        files.push(...await this.generateClaudeCodeFiles(categoryTree, guidelineIds, selection, projectPath));
+        files.push(...await this.generateClaudeCodeFiles(units, guidelineIds, selection));
         break;
       case 'copilot':
-        files.push(...await this.generateCopilotFiles(categoryTree, selection));
+        files.push(...await this.generateCopilotFiles(units, selection));
         break;
       case 'antigravity':
-        files.push(...await this.generateAntigravityFiles(categoryTree, selection));
+        files.push(...await this.generateAntigravityFiles(units, selection));
         break;
       case 'codex':
-        files.push(...await this.generateCodexFiles(categoryTree, selection, projectPath));
+        files.push(...await this.generateCodexFiles(units, selection, projectPath));
         break;
       default:
         throw new Error(`Unsupported assistant: ${assistant}`);
@@ -67,19 +79,20 @@ export class AssistantFileWriter {
       files.push(...workflowFiles);
     }
 
-    if (hasEnabledCapability(assistant, selection.level, 'prompt-files')) {
-      files.push(...this.workflowInjector.generateCopilotPromptFiles());
+    if (assistant === 'copilot' && hasEnabledCapability(assistant, selection.level, 'hooks')) {
+      files.push(buildCopilotGuardHook());
     }
 
-    if (hasEnabledCapability(assistant, selection.level, 'chat-modes')) {
-      files.push(...this.workflowInjector.generateCopilotChatModeFiles());
+    if (hasEnabledCapability(assistant, selection.level, 'custom-agents')) {
+      files.push(...this.workflowInjector.generateCopilotAgentFiles());
+      files.push(...await this.generateCopilotReviewerAgents(guidelineIds, selection));
     }
 
     if (hasEnabledCapability(assistant, selection.level, 'mcp-templates')) {
       files.push(this.generateMcpTemplateFile(assistant, selection));
     }
 
-    files.push(this.generateUniversalAgentsFile(categoryTree, selection));
+    files.push(this.generateUniversalAgentsFile(units, selection));
 
     return files.map(file => ({
       ...file,
@@ -87,54 +100,21 @@ export class AssistantFileWriter {
     }));
   }
 
+  /** Check generated files against context budgets (vendor limits and recommendations). */
+  analyzeBudget(assistant: AIAssistant, selection: ProfileSelection, files: GeneratedFile[]): BudgetFinding[] {
+    return analyzeBudgets(assistant, selection.level, files);
+  }
+
   async writeFiles(files: GeneratedFile[]): Promise<void> {
     await writeFiles(files.map(file => ({ path: file.path, content: file.content })));
   }
 
-  private organizeByCategory(guidelineIds: string[]): Map<string, string[]> {
-    const byCategory = new Map<string, string[]>();
-
-    for (const id of guidelineIds) {
-      const mapping = this.guidelineLoader.getMapping(id);
-      if (mapping) {
-        const category = mapping.category || 'General';
-        if (!byCategory.has(category)) {
-          byCategory.set(category, []);
-        }
-        byCategory.get(category)!.push(id);
-      }
-    }
-
-    return byCategory;
-  }
-
   private async generateClaudeCodeFiles(
-    categoryTree: Map<string, string[]>,
+    units: GuidelineUnit[],
     guidelineIds: string[],
-    selection: ProfileSelection,
-    projectPath: string
+    selection: ProfileSelection
   ): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
-
-    const mainReferences: string[] = [];
-    const guidelines: string[] = [];
-
-    for (const [category, ids] of categoryTree) {
-      const categoryFile = category.toLowerCase().replace(/\s+/g, '-');
-      const categoryContent = ids.map(id => {
-        const content = this.guidelineLoader.loadGuideline(id);
-        guidelines.push(content);
-        return content;
-      }).join('\n\n---\n\n');
-
-      files.push({
-        path: `.claude/guidelines/${categoryFile}.md`,
-        content: `# ${category}\n\n${categoryContent}`,
-        type: 'guideline'
-      });
-
-      mainReferences.push(`- **${category}**: @.claude/guidelines/${categoryFile}.md`);
-    }
+    const files: GeneratedFile[] = [...renderGuidelineFiles('claude-code', units)];
 
     const archDescription = selection.architecture === 'other'
       ? ''
@@ -145,7 +125,7 @@ export class AssistantFileWriter {
       : '';
     const agenticProfileSection = buildAgenticProfileSection('claude-code', selection.level);
     const verificationNotes = [
-      '- **Follow the guidelines** referenced above.',
+      '- **Follow the guidelines** listed above; rules and skills load automatically when relevant.',
       hasEnabledCapability('claude-code', selection.level, 'subagents')
         ? '- **Verification**: Use sub-agents in `.claude/agents/` to verify compliance.'
         : '- **Verification**: Review changes against the referenced guideline files before completion.',
@@ -159,18 +139,10 @@ export class AssistantFileWriter {
 **Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
 **User's Goal:** Build high-quality, maintainable software following strict project guidelines.
 
-## Guidelines
-
-This project follows structured coding guidelines organized by category:
-
-${mainReferences.join('\n')}
-
+${buildGuidelineIndex('claude-code', units)}
 ## Quick Reference
 
-- Run tests: Check package.json scripts
-- Build: Check package.json scripts
-- Code style: See Code Style guidelines above
-- Architecture: See Architecture guidelines above
+${quickReferenceLines(selection.language).join('\n')}
 
 ${workflowsSection}${agenticProfileSection}## Important Notes
 
@@ -187,7 +159,7 @@ ${verificationNotes}
     });
 
     const hooks = await this.hookGenerator.generateHooks(guidelineIds, selection.level);
-    const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, projectPath, selection.level);
+    const settingsContent = this.hookGenerator.generateClaudeCodeSettings(hooks, selection.level, selection.language);
 
     files.push({
       path: '.claude/settings.json',
@@ -195,7 +167,7 @@ ${verificationNotes}
       type: 'config'
     });
 
-    const subAgents = await this.subAgentGenerator.generateSubAgents(guidelineIds, selection.level);
+    const subAgents = await this.subAgentGenerator.generateSubAgents(guidelineIds, selection.level, selection.language);
     for (const agent of subAgents) {
       files.push({
         path: `.claude/agents/${agent.name}.md`,
@@ -204,7 +176,7 @@ ${verificationNotes}
       });
     }
 
-    const skills = await this.subAgentGenerator.generateSkills(guidelineIds, selection.level);
+    const skills = await this.subAgentGenerator.generateSkills(guidelineIds, selection.level, selection.language);
     for (const skill of skills) {
       files.push({
         path: `.claude/skills/${skill.name}/SKILL.md`,
@@ -217,57 +189,20 @@ ${verificationNotes}
   }
 
   private async generateCopilotFiles(
-    categoryTree: Map<string, string[]>,
+    units: GuidelineUnit[],
     selection: ProfileSelection
   ): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+    const files: GeneratedFile[] = [...renderGuidelineFiles('copilot', units)];
 
-    const mainReferences: string[] = [];
-
-    for (const [category, ids] of categoryTree) {
-      const categoryFile = category.toLowerCase().replace(/\s+/g, '-');
-      const categoryContent = ids.map(id =>
-        this.guidelineLoader.loadGuideline(id)
-      ).join('\n\n---\n\n');
-
-      let applyTo = "**/*";
-
-      // Smart globs for specific categories
-      if (category.toLowerCase().includes('testing')) {
-        applyTo = "**/*.test.ts, **/*.spec.ts, **/tests/**";
-      } else if (category.toLowerCase().includes('language') || category.toLowerCase().includes('style')) {
-        applyTo = "**/*.ts, **/*.js, **/*.tsx, **/*.jsx"; // Adjust based on language in future
-      }
-
-      const instructionsContent = `---
-applyTo: "${applyTo}"
-description: "${category} guidelines"
----
-
-# ${category}
-
-${categoryContent}
-`;
-
-      files.push({
-        path: `.github/instructions/${categoryFile}.instructions.md`,
-        content: instructionsContent,
-        type: 'guideline'
-      });
-
-      mainReferences.push(`- ${category}: @.github/instructions/${categoryFile}.instructions.md`);
-    }
-
+    const extras: string[] = [];
     if (hasEnabledCapability('copilot', selection.level, 'workflow-commands')) {
-      mainReferences.push(`- Workflows: @.github/instructions/workflows.instructions.md`);
+      extras.push('- Workflow skills (invoke as `/aicgen-spec`, `/aicgen-plan`, ...): `.github/skills/aicgen-*/`');
     }
-
-    if (hasEnabledCapability('copilot', selection.level, 'prompt-files')) {
-      mainReferences.push(`- Prompt files: @.github/prompts/*.prompt.md`);
+    if (hasEnabledCapability('copilot', selection.level, 'hooks')) {
+      extras.push('- Guard hook: `.github/hooks/aicgen-guard.json`');
     }
-
-    if (hasEnabledCapability('copilot', selection.level, 'chat-modes')) {
-      mainReferences.push(`- Review chat mode: @.github/chatmodes/aicgen-review.chatmode.md`);
+    if (hasEnabledCapability('copilot', selection.level, 'custom-agents')) {
+      extras.push('- Custom agents: `.github/agents/*.agent.md` (review, guideline, architecture and security reviewers)');
     }
 
     const archDescription = selection.architecture === 'other'
@@ -278,18 +213,11 @@ ${categoryContent}
 
 **Role:** You are an expert AI pair programmer specialized in ${selection.language}${archDescription}.
 
-## Guidelines
+${buildGuidelineIndex('copilot', units)}
+## Commands
 
-${mainReferences.join('\n')}
-
-## Development
-
-See the instruction files above for detailed guidelines on:
-- Code style and naming conventions
-- Architecture patterns and best practices
-- Testing requirements
-- Security considerations
-
+${quickReferenceLines(selection.language).join('\n')}
+${extras.length ? `\n## Also available\n\n${extras.join('\n')}\n` : ''}
 ${buildAgenticProfileSection('copilot', selection.level)}
 
 ---
@@ -305,60 +233,46 @@ ${buildAgenticProfileSection('copilot', selection.level)}
     return files;
   }
 
-  private async generateAntigravityFiles(
-    categoryTree: Map<string, string[]>,
+  private async generateCopilotReviewerAgents(
+    guidelineIds: string[],
     selection: ProfileSelection
   ): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
-    const ruleFiles: string[] = [];
+    const reviewers = await this.subAgentGenerator.generateSubAgents(guidelineIds, selection.level, selection.language);
 
-    // Generate separate rule files for each category
-    for (const [category, ids] of categoryTree) {
-      const guidelines = ids.map(id => {
-        const guideline = this.guidelineLoader.loadGuideline(id);
-        return guideline;
-      }).filter(Boolean).join('\n\n---\n\n');
+    // Copilot custom agent profile: description is required; tools use the read/search aliases.
+    return reviewers.map(agent => ({
+      path: `.github/agents/aicgen-${agent.name}.agent.md`,
+      content: `---\nname: aicgen-${agent.name}\ndescription: ${JSON.stringify(readFrontmatterDescription(agent.content))}\ntools: ["read", "search"]\n---\n\n${stripFrontmatter(agent.content)}`,
+      type: 'agent' as const,
+    }));
+  }
 
-      if (guidelines) {
-        const fileName = category.toLowerCase().replace(/\s+/g, '-');
+  private async generateAntigravityFiles(
+    units: GuidelineUnit[],
+    selection: ProfileSelection
+  ): Promise<GeneratedFile[]> {
+    const files: GeneratedFile[] = [...renderGuidelineFiles('antigravity', units)];
 
-        const content = `# ${category} Rules
-
-${guidelines}
-
----
-*Generated by aicgen*
-`;
-
-        files.push({
-          path: `.agent/rules/${fileName}.md`,
-          content,
-          type: 'guideline'
-        });
-
-        ruleFiles.push(`- **${category}**: @.agent/rules/${fileName}.md`);
-      }
-    }
-
-    // Generate main instruction file (Index/System Prompt)
     const archDescription = selection.architecture === 'other'
       ? ''
       : ` and ${selection.architecture} architecture`;
 
-    const mainContent = `# Google Antigravity Instructions
+    // Always-on rule. Antigravity also reads AGENTS.md natively, so this file stays
+    // short and the guideline index lives in AGENTS.md only.
+    const mainContent = `---
+trigger: always_on
+description: "Project role and operating principles"
+---
+
+# Google Antigravity Instructions
 
 **Role:** You are an expert software engineer specialized in ${selection.language}${archDescription}.
-**Objective:** Assist the user in building high-quality, maintainable software following strict project guidelines.
 
-## Rule Index
-
-This project is governed by the following rule sets:
-
-${ruleFiles.join('\n')}
+See \`AGENTS.md\` for project commands and the guideline index. Detailed rules in this folder activate by file glob or when relevant.
 
 ## Core Principles
 1. **Act as an Agent**: Don't just answer; perform actions, verify results, and course-correct.
-2. **Follow Guidelines**: Strictly adhere to the rules linked above.
+2. **Follow Guidelines**: Apply the rules that activate for the files you touch.
 3. **Think Step-by-Step**: Break down complex tasks into smaller, verifiable steps.
 
 ${buildAgenticProfileSection('antigravity', selection.level)}
@@ -368,7 +282,7 @@ ${buildAgenticProfileSection('antigravity', selection.level)}
 `;
 
     files.push({
-      path: '.agent/rules/instructions.md',
+      path: '.agents/rules/aicgen-instructions.md',
       content: mainContent,
       type: 'main'
     });
@@ -378,16 +292,15 @@ ${buildAgenticProfileSection('antigravity', selection.level)}
       const workflows = this.getWorkflowsForLevel(selection.level);
       for (const workflow of workflows) {
         files.push({
-          path: `.agent/workflows/${workflow.name}.md`,
-          content: workflow.content,
-          type: 'config'
+          path: `.agents/skills/aicgen-${workflow.name}/SKILL.md`,
+          content: workflowAsSkill(workflow.name, workflow.content),
+          type: 'workflow'
         });
       }
     }
 
     return files;
   }
-
 
   private getWorkflowsForLevel(level: string): Array<{ name: string; content: string }> {
     const workflows: Array<{ name: string; content: string }> = [];
@@ -493,49 +406,14 @@ description: Analyze code for performance bottlenecks and optimization opportuni
   }
 
   private async generateCodexFiles(
-    categoryTree: Map<string, string[]>,
+    units: GuidelineUnit[],
     selection: ProfileSelection,
     projectPath: string
   ): Promise<GeneratedFile[]> {
-    const files: GeneratedFile[] = [];
+    const files: GeneratedFile[] = [...renderGuidelineFiles('codex', units)];
 
-    let allGuidelines = '';
-    for (const [category, ids] of categoryTree) {
-      const categoryContent = ids.map(id =>
-        this.guidelineLoader.loadGuideline(id)
-      ).join('\n\n');
-
-      allGuidelines += `\n\n## ${category}\n\n${categoryContent}\n\n---\n`;
-    }
-
-    const workflowSection = hasEnabledCapability('codex', selection.level, 'skills')
-      ? this.workflowInjector.buildCodexWorkflowSection()
-      : '';
-
-    const content = `# Codex Development Guide
-
-**Role:** You are an expert software engineer specialized in ${selection.language}.
-**Objective:** Assist the user in writing high-quality code.
-
-**Language:** ${selection.language}
-**Type:** ${selection.projectType}
-
-${allGuidelines}
-
-${workflowSection}
-
-${buildAgenticProfileSection('codex', selection.level)}
-
----
-*Generated by aicgen*
-`;
-
-    files.push({
-      path: '.codex/instructions.md',
-      content,
-      type: 'main'
-    });
-
+    // Codex reads AGENTS.md (32 KiB limit) and skills from .agents/skills. There is no
+    // documented .codex/instructions.md, so the guideline index and workflows live in AGENTS.md.
     if (hasEnabledCapability('codex', selection.level, 'plugins')) {
       const pluginGenerator = new CodexPluginGenerator(
         this.workflowInjector.getCommands(),
@@ -583,7 +461,7 @@ ${buildAgenticProfileSection('codex', selection.level)}
 import json
 
 context = (
-    "AICGEN profile ${selection.level}: read AGENTS.md and .codex/instructions.md before editing. "
+    "AICGEN profile ${selection.level}: read AGENTS.md before editing. "
     "Use project-local aicgen skills for SDLC work. Treat hooks, MCP, and plugin setup as advanced surfaces "
     "that require explicit user review before expansion."
 )
@@ -655,21 +533,9 @@ Add tool-specific MCP config manually after review.
   }
 
   private generateUniversalAgentsFile(
-    categoryTree: Map<string, string[]>,
+    units: GuidelineUnit[],
     selection: ProfileSelection
   ): GeneratedFile {
-    const categories: string[] = [];
-
-    for (const [category, ids] of categoryTree) {
-      const examples = ids.slice(0, 3).map(id => {
-        const mapping = this.guidelineLoader.getMapping(id);
-        const fileName = mapping?.path.split('/').pop()?.replace('.md', '') || id;
-        return `- ${fileName}`;
-      }).join('\n  ');
-
-      categories.push(`### ${category}\n\n  ${examples}\n`);
-    }
-
     const archLine = selection.architecture === 'other'
       ? ''
       : `**Architecture:** ${selection.architecture}\n`;
@@ -688,7 +554,9 @@ This project follows **${selection.architecture}** architecture. See architectur
     const workflowsSection = hasWorkflows
       ? selection.assistant === 'codex'
         ? this.workflowInjector.buildCodexWorkflowSummary()
-        : this.workflowInjector.buildWorkflowSummary()
+        : this.workflowInjector.buildWorkflowSummary(
+          selection.assistant === 'copilot' || selection.assistant === 'antigravity' ? 'aicgen-' : ''
+        )
       : '';
 
     const content = `# AGENTS.md
@@ -699,42 +567,18 @@ This project follows **${selection.architecture}** architecture. See architectur
 **Type:** ${selection.projectType}
 **Instruction Level:** ${selection.level}
 ${archLine}
-## Development Guidelines
-
-This project follows structured coding guidelines across multiple categories:
-
-${categories.join('\n')}
-
+${buildGuidelineIndex(selection.assistant, units)}
 ## Commands
 
-**Install dependencies:**
-\`\`\`bash
-# Check package.json for package manager
-npm install
-# or yarn install
-# or pnpm install
-# or bun install
-\`\`\`
-
-**Run tests:**
-\`\`\`bash
-# Check package.json scripts section
-npm test
-\`\`\`
-
-**Build:**
-\`\`\`bash
-# Check package.json scripts section
-npm run build
-\`\`\`
+${commandsSection(selection.language)}
 
 ## Code Style
 
 See tool-specific instruction files for detailed code style guidelines:
 - Claude Code: \`CLAUDE.md\`
 - GitHub Copilot: \`.github/copilot-instructions.md\`
-- Antigravity: \`.agent/rules/instructions.md\`
-- OpenAI Codex: \`.codex/instructions.md\`
+- Antigravity: \`.agents/rules/aicgen-instructions.md\`
+- OpenAI Codex: \`AGENTS.md\` and \`.agents/skills/\`
 
 ${archSection}${buildAgenticProfileSection(selection.assistant, selection.level)}## Testing
 

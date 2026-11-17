@@ -2,37 +2,36 @@ github:
   owner: aicgen
   repo: aicgen-data
 
-# AI Provider Configuration
+# AI Provider Configuration (all optional; see config.example.yml)
+# Temperature is omitted unless you set it: some current models only accept
+# their default value.
 ai:
   gemini:
-    model: gemini-2.0-flash-exp
+    model: gemini-3.8-flash
     timeout: 30000
     maxRetries: 3
     maxTokens: 8192
 
   claude:
-    model: claude-3-5-sonnet-20241022
+    model: claude-sonnet-5-5
     timeout: 30000
     maxRetries: 3
-    maxTokens: 8096
-    temperature: 0.7
+    maxTokens: 8192
 
   openai:
-    model: gpt-4o
+    model: gpt-6-astra
     timeout: 30000
     maxRetries: 3
     maxTokens: 4096
-    temperature: 0.7
 
+  # Generated Claude Code sub-agents. Use an alias (opus, sonnet, haiku, fable),
+  # a full model ID, or "inherit".
   subAgents:
     guidelineChecker:
-      model: claude-opus-4-5
-      temperature: 0.3
+      model: opus
 
     architectureReviewer:
-      model: claude-sonnet-4-5
-      temperature: 0.5
+      model: sonnet
 
     securityAuditor:
-      model: claude-opus-4-5
-      temperature: 0.3
+      model: opus

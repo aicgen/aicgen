@@ -130,11 +130,19 @@ jobs:
             dist/aicgen_x86_64.rpm
 
   # ----------------------------------------------------------------
-  # JOB: HOMEBREW TAP
+  # JOB: HOMEBREW BINARIES
+  # Builds the macOS/Linux tarballs and attaches them to the release.
+  # The tap formula itself is pushed by the last job (homebrew-tap), so a
+  # tap credential problem can never block the npm or GitHub release.
   # ----------------------------------------------------------------
-  homebrew-tap:
+  homebrew-binaries:
     needs: verify-release
     runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha_macos_arm64: ${{ steps.sha256.outputs.macos_arm64 }}
+      sha_macos_x64: ${{ steps.sha256.outputs.macos_x64 }}
+      sha_linux_x64: ${{ steps.sha256.outputs.linux_x64 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -188,17 +196,29 @@ jobs:
             dist/aicgen-linux-x64.tar.gz
             dist/aicgen-macos.tar.gz
 
+  # ----------------------------------------------------------------
+  # JOB: HOMEBREW TAP
+  # Runs last, after the GitHub release is published. Nothing depends on it.
+  # ----------------------------------------------------------------
+  homebrew-tap:
+    needs: [homebrew-binaries, publish-release]
+    runs-on: ubuntu-latest
+    steps:
       - name: Update Homebrew Tap
         env:
           # REQUIRED: A Personal Access Token (PAT) with 'public_repo' scope
           # stored in Settings > Secrets and variables > Actions > New repository secret
           # Name: GH_PAT
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          VERSION: ${{ steps.version.outputs.version }}
-          SHA_MACOS_ARM64: ${{ steps.sha256.outputs.macos_arm64 }}
-          SHA_MACOS_X64: ${{ steps.sha256.outputs.macos_x64 }}
-          SHA_LINUX_X64: ${{ steps.sha256.outputs.linux_x64 }}
+          VERSION: ${{ needs.homebrew-binaries.outputs.version }}
+          SHA_MACOS_ARM64: ${{ needs.homebrew-binaries.outputs.sha_macos_arm64 }}
+          SHA_MACOS_X64: ${{ needs.homebrew-binaries.outputs.sha_macos_x64 }}
+          SHA_LINUX_X64: ${{ needs.homebrew-binaries.outputs.sha_linux_x64 }}
         run: |
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "::error::GH_PAT secret is empty or missing"; exit 1
+          fi
+
           # Clone the tap repository using the PAT
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/aicgen/homebrew-aicgen.git tap
           cd tap
@@ -242,7 +262,7 @@ jobs:
           end
           EOF
 
-          sed -i '' "s/@VERSION@/$VERSION/g; s/@SHA_MACOS_ARM64@/$SHA_MACOS_ARM64/g; s/@SHA_MACOS_X64@/$SHA_MACOS_X64/g; s/@SHA_LINUX_X64@/$SHA_LINUX_X64/g" Formula/aicgen.rb
+          sed -i "s/@VERSION@/$VERSION/g; s/@SHA_MACOS_ARM64@/$SHA_MACOS_ARM64/g; s/@SHA_MACOS_X64@/$SHA_MACOS_X64/g; s/@SHA_LINUX_X64@/$SHA_LINUX_X64/g" Formula/aicgen.rb
 
           # Commit and push
           git config user.name "GitHub Actions"
@@ -253,7 +273,7 @@ jobs:
 
   # ----------------------------------------------------------------
   publish-npm:
-    needs: [release-windows, release-linux, homebrew-tap]
+    needs: [release-windows, release-linux, homebrew-binaries]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -280,7 +300,7 @@ jobs:
   # JOB: PUBLISH RELEASE
   # ----------------------------------------------------------------
   publish-release:
-    needs: [release-windows, release-linux, homebrew-tap]
+    needs: [release-windows, release-linux, homebrew-binaries]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

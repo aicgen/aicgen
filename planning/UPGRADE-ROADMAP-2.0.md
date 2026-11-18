@@ -285,6 +285,9 @@ Found and fixed by QA with the real CLI (see `scripts/qa/`)
 - `quick-add` offered only what was already installed, started on a disabled header and labelled items by file name; it now offers uninstalled guidelines up to full, with ids and descriptions.
 - `add-guideline` discarded the description the user typed; it is now saved and used as the skill description.
 - A guideline cache downloaded by an older aicgen (1.x `update`) overrode the bundled 2.0 data, and `update` would download an older release; caches older than the bundled data are now ignored.
+- The npm package had no `files` allowlist and shipped 43 files, including the committed `.vs/` editor state and the repository's own 187 KB `.codex/instructions.md`; it is now `dist/`, README and LICENSE (4 files). `.vs/` is untracked, and `packaging.test.ts` guards the allowlist, version consistency across npm, deb, rpm and the Windows installer, and the RPM changelog dates.
+- Release channels verified locally: the packed npm tarball installed into an empty prefix runs and passes the 48-run matrix; the `.deb` and `.rpm` build and inspect cleanly. The Windows installer (NSIS) and the Homebrew tap push only run in CI.
+- CI: the Linux Tests job now builds the binary and runs the CLI QA matrix.
 - Verified: 48 wizard runs (4 languages x 4 assistants x 3 levels), 12 real 1.2.0-to-2.0 upgrades (TypeScript, Python, Go x 4 assistants), existing-config prompts, clear, custom guidelines, update.
 
 Not done

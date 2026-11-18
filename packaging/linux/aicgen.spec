@@ -28,7 +28,7 @@ chmod 755 %{buildroot}/usr/bin/aicgen
 - Add agentic profile outputs for Claude Code, Copilot, Antigravity, and Codex
 - Embed data from the local data submodule
 
-* Wed May 14 2026 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.1.1
+* Thu May 14 2026 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.1.1
 - Add SDLC workflow slash commands (/spec, /research, /plan, /build, /check, /ship) injected into all assistant configs
 
 * Thu Dec 11 2025 Lahiru Sandaruwan <lpsandaruwan@gmail.com> - 1.0.0-1

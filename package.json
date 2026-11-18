@@ -22,6 +22,11 @@
   "bin": {
     "aicgen": "dist/index.js"
   },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22"

@@ -1,3 +1,4 @@
+import { withPosixPaths } from '../../test-utils/paths.js';
 import { AssistantFileWriter } from '../assistant-file-writer.js';
 import { WorkflowInjector } from '../workflow-injector.js';
 
@@ -84,7 +85,7 @@ describe('AssistantFileWriter — workflow injection', () => {
 
   beforeEach(async () => {
     workflowInjector = WorkflowInjector.fromContent(SAMPLE_SDLC_CONTENT);
-    writer = await AssistantFileWriter.create(workflowInjector);
+    writer = withPosixPaths(await AssistantFileWriter.create(workflowInjector));
   });
 
   describe('claude-code', () => {

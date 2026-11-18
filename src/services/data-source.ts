@@ -1,7 +1,7 @@
 import { readFile, readdir, access } from 'fs/promises';
 import { join } from 'path';
 import YAML from 'yaml';
-import { EMBEDDED_DATA, GuidelineMapping } from '../embedded-data';
+import { EMBEDDED_DATA, EMBEDDED_DATA_VERSION, GuidelineMapping } from '../embedded-data';
 
 export interface GuidelineData {
   mappings: Record<string, GuidelineMapping>;
@@ -13,6 +13,50 @@ export interface DataSource {
   load(): Promise<GuidelineData>;
   exists(): Promise<boolean>;
   getVersion(): Promise<string>;
+}
+
+/** Compares dotted numeric versions (`2.0.0` vs `1.2.1`); non-numeric parts count as 0. Returns <0, 0 or >0. */
+export function compareVersions(a: string, b: string): number {
+  const parse = (v: string) => v.split('-')[0].split('.').map(part => Number.parseInt(part, 10) || 0);
+  const left = parse(a);
+  const right = parse(b);
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    const diff = (left[i] || 0) - (right[i] || 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+/** True when `version` is a real version older than `minimum` (or unreadable). */
+export function isOlderVersion(version: string, minimum: string): boolean {
+  if (!/^\d+(\.\d+)*/.test(version)) return true;
+  return compareVersions(version, minimum) < 0;
+}
+
+/** Version of the guidelines compiled into this build. */
+export const BUNDLED_DATA_VERSION = EMBEDDED_DATA_VERSION;
+
+/**
+ * Wraps a downloaded data package and ignores it when it is older than `minimumVersion`.
+ * Without this, a cache downloaded by an older aicgen (for example 1.2.x guidelines from
+ * `aicgen update`) would override the newer guidelines bundled with this release.
+ */
+export class MinVersionDataSource implements DataSource {
+  constructor(private inner: DataSource, private minimumVersion: string) {}
+
+  async exists(): Promise<boolean> {
+    if (!(await this.inner.exists())) return false;
+    if (this.minimumVersion === 'unknown') return true;
+    return !isOlderVersion(await this.inner.getVersion(), this.minimumVersion);
+  }
+
+  load(): Promise<GuidelineData> {
+    return this.inner.load();
+  }
+
+  getVersion(): Promise<string> {
+    return this.inner.getVersion();
+  }
 }
 
 export class EmbeddedDataSource implements DataSource {

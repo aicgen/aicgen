@@ -1,3 +1,4 @@
+import { basename } from 'path';
 import { select, confirm, input } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -20,9 +21,22 @@ interface ConfigureOptions {
   force?: boolean;
 }
 
+/** Validates `--assistant` before any prompt so a typo fails immediately. */
+function resolveAssistantOption(assistant: string | undefined): AIAssistant | undefined {
+  if (!assistant) return undefined;
+  try {
+    getAssistantDefinition(assistant as AIAssistant);
+  } catch {
+    throw new Error(`Unsupported assistant "${assistant}". Gemini CLI generation was removed; use "antigravity" for Google agentic coding profiles.`);
+  }
+  return assistant as AIAssistant;
+}
+
 export async function configureCommand(options: ConfigureOptions) {
+  const presetAssistant = resolveAssistantOption(options.assistant);
   showBanner();
   const projectPath = process.cwd();
+  const projectName = basename(projectPath) || 'my-project';
   const spinner = ora('Analyzing project structure...').start();
   
   const analyzer = new ProjectAnalyzer(projectPath);
@@ -44,7 +58,7 @@ export async function configureCommand(options: ConfigureOptions) {
       projectType: 'other',
       architecture: 'other',
       datasource: 'none',
-      projectName: 'my-project',
+      projectName,
       level: 'standard'
   };
 
@@ -147,7 +161,7 @@ export async function configureCommand(options: ConfigureOptions) {
           } else {
               // User rejected AI suggestions - run manual wizard
               console.log(chalk.yellow('\n📝 Manual Configuration'));
-              finalSelection = await runManualWizard(analysisContext.metadata.language);
+              finalSelection = await runManualWizard(analysisContext.metadata.language, projectName, presetAssistant);
           }
       } catch (e) {
           spinner.fail('AI Analysis Failed');
@@ -174,23 +188,22 @@ export async function configureCommand(options: ConfigureOptions) {
           }
 
           console.log(chalk.yellow('\n📝 Manual Configuration'));
-          finalSelection = await runManualWizard(analysisContext.metadata.language);
+          finalSelection = await runManualWizard(analysisContext.metadata.language, projectName, presetAssistant);
       }
   } else {
       // Manual Fallback (Wizard)
       console.log(chalk.yellow('\n📝 Manual Configuration'));
-      finalSelection = await runManualWizard(analysisContext.metadata.language);
+      finalSelection = await runManualWizard(analysisContext.metadata.language, projectName, presetAssistant);
+  }
+
+  if (!finalSelection.projectName || finalSelection.projectName === 'my-project') {
+      finalSelection.projectName = projectName;
   }
 
   // Ask for target coding assistant if not already set
   if (!finalSelection.assistant) {
-      if (options.assistant) {
-          try {
-              getAssistantDefinition(options.assistant as AIAssistant);
-          } catch {
-              throw new Error(`Unsupported assistant "${options.assistant}". Gemini CLI generation was removed; use "antigravity" for Google agentic coding profiles.`);
-          }
-          finalSelection.assistant = options.assistant as AIAssistant;
+      if (presetAssistant) {
+          finalSelection.assistant = presetAssistant;
       } else {
           finalSelection.assistant = await select({
           message: 'Which coding assistant will use these guidelines?',
@@ -260,11 +273,30 @@ export async function configureCommand(options: ConfigureOptions) {
   if (result.conflicts.length > 0) {
       console.log(chalk.yellow(`\n⚠️  Refreshed ${result.conflicts.length} existing file(s).`));
   }
+  if (result.migrated && result.migrated.length > 0) {
+      console.log(chalk.yellow(`\n♻️  Replaced ${result.migrated.length} aicgen 1.x file(s) with the 2.0 layout:`));
+      result.migrated.forEach(file => console.log(chalk.gray(`   ${file.replace(projectPath, '').replace(/^[/\\]/, '')}`)));
+  }
+  if (result.removed && result.removed.length > 0) {
+      console.log(chalk.yellow(`\n🧹 Removed ${result.removed.length} file(s) from the previous profile that this profile no longer generates:`));
+      result.removed.slice(0, 10).forEach(file => console.log(chalk.gray(`   ${file}`)));
+      if (result.removed.length > 10) console.log(chalk.gray(`   ... and ${result.removed.length - 10} more`));
+  }
+  if (result.keptModified && result.keptModified.length > 0) {
+      console.log(chalk.yellow(`\n⚠️  Kept ${result.keptModified.length} outdated file(s) you modified (delete them if you no longer need them):`));
+      result.keptModified.forEach(file => console.log(chalk.gray(`   ${file}`)));
+  }
+  if (result.budget) {
+      console.log(chalk.cyan('\n🧠 Context budget:'));
+      console.log(chalk.gray(`   Always-on instructions: ~${result.budget.alwaysOnTokens} tokens`));
+      console.log(chalk.gray(`   ${result.budget.onDemandFiles} guideline file(s) load only when relevant (path-scoped rules and skills)`));
+      result.budget.warnings.forEach(warning => console.log(chalk.yellow(`   ⚠ ${warning}`)));
+  }
   console.log(chalk.cyan('\n🚀 Next steps:'));
   printNextSteps(finalSelection.assistant);
 }
 
-async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSelection> {
+async function runManualWizard(detectedLanguage: Language | undefined, projectName: string, presetAssistant?: AIAssistant): Promise<ProfileSelection> {
   // Language
   let language: Language;
   if (detectedLanguage && detectedLanguage !== 'unknown') {
@@ -317,8 +349,8 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       ]
   }) as InstructionLevel;
 
-  // Target Coding Assistant
-  const assistant = await select({
+  // Target Coding Assistant (skipped when --assistant was given)
+  const assistant = presetAssistant ?? await select({
       message: 'Which coding assistant will use these guidelines?',
       choices: listAssistantDefinitions().map(definition => ({
           value: definition.id,
@@ -333,7 +365,7 @@ async function runManualWizard(detectedLanguage?: Language): Promise<ProfileSele
       projectType,
       architecture,
       datasource,
-      projectName: 'my-project',
+      projectName,
       level
   };
 }

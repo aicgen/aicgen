@@ -41,6 +41,14 @@ jobs:
       - name: Build package
         run: bun run build
 
+      # Drives the real compiled CLI through its wizard (4 languages x 4 assistants x 3 levels)
+      # and validates the files it writes. Catches problems unit tests miss, such as code paths
+      # the CLI does not actually run.
+      - name: CLI QA matrix
+        run: |
+          bun run build:binary:linux
+          python3 scripts/qa/matrix.py
+
       - name: Generate optional coverage report
         if: always()
         run: |

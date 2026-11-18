@@ -141,6 +141,8 @@ Profile levels control how much AICGEN generates:
 
 Generated files follow a **context budget**: always-on files stay small (role, commands and an index of guideline names), and each guideline is its own file that loads only when it is relevant. `aicgen init` prints the always-on size and warns when a vendor limit is at risk. Guidelines are also **localized to your project's language**: examples written in other languages (and sections named after them) are dropped, so a Rust or Python project does not receive TypeScript snippets (roughly 40% fewer guideline tokens for non-TypeScript projects).
 
+**Changing your profile is safe.** aicgen records what it generates in `.aicgen/manifest.json` (commit it). Re-running with a smaller profile, another language or architecture, or after a guideline is renamed removes the files the previous run created that the new one no longer produces, so stale rules and skills do not keep loading. Files you edited are kept and listed, and your own rules, skills and agents are never touched. `aicgen clear` removes the manifest with the rest. Upgrading from 1.x replaces the old 1.x outputs the same way.
+
 | Tier | Loaded | Contents |
 |------|--------|----------|
 | Always-on | every session | Role, project commands, guideline index, workflow summary |

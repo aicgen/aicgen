@@ -1,4 +1,5 @@
 import { hasBash, runBash } from '../../test-utils/bash.js';
+import { withPosixPaths } from '../../test-utils/paths.js';
 import { AssistantFileWriter } from '../assistant-file-writer.js';
 import { WorkflowInjector } from '../workflow-injector.js';
 import { commandsSection, getLanguageProfile, quickReferenceLines } from '../language-profile.js';
@@ -32,7 +33,7 @@ describe('Rust generation', () => {
   let writer: AssistantFileWriter;
 
   beforeEach(async () => {
-    writer = await AssistantFileWriter.create(WorkflowInjector.fromContent('# SDLC\n'));
+    writer = withPosixPaths(await AssistantFileWriter.create(WorkflowInjector.fromContent('# SDLC\n')));
   });
 
   const find = (files: { path: string; content: string }[], suffix: string) =>

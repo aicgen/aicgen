@@ -3,13 +3,16 @@ import chalk from 'chalk';
 import { GuidelineLoader } from '../services/guideline-loader';
 import { createSummaryBox } from '../utils/formatting';
 import { DataPackageInstaller, DataPackageVersionInfo } from '../services/data-package-installer.js';
+import { BUNDLED_DATA_VERSION } from '../services/data-source.js';
 
 export async function updateCommand(options: { force?: boolean } = {}) {
   const spinner = ora('Checking for updates...').start();
 
   try {
     const loader = await GuidelineLoader.create();
-    const currentVersion = loader.getVersion();
+    // With no newer downloaded package the guidelines in use are the ones bundled with this build.
+    const loaded = loader.getVersion();
+    const currentVersion = loaded === 'embedded' || loaded === 'unknown' ? BUNDLED_DATA_VERSION : loaded;
     const installer = new DataPackageInstaller();
     const latestVersion = await installer.fetchLatestVersion();
 
@@ -73,7 +76,7 @@ function printUpdateError(error: Error): void {
   }
 }
 
-function needsUpdate(current: string, latest: string): boolean {
+export function needsUpdate(current: string, latest: string): boolean {
   if (current === 'embedded' || current === 'unknown' || current === 'custom') {
     return true;
   }

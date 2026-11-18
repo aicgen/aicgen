@@ -1,4 +1,4 @@
-import { select, checkbox, confirm } from '@inquirer/prompts';
+import { select, checkbox, confirm, Separator } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
@@ -14,12 +14,30 @@ import { CONFIG } from '../config.js';
 import { detectAssistant } from '../services/assistant-registry.js';
 import { buildGuidelineUnits, renderGuidelineFiles } from '../services/guideline-delivery.js';
 import { writeFiles } from '../utils/file.js';
+import type { CategoryNode } from '../services/guideline-loader';
 
 interface CheckboxChoice {
   name: string;
   value: string;
   checked?: boolean;
   disabled?: boolean | string;
+  description?: string;
+}
+
+/**
+ * Guidelines worth offering: everything available for this language (up to the `full` level)
+ * that the current profile does not already include. Offering only the current level would list
+ * exactly what is already installed.
+ */
+export function buildAddableTree(loader: GuidelineLoader, config: ProfileSelection): CategoryNode[] {
+  const installed = new Set(loader.getGuidelinesForProfile(config.language, config.level, config.architecture, config.datasource));
+
+  return loader.getCategoryTree(config.language, 'full', config.architecture, config.datasource)
+    .map(category => {
+      const guidelines = category.guidelines.filter(guideline => !installed.has(guideline.id));
+      return { ...category, guidelines, count: guidelines.length };
+    })
+    .filter(category => category.count > 0);
 }
 
 
@@ -57,31 +75,34 @@ export async function quickAddCommand() {
   let continueLoop = true;
   while (continueLoop) {
     // Organize by category
-    const categoryTree = loader.getCategoryTree(
-      existingConfig.language,
-      existingConfig.level,
-      existingConfig.architecture || 'modular-monolith',
-      existingConfig.datasource || 'sql'
-    );
+    const categoryTree = buildAddableTree(loader, {
+      ...existingConfig,
+      architecture: existingConfig.architecture || 'modular-monolith',
+      datasource: existingConfig.datasource || 'sql',
+    });
+
+    if (categoryTree.length === 0) {
+      console.log(chalk.gray('\nEvery available guideline for this project is already part of your configuration.'));
+      return;
+    }
 
     // Build choices
-    const choices: CheckboxChoice[] = [];
+    const choices: Array<CheckboxChoice | Separator> = [];
     const guidelineMap = new Map<string, string>();
 
     for (const category of categoryTree) {
-      choices.push({
-        name: chalk.bold.cyan(`${category.name} (${category.count})`),
-        value: `__CATEGORY_${category.name}__`,
-        disabled: true
-      });
+      // A separator is skipped by the cursor, unlike a disabled choice that starts focused.
+      choices.push(new Separator(chalk.bold.cyan(`${category.name} (${category.count})`)));
 
       for (const guideline of category.guidelines) {
         choices.push({
-          name: `   ${guideline.name}`,
+          // The id is unique and readable; file names such as "patterns" repeat across categories.
+          name: guideline.id,
           value: guideline.id,
-          checked: false
+          checked: false,
+          description: guideline.description
         });
-        guidelineMap.set(guideline.id, guideline.name);
+        guidelineMap.set(guideline.id, guideline.id);
       }
     }
 

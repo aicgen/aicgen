@@ -7,6 +7,8 @@ import {
   DataSource,
   HybridDataSource,
   FileSystemDataSource,
+  MinVersionDataSource,
+  BUNDLED_DATA_VERSION,
   CustomMappingsDataSource,
   EmbeddedDataSource,
   GuidelineData
@@ -34,7 +36,7 @@ export class GuidelineLoader {
 
     return new HybridDataSource([
       new CustomMappingsDataSource(userDataPath),      // Highest priority
-      new FileSystemDataSource(officialCachePath),     // Official updates
+      new MinVersionDataSource(new FileSystemDataSource(officialCachePath), BUNDLED_DATA_VERSION), // Official updates, only if newer than the bundled data
       new EmbeddedDataSource()                         // Fallback
     ]);
   }
@@ -190,7 +192,8 @@ export class GuidelineLoader {
         guidelines: guidelineIds.map(id => ({
           id,
           name: this.mappings[id].path.split('/').pop()?.replace('.md', '') || id,
-          path: this.mappings[id].path
+          path: this.mappings[id].path,
+          description: this.mappings[id].description
         }))
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -313,6 +316,7 @@ export interface CategoryNode {
     id: string;
     name: string;
     path: string;
+    description?: string;
   }[];
 }
 

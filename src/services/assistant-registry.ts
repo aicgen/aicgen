@@ -165,5 +165,6 @@ export function getAllClearTargets(): AssistantClearTarget[] {
     ...ASSISTANT_DEFINITIONS.flatMap(definition => definition.clearTargets),
     { path: '.gemini', name: 'Legacy Gemini CLI config' },
     { path: 'AGENTS.md', name: 'Universal AGENTS.md', isFile: true },
+    { path: '.aicgen', name: 'aicgen metadata (generation manifest, MCP templates)' },
   ];
 }

@@ -93,7 +93,7 @@ export async function addGuidelineCommand() {
     });
 
     const description = await input({
-      message: 'Short description (optional):',
+      message: 'Description - what it covers and when to use it, e.g. "... Use when writing HTTP handlers." (optional):',
       default: ''
     });
 
@@ -265,6 +265,8 @@ export async function addGuidelineCommand() {
     mappings[id] = {
       path: relativePath,
       category,
+      // Assistants read this to decide when to load the guideline.
+      ...(description.trim() && { description: description.trim() }),
       ...(languages.length > 0 && { languages }),
       levels,
       ...(architectures.length > 0 && { architectures }),

@@ -278,6 +278,15 @@ Done in the final pass
 - OpenAI (`gpt-6-astra`) and Gemini (`gemini-3.8-flash`) default model IDs confirmed against vendor model pages; example config model lists refreshed.
 - Website builds (`vite build`).
 
+Found and fixed by QA with the real CLI (see `scripts/qa/`)
+- `aicgen init` runs `commands/configure.ts`; the budget summary, 1.x-migration notice and `--assistant` handling had been added to the unused `init.ts`. They now live in `configure.ts`, with tests that run the real command. `init.ts` is dead code and could be removed.
+- The project name was hardcoded to "my-project"; it is now the directory name.
+- Overwriting a profile left stale files (54-57 after full to basic). A generation manifest (`.aicgen/manifest.json`) now removes what the new profile no longer produces, keeps user-edited files, and `clear` removes it.
+- `quick-add` offered only what was already installed, started on a disabled header and labelled items by file name; it now offers uninstalled guidelines up to full, with ids and descriptions.
+- `add-guideline` discarded the description the user typed; it is now saved and used as the skill description.
+- A guideline cache downloaded by an older aicgen (1.x `update`) overrode the bundled 2.0 data, and `update` would download an older release; caches older than the bundled data are now ignored.
+- Verified: 48 wizard runs (4 languages x 4 assistants x 3 levels), 12 real 1.2.0-to-2.0 upgrades (TypeScript, Python, Go x 4 assistants), existing-config prompts, clear, custom guidelines, update.
+
 Not done
 - Go, C#, Ruby, Kotlin, PHP and Swift snippets are not compiled: those toolchains are not installed here and installing them was blocked.
 - Behaviour with real assistants (skill loading, rule following) and the interactive `aicgen init` wizard were not exercised; no assistant CLI is installed here.

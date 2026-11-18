@@ -1,3 +1,4 @@
+import { planStaleRemoval, readManifest, recordGenerated, removeStale, toRelative } from './generation-manifest.js';
 import { summarizeFindings } from './context-budget.js';
 import { findLegacyOutputs, removeLegacyOutputs } from './legacy-migration.js';
 import { join } from 'path';
@@ -29,6 +30,10 @@ export interface GenerationResult {
   };
   /** aicgen 1.x outputs that were (or, in a dry run, would be) replaced by the 2.0 layout. */
   migrated?: string[];
+  /** Files from this assistant's previous profile that were (or would be) removed because the new profile no longer produces them. */
+  removed?: string[];
+  /** Stale files the user had edited; they were kept. */
+  keptModified?: string[];
 }
 
 export class ConfigGenerator {
@@ -92,6 +97,14 @@ export class ConfigGenerator {
 
       const migrated = await findLegacyOutputs(options.projectPath, options.selection.assistant);
 
+      const manifest = await readManifest(options.projectPath);
+      const stale = await planStaleRemoval(
+        options.projectPath,
+        manifest,
+        options.selection.assistant,
+        new Set(files.map(file => toRelative(options.projectPath, file.path)))
+      );
+
       if (options.dryRun) {
         conflicts.push(...await this.findConflicts(files.map(file => file.path)));
         return {
@@ -100,13 +113,17 @@ export class ConfigGenerator {
           conflicts,
           errors: [],
           budget,
-          migrated
+          migrated,
+          removed: stale.remove,
+          keptModified: stale.keptModified
         };
       }
 
       conflicts.push(...await this.findConflicts(files.map(file => file.path)));
       await removeLegacyOutputs(migrated);
+      await removeStale(options.projectPath, stale);
       await this.fileWriter.writeFiles(files);
+      await recordGenerated(options.projectPath, options.selection.assistant, files, { manifest });
       files.forEach(f => filesGenerated.push(f.path));
 
       return {
@@ -115,7 +132,9 @@ export class ConfigGenerator {
         conflicts,
         errors: [],
         budget,
-        migrated
+        migrated,
+        removed: stale.remove,
+        keptModified: stale.keptModified
       };
     } catch (error) {
       errors.push((error as Error).message);

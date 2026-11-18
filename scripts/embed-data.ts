@@ -98,6 +98,14 @@ export async function buildEmbeddedDataOutput(dataDir: string): Promise<{ output
   delete guidelines['guideline-mappings.yml'];
   delete guidelines['index.md'];
 
+  // Version of the bundled data; a downloaded cache older than this is ignored at runtime.
+  let dataVersion = 'unknown';
+  try {
+    dataVersion = JSON.parse(await readText(join(dataDir, 'version.json'))).version ?? 'unknown';
+  } catch {
+    // version.json is optional for ad-hoc data directories
+  }
+
   // Read SDLC workflow content
   const sdlcPath = join(dataDir, 'workflows/sdlc.md');
   const sdlcContent = await readText(sdlcPath);
@@ -129,6 +137,7 @@ export const EMBEDDED_DATA: EmbeddedData = ${JSON.stringify(data, null, 2)};
 
 export const GUIDELINE_COUNT = ${Object.keys(guidelines).length};
 export const MAPPING_COUNT = ${Object.keys(mappings).length};
+export const EMBEDDED_DATA_VERSION = ${JSON.stringify(dataVersion)};
 export const EMBEDDED_SDLC_CONTENT = ${JSON.stringify(sdlcContent)};
 `;
 

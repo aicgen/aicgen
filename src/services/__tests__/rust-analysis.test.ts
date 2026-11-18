@@ -1,3 +1,4 @@
+import { toPosix } from '../../test-utils/paths.js';
 import { ProjectAnalyzer } from '../project-analyzer';
 
 jest.mock('fast-glob', () => ({ __esModule: true, default: jest.fn() }));
@@ -16,10 +17,10 @@ function mockProject(opts: {
     Promise.resolve(options?.onlyDirectories ? (opts.dirs ?? []) : opts.files)
   );
   exists.mockImplementation((filepath: string) =>
-    Promise.resolve((opts.present ?? []).some(name => filepath.endsWith(name)))
+    Promise.resolve((opts.present ?? []).some(name => toPosix(filepath).endsWith(name)))
   );
   readFile.mockImplementation((filepath: string) => {
-    const match = Object.entries(opts.contents ?? {}).find(([name]) => filepath.endsWith(name));
+    const match = Object.entries(opts.contents ?? {}).find(([name]) => toPosix(filepath).endsWith(name));
     return Promise.resolve(match ? match[1] : '{}');
   });
 }
